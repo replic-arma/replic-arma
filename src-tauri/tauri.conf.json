@@ -1,11 +1,11 @@
 {
   "package": {
-    "productName": "replic-arma",
+    "productName": "TF47 Mod Launcher POC",
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "Set automatically by Vue CLI plugin",
-    "devPath": "Set automatically by Vue CLI plugin",
+    "distDir": "../frontend/dist",
+    "devPath": "http://localhost:8080",
     "beforeDevCommand": "",
     "beforeBuildCommand": ""
   },
@@ -49,13 +49,26 @@
       "active": false
     },
     "allowlist": {
-      "all": true
+      "all": false,
+	  "shell": {
+		  "execute": true,
+		  "open": true
+	  },
+	  "fs": {
+		  "all": true
+	  },
+      "notification": {
+        "all": true
+      },
+      "dialog": {
+        "all": true
+      }
     },
     "windows": [
       {
-        "title": "replic-arma",
-        "width": 800,
-        "height": 600,
+        "title": "TF47 Mod Launcher POC",
+        "width": 1280,
+        "height": 720,
         "resizable": true,
         "fullscreen": false
       }

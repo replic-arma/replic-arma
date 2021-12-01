@@ -1,30 +1,52 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
   <router-view/>
 </template>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+@import url('https://fonts.googleapis.com/css?family=Rubik|Source+Sans+Pro|Source+Code+Pro&display=swap');
+
+:root {
+    --c-text-1: #212121;
+    --c-text-2: #595959;
+    --c-text-3: #7D7D7D;
+
+    --c-surf-1: #F0F1F2; // BACKGROUND
+    --c-surf-2: #FFFFFF; // "ACCENT"
+    --c-surf-3: rgba(0, 0, 0, 0.1); // HOVER
+
+    --shadow-1:  0 0 .125rem 0 rgb(0 0 0 / 20%);
+    --shadow-2:  0 0 .25rem 0 rgb(0 0 0 / 40%);
 }
 
-#nav {
-  padding: 30px;
+// TODO: Uncomment and check colors
+// @media(prefers-color-scheme: dark) {
+//     :root {
+//         --c-text-1: #DEDEDE;
+//         --c-text-2: #A6A6A6;
+//         --c-text-3: #818181;
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+//         --c-surf-1: #222222;
+//         --c-surf-2: #353535;
+//     }
+// }
 
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+html, body {
+    margin: 0;
+    font-family: Source Sans Pro, sans-serif;
+    background-color: var(--c-surf-1);
+    color: var(--c-text-1);
+    padding: 1rem 2.5rem 0 2.5rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: Rubik, sans-serif;
+}
+
+textarea, input, pre, code {
+    font-family: Source Code Pro, monospace;
+}
+router-link {
+  cursor: pointer;
+  color: #333333
 }
 </style>

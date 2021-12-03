@@ -1,6 +1,6 @@
 <template>
-  <div class="settings">
-    <div class="settings__heading">
+  <div class="repo">
+    <div class="repo__heading">
       <router-link to="/"><mdicon name="chevron-left" size="35"/></router-link>
       <h1>Settings</h1>
     </div>
@@ -18,17 +18,16 @@ import { Options, Vue } from 'vue-class-component';
         Subnavi: SubnaviVue
     }
 })
-export default class SettingsView extends Vue {
+export default class RepoView extends Vue {
   private subnaviItems: SubnaviItem[] = [
-      { label: 'General', link: '/settings/general' },
-      { label: 'Launch Options', link: '/settings/launch' },
-      { label: 'About', link: '/settings/about' }
+      { label: 'Modset', link: '/repo/modset' },
+      { label: 'Server', link: '/repo/modset' }
   ];
 }
 </script>
 
 <style lang="scss">
-.settings {
+.repo {
 
   &__heading {
     display: grid;

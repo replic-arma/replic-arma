@@ -6,13 +6,14 @@
 @import url('https://fonts.googleapis.com/css?family=Rubik|Source+Sans+Pro|Source+Code+Pro&display=swap');
 
 :root {
-    --c-text-1: #212121;
+    --c-text-1: #333333;
     --c-text-2: #595959;
     --c-text-3: #7D7D7D;
 
     --c-surf-1: #F0F1F2; // BACKGROUND
-    --c-surf-2: #FFFFFF; // "ACCENT"
+    --c-surf-2: #2F80ED; // "ACCENT"
     --c-surf-3: rgba(0, 0, 0, 0.1); // HOVER
+    --c-surf-4: #FFFFFF;
 
     --shadow-1:  0 0 .125rem 0 rgb(0 0 0 / 20%);
     --shadow-2:  0 0 .25rem 0 rgb(0 0 0 / 40%);
@@ -45,8 +46,8 @@ h1, h2, h3, h4, h5, h6 {
 textarea, input, pre, code {
     font-family: Source Code Pro, monospace;
 }
-router-link {
+a {
   cursor: pointer;
-  color: #333333
+  color: #333333;
 }
 </style>

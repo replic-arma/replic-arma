@@ -69,6 +69,8 @@
         "title": "TF47 Mod Launcher POC",
         "width": 1280,
         "height": 720,
+        "minHeight": 850,
+        "minWidth": 850,
         "resizable": true,
         "fullscreen": false
       }

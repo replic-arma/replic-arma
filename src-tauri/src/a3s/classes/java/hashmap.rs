@@ -1,10 +1,10 @@
+use byteorder::{BigEndian, ByteOrder};
+use jaded::{ConversionError, ConversionResult, FromValue, Value};
 use std::collections::HashMap;
 use std::hash::Hash;
-use jaded::{FromValue, ConversionResult, ConversionError, Value};
-use byteorder::{ByteOrder, BigEndian};
 
 #[derive(Debug)]
-pub struct JavaHashMap<K, V>{
+pub struct JavaHashMap<K, V> {
     val: HashMap<K, V>,
     buckets: i32,
 }
@@ -29,13 +29,13 @@ impl<K: FromValue + Eq + Hash, V: FromValue> FromValue for JavaHashMap<K, V> {
                 for i in 0..size {
                     let index = 1 + (i as usize) * 2;
                     let key: K = K::from_value(annotation[index].value())?;
-                    let value: V = V::from_value(annotation[index+1].value())?;
-                    
+                    let value: V = V::from_value(annotation[index + 1].value())?;
+
                     val.insert(key, value);
                 }
 
-                return Ok(JavaHashMap{val, buckets});
-            },
+                return Ok(JavaHashMap { val, buckets });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };

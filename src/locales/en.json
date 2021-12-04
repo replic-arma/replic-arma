@@ -1,1 +1,5 @@
-{}
+{
+    "repositories": "Repositories",
+    "repository": "Repository",
+    "settings": "Settings"
+}

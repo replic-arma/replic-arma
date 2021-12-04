@@ -1,5 +1,7 @@
 /* eslint-disable camelcase */
 
+import { GameLaunchSettings } from "./Settings";
+
 export interface File {
     path: string,
     size: number,
@@ -15,6 +17,7 @@ export interface ModsetMod {
 export interface Modset {
     name: string,
     description: string,
+    status: string,
     mods?: Array<ModsetMod>,
 }
 
@@ -22,7 +25,7 @@ export interface GameServer {
     name: string,
     host: string,
     port: string,
-    password: string,
+    password?: string,
     modset?: string,
 }
 
@@ -54,4 +57,5 @@ export interface Repository {
 export interface ReplicArmaRepository extends Repository {
     image?: string;
     status: string;
+    settings?: GameLaunchSettings
 }

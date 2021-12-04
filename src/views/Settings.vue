@@ -2,7 +2,7 @@
   <div class="settings">
     <div class="settings__heading">
       <router-link to="/"><mdicon name="chevron-left" size="35"/></router-link>
-      <h1>Settings</h1>
+      <h1>{{$t('settings')}}</h1>
     </div>
     <subnavi :subnaviItems="subnaviItems"></subnavi>
     <router-view />

@@ -1,7 +1,7 @@
 <template>
   <div class="repos">
     <div class="repos__heading">
-      <h1>Repos</h1>
+      <h1>{{$t('repositories')}}</h1>
       <div class="icon-group">
         <router-link to="/settings"><mdicon name="download" size="35"/></router-link>
         <mdicon name="refresh" size="35"/>
@@ -11,6 +11,7 @@
     <ul>
       <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="i"></repo>
     </ul>
+    <button class="repos__add">Add Repository</button>
   </div>
 </template>
 
@@ -35,6 +36,8 @@ export default class ReposView extends Vue {
 
 <style lang="scss" scoped>
 .repos {
+  display: flex;
+  flex-direction: column;
   ul {
     padding: 0;
   }
@@ -63,6 +66,16 @@ export default class ReposView extends Vue {
       align-items: center;
       justify-content: center;
     }
+  }
+
+  &__add {
+    justify-self: center;
+    align-self: center;
+    background: var(--c-surf-3);
+    border-radius: 9rem;
+    padding: .75rem 1rem;
+    cursor: pointer;
+    color: var(--c-text-2);
   }
 }
 </style>

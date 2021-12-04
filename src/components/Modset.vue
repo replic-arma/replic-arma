@@ -1,7 +1,10 @@
 <template>
     <li class="modset">
-       <span class="modset__name">Gruppe Adler</span>
-        <span class="repo__status">asd</span>
+        <div class="modset__info">
+            <span class="modset__name">{{modset.name}}</span>
+            <span class="modset__description">{{modset.description}}</span>
+        </div>
+        <span class="repo__status">{{modset.status}}</span>
         <div class="modset__play">
             <span>Play</span>
             <mdicon name="play" size="35"/>
@@ -12,12 +15,16 @@
     </li>
 </template>
 <script lang="ts">
+import { Modset } from '@/models/Repository';
 import { Options, Vue } from 'vue-class-component';
+import { Prop } from 'vue-property-decorator';
 
 @Options({
     components: { }
 })
-export default class RepoVue extends Vue {}
+export default class ModsetVue extends Vue {
+    @Prop({ type: Object }) private modset!: Modset;
+}
 </script>
 <style lang="scss" scoped>
 .modset {
@@ -35,9 +42,9 @@ export default class RepoVue extends Vue {}
 
     &__name {
         font-weight: bold;
-        font-size: 24pt;
-        padding: 1rem;
+        font-size: 18pt;
     }
+
     &__open {
         cursor: pointer;
         background-color: var(--c-surf-3);
@@ -85,9 +92,20 @@ export default class RepoVue extends Vue {}
             background-color: var(--c-surf-3);
         }
     }
+
     &__modset {
         list-style-type: none;
         color: var(--c-surf-2);
+    }
+
+    &__info {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    &__description {
+        color: var(--c-text-3);
     }
 }
 </style>

@@ -45,8 +45,13 @@ export interface Repository {
     open_repository_schema: number,
     name: string,
     build_date: string,
-    files: Array<File>,
-    modsets: Array<Modset>,
-    game_servers: Array<GameServer>,
-    download_server: DownloadServer,
+    files?: Array<File>,
+    modsets?: Array<Modset>,
+    game_servers?: Array<GameServer>,
+    download_server?: DownloadServer,
+}
+
+export interface ReplicArmaRepository extends Repository {
+    image?: string;
+    status: string;
 }

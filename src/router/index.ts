@@ -26,8 +26,18 @@ const routes: Array<RouteRecordRaw> = [
         ]
     },
     {
-        path: '/repo',
-        component: RepoView
+        path: '/repo/:id',
+        component: RepoView,
+        children: [
+            {
+                path: 'modsets',
+                component: () => import(/* webpackChunkName: "modsets" */ '../views/ModsetList.vue')
+            },
+            {
+                path: 'servers',
+                component: () => import(/* webpackChunkName: "servers" */ '../views/ServerList.vue')
+            }
+        ]
     }
 ];
 

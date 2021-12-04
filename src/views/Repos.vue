@@ -9,14 +9,7 @@
       </div>
     </div>
     <ul>
-      <repo></repo>
-      <repo></repo>
-      <repo></repo>
-      <repo></repo>
-      <repo></repo>
-      <repo></repo>
-      <repo></repo>
-      <repo></repo>
+      <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="i"></repo>
     </ul>
   </div>
 </template>
@@ -24,15 +17,23 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import RepoVue from '@/components/Repo.vue';
+import { useRepoStore } from '../store/repo';
+import { ReplicArmaRepository } from '@/models/Repository';
 @Options({
     components: {
         Repo: RepoVue
     }
 })
-export default class ReposView extends Vue {}
+export default class ReposView extends Vue {
+  private repoStore = useRepoStore();
+  private repos: ReplicArmaRepository[] = [];
+  public mounted (): void {
+      this.repos = this.repoStore.getRepos;
+  }
+}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .repos {
   ul {
     padding: 0;
@@ -45,6 +46,10 @@ export default class ReposView extends Vue {}
   &__heading {
     display: grid;
     grid-template-columns: 1fr auto auto;
+    font-weight: bold;
+    font-size: 22pt;
+    align-items: center;
+    justify-content: center;
 
     h1 {
       margin: 0;
@@ -55,6 +60,8 @@ export default class ReposView extends Vue {}
     .icon-group {
       display: grid;
       grid-template-columns: repeat(3, 3rem);
+      align-items: center;
+      justify-content: center;
     }
   }
 }

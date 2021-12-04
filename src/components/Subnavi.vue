@@ -27,6 +27,7 @@ export default class SubnaviVue extends Vue {
     private onRouteChanged () {
         this.$nextTick(() => {
             const anchor = this.$el.querySelector('.router-link-active') as HTMLAnchorElement;
+            if (anchor === null) return;
             const el = anchor.parentElement as HTMLLIElement;
 
             const bb = el.getBoundingClientRect();
@@ -60,7 +61,7 @@ export default class SubnaviVue extends Vue {
             font-size: 16pt;
             color: var(--c-text-1);
             height: 1.5rem;
-            padding: .75rem .5rem;
+            padding: .75rem .75rem;
             border-radius: .25rem;
         }
     }

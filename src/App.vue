@@ -49,5 +49,6 @@ textarea, input, pre, code {
 a {
   cursor: pointer;
   color: #333333;
+  text-decoration: none;
 }
 </style>

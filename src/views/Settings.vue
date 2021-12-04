@@ -33,6 +33,9 @@ export default class SettingsView extends Vue {
   &__heading {
     display: grid;
     grid-template-columns: 2.5rem 1fr;
+    font-size: 22pt;
+    align-items: center;
+    justify-content: center;
     h1 {
       margin: 0;
       font-style: normal;

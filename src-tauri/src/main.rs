@@ -3,6 +3,8 @@
     windows_subsystem = "windows"
 )]
 
+mod util;
+
 mod a3s;
 mod repository;
 mod swifty;
@@ -24,4 +26,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("error while running tauri application");
 
     return Ok(());
+}
+
+#[test]
+fn test_swifty() {
+    let swifty = SwiftyRepository::from_repo_json(String::from(
+        "https://swifty.projectawesome.net/event/repo.json",
+    ));
+
+    assert_eq!(swifty.unwrap().repo_name, "Event".to_string());
 }

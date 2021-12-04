@@ -1,16 +1,16 @@
-use std::sync::Barrier;
-use threadpool::ThreadPool;
 use chrono::{DateTime, Utc};
-use std::path::Path;
+use sha1::{Digest, Sha1};
 use std::collections::HashMap;
-use std::{fs, io};
-use sha1::{Sha1, Digest};
-use std::sync::mpsc::channel;
-use std::thread;
-use std::time::{Instant};
-use std::sync::{Arc, RwLock};
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::io::prelude::*;
+use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::mpsc::channel;
+use std::sync::Barrier;
+use std::sync::{Arc, RwLock};
+use std::thread;
+use std::time::Instant;
+use std::{fs, io};
+use threadpool::ThreadPool;
 
 #[derive(Debug)]
 pub struct Repository {
@@ -25,7 +25,15 @@ pub struct Repository {
 
 impl std::fmt::Display for Repository {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Repository \"{}\" from {} (includes {} files, {} modsets and {} game servers)", self.name, self.build_date, self.files.len(), self.modsets.len(), self.game_servers.len())
+        write!(
+            f,
+            "Repository \"{}\" from {} (includes {} files, {} modsets and {} game servers)",
+            self.name,
+            self.build_date,
+            self.files.len(),
+            self.modsets.len(),
+            self.game_servers.len()
+        )
     }
 }
 
@@ -67,10 +75,10 @@ pub struct DownloadServerOptions {
     pub max_connections: i32,
 }
 #[derive(Debug)]
-struct FileMap{
+struct FileMap {
     foreign_hash: String,
     local_hash: String,
-    file_found: bool
+    file_found: bool,
 }
 
 impl Repository {
@@ -89,19 +97,37 @@ impl Repository {
             let abs_path = base_dir.join(file.path.clone());
 
             if fs::metadata(&abs_path).is_ok() {
-
                 let file_map = file_map.clone();
 
                 pool.execute(move || {
                     let now = Instant::now();
                     let local_hash = self::create_hash_from_file(&abs_path).unwrap();
                     let mut list = file_map.write().unwrap();
-                    println!("finished {:?} in {}ms ({})", &abs_path.file_name().unwrap(), now.elapsed().as_millis(), local_hash);
-                    list.insert(abs_path, FileMap{foreign_hash: file.sha1, local_hash: local_hash, file_found: true});
+                    println!(
+                        "finished {:?} in {}ms ({})",
+                        &abs_path.file_name().unwrap(),
+                        now.elapsed().as_millis(),
+                        local_hash
+                    );
+                    list.insert(
+                        abs_path,
+                        FileMap {
+                            foreign_hash: file.sha1,
+                            local_hash: local_hash,
+                            file_found: true,
+                        },
+                    );
                 });
             } else {
                 let mut list = file_map.write().unwrap();
-                list.insert(abs_path, FileMap{foreign_hash: file.sha1, local_hash: String::from(""), file_found: false});
+                list.insert(
+                    abs_path,
+                    FileMap {
+                        foreign_hash: file.sha1,
+                        local_hash: String::from(""),
+                        file_found: false,
+                    },
+                );
             }
         }
 
@@ -113,10 +139,12 @@ impl Repository {
     }
 }
 
-pub fn create_hash_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn std::error::Error>> {
+pub fn create_hash_from_file<P: AsRef<Path>>(
+    path: P,
+) -> Result<String, Box<dyn std::error::Error>> {
     let mut file = fs::File::open(&path)?;
 
-    let buf_size= std::cmp::min(file.metadata()?.len(), 4 * 1024 * 1024) as usize;
+    let buf_size = std::cmp::min(file.metadata()?.len(), 4 * 1024 * 1024) as usize;
     let mut vec = vec![0 as u8; buf_size];
     let mut buf = vec.as_mut_slice();
 
@@ -124,7 +152,9 @@ pub fn create_hash_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn 
 
     loop {
         let size = file.read(&mut buf)?;
-        if size == 0 {break};
+        if size == 0 {
+            break;
+        };
 
         if size < buf_size {
             digest.update(&buf[..size]);

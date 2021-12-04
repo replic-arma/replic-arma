@@ -1,16 +1,16 @@
-use jaded::{Parser, FromValue};
+use core::time::Duration;
 use curl::easy::Easy;
 use flate2::read::GzDecoder;
-use std::io::Cursor;
+use jaded::{FromValue, Parser};
 use std::io::prelude::*;
-use url::{Url};
-use core::time::Duration;
+use std::io::Cursor;
+use url::Url;
 
 pub trait FromJavaObject {
     fn from_java_obj(slice: &[u8]) -> Result<Box<Self>, Box<dyn std::error::Error>>;
 }
 
-pub fn from_java_obj<T: FromValue>(slice : &[u8]) -> Result<Box<T>, Box<dyn std::error::Error>> {
+pub fn from_java_obj<T: FromValue>(slice: &[u8]) -> Result<Box<T>, Box<dyn std::error::Error>> {
     let mut parser = Parser::new(slice).expect("Bytes stream was not valid");
     let val: T = parser.read_as()?;
     return Ok(Box::new(val));
@@ -30,10 +30,13 @@ pub fn fetch(url: String) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         })?;
         transfer.perform()?;
     }
-    
+
     let code = easy.response_code()?;
     if code >= 400 {
-        return Err(Box::<dyn std::error::Error>::from(format!("Received non okay status code {:?}", code)));
+        return Err(Box::<dyn std::error::Error>::from(format!(
+            "Received non okay status code {:?}",
+            code
+        )));
     }
 
     return Ok(response_body);
@@ -49,8 +52,10 @@ pub fn unzip(zipped_data: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>
     return Ok(data);
 }
 
-
-pub fn fetch_meta_file<T: FromJavaObject>(base_url: String, file_name: &str) -> Result<T, Box<dyn std::error::Error>> {
+pub fn fetch_meta_file<T: FromJavaObject>(
+    base_url: String,
+    file_name: &str,
+) -> Result<T, Box<dyn std::error::Error>> {
     let mut url = Url::parse(&base_url)?;
     {
         let mut seg = url.path_segments_mut().unwrap();

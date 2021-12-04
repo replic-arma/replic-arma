@@ -1,10 +1,10 @@
-use jaded::{FromValue, ConversionResult, ConversionError, Value};
-use byteorder::{ByteOrder, BigEndian};  
-use chrono::{DateTime, Utc, NaiveDateTime};
+use byteorder::{BigEndian, ByteOrder};
+use chrono::{DateTime, NaiveDateTime, Utc};
+use jaded::{ConversionError, ConversionResult, FromValue, Value};
 
 #[derive(Debug)]
 pub struct JavaDate {
-    val: DateTime<Utc>
+    val: DateTime<Utc>,
 }
 
 impl JavaDate {
@@ -19,11 +19,12 @@ impl FromValue for JavaDate {
             Value::Object(data) => {
                 let annotation = data.get_annotation(0).unwrap();
                 let millis = BigEndian::read_i64(annotation[0].data());
-                
-                let val = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(millis / 1000, 0), Utc);
 
-                return Ok(JavaDate{val});
-            },
+                let val =
+                    DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(millis / 1000, 0), Utc);
+
+                return Ok(JavaDate { val });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };

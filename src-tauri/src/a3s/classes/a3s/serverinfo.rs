@@ -1,8 +1,8 @@
-use std::collections::HashSet;
-use chrono::{DateTime, Utc};
-use jaded::{FromValue, ConversionResult, ConversionError, Value};
-use super::super::java::{JavaHashSet,JavaDate};
+use super::super::java::{JavaDate, JavaHashSet};
 use crate::a3s::utils::{from_java_obj, FromJavaObject};
+use chrono::{DateTime, Utc};
+use jaded::{ConversionError, ConversionResult, FromValue, Value};
+use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct ServerInfo {
@@ -14,7 +14,7 @@ pub struct ServerInfo {
     pub number_of_connections: i32,
     pub no_partial_file_transfer: bool,
     pub repository_content_updated: bool,
-    pub compressed_pbo_files_only: bool
+    pub compressed_pbo_files_only: bool,
 }
 
 impl FromValue for ServerInfo {
@@ -29,9 +29,21 @@ impl FromValue for ServerInfo {
                 let no_partial_file_transfer = data.get_field_as("noPartialFileTransfer")?;
                 let repository_content_updated = data.get_field_as("repositoryContentUpdated")?;
                 let compressed_pbo_files_only = data.get_field_as("compressedPboFilesOnly")?;
-                let hidden_folder_paths = data.get_field_as::<JavaHashSet<String>>("hiddenFolderPaths")?.value();
-                return Ok(ServerInfo{revision, build_date, number_of_files, total_file_size, number_of_connections, no_partial_file_transfer, repository_content_updated, compressed_pbo_files_only, hidden_folder_paths});
-            },
+                let hidden_folder_paths = data
+                    .get_field_as::<JavaHashSet<String>>("hiddenFolderPaths")?
+                    .value();
+                return Ok(ServerInfo {
+                    revision,
+                    build_date,
+                    number_of_files,
+                    total_file_size,
+                    number_of_connections,
+                    no_partial_file_transfer,
+                    repository_content_updated,
+                    compressed_pbo_files_only,
+                    hidden_folder_paths,
+                });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };

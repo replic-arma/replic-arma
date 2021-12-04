@@ -1,7 +1,7 @@
-use jaded::{FromValue, ConversionResult, ConversionError, Value};
-use chrono::{DateTime, Utc};
 use super::super::java::{JavaArrayList, JavaDate};
 use crate::a3s::utils::{from_java_obj, FromJavaObject};
+use chrono::{DateTime, Utc};
+use jaded::{ConversionError, ConversionResult, FromValue, Value};
 
 /* --------------------------------------------------------------------- Changelog -------------------------------------------------------------------- */
 #[derive(Debug, Clone)]
@@ -21,15 +21,31 @@ impl FromValue for Changelog {
                 let revision = data.get_field_as("revision")?;
                 let content_updated = data.get_field_as("contentUpdated")?;
 
-                let addons = data.get_field_as::<JavaArrayList<String>>("addons")?.value();
-                let new_addons = data.get_field_as::<JavaArrayList<String>>("newAddons")?.value();
-                let deleted_addons = data.get_field_as::<JavaArrayList<String>>("deletedAddons")?.value();
-                let updated_addons = data.get_field_as::<JavaArrayList<String>>("updatedAddons")?.value();
+                let addons = data
+                    .get_field_as::<JavaArrayList<String>>("addons")?
+                    .value();
+                let new_addons = data
+                    .get_field_as::<JavaArrayList<String>>("newAddons")?
+                    .value();
+                let deleted_addons = data
+                    .get_field_as::<JavaArrayList<String>>("deletedAddons")?
+                    .value();
+                let updated_addons = data
+                    .get_field_as::<JavaArrayList<String>>("updatedAddons")?
+                    .value();
 
                 let build_date = data.get_field_as::<JavaDate>("buildDate")?.value();
 
-                return Ok(Changelog{revision, addons, new_addons, deleted_addons, updated_addons, content_updated, build_date});
-            },
+                return Ok(Changelog {
+                    revision,
+                    addons,
+                    new_addons,
+                    deleted_addons,
+                    updated_addons,
+                    content_updated,
+                    build_date,
+                });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };
@@ -46,9 +62,11 @@ impl FromValue for Changelogs {
     fn from_value(value: &Value) -> ConversionResult<Self> {
         return match value {
             Value::Object(data) => {
-                let list = data.get_field_as::<JavaArrayList<Changelog>>("list")?.value();
-                return Ok(Changelogs{list});
-            },
+                let list = data
+                    .get_field_as::<JavaArrayList<Changelog>>("list")?
+                    .value();
+                return Ok(Changelogs { list });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };

@@ -1,8 +1,8 @@
+use crate::a3s::utils::{from_java_obj, FromJavaObject};
+use byteorder::{BigEndian, ByteOrder};
+use jaded::{ConversionError, ConversionResult, FromValue, Value};
 use std::collections::HashMap;
 use std::path::Path;
-use jaded::{FromValue, ConversionResult, ConversionError, Value};
-use byteorder::{ByteOrder, BigEndian};
-use crate::a3s::utils::{from_java_obj, FromJavaObject};
 
 /* --------------------------------------------------------------------- Tree List -------------------------------------------------------------------- */
 #[derive(Debug)]
@@ -22,8 +22,7 @@ impl FromValue for SyncTreeList {
 
                 let size = BigEndian::read_i32(vec[0].data());
 
-                for i in 1..(size+1) as usize {
-
+                for i in 1..(size + 1) as usize {
                     let val = vec[i].value();
                     let d = val.object_data();
 
@@ -34,11 +33,13 @@ impl FromValue for SyncTreeList {
                         let val: SyncTreeLeaf = SyncTreeLeaf::from_value(val)?;
                         file_list.push(val);
                     }
-
                 }
 
-                return Ok(SyncTreeList{directory_list, file_list});
-            },
+                return Ok(SyncTreeList {
+                    directory_list,
+                    file_list,
+                });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };
@@ -68,8 +69,16 @@ impl FromValue for SyncTreeLeaf {
                 let updated = data.get_field_as("updated")?;
                 let deleted = data.get_field_as("deleted")?;
                 let compressed = data.get_field_as("compressed")?;
-                return Ok(SyncTreeLeaf{name, sha1, size, compressed_size, updated, deleted, compressed});
-            },
+                return Ok(SyncTreeLeaf {
+                    name,
+                    sha1,
+                    size,
+                    compressed_size,
+                    updated,
+                    deleted,
+                    compressed,
+                });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };
@@ -102,8 +111,16 @@ impl FromValue for SyncTreeDirectory {
                 let directory_list = list.directory_list;
                 let file_list = list.file_list;
 
-                return Ok(SyncTreeDirectory{name, mark_as_addon, deleted, updated, hidden, directory_list, file_list});
-            },
+                return Ok(SyncTreeDirectory {
+                    name,
+                    mark_as_addon,
+                    deleted,
+                    updated,
+                    hidden,
+                    directory_list,
+                    file_list,
+                });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };
@@ -112,8 +129,8 @@ impl FromValue for SyncTreeDirectory {
 
 impl SyncTreeDirectory {
     pub fn flat(&self, base: String) -> HashMap<String, SyncTreeLeaf> {
-        let mut map =  HashMap::<String, SyncTreeLeaf>::new();
-        
+        let mut map = HashMap::<String, SyncTreeLeaf>::new();
+
         self.flat_rec(base, &mut map);
 
         return map;
@@ -124,9 +141,11 @@ impl SyncTreeDirectory {
 
         for leaf in self.file_list.iter() {
             let file_path = path.join(leaf.name.clone());
-            
+
             match file_path.to_str() {
-                Some(s) => { map.insert(String::from(s), leaf.clone()); },
+                Some(s) => {
+                    map.insert(String::from(s), leaf.clone());
+                }
                 _ => (),
             };
         }
@@ -135,7 +154,9 @@ impl SyncTreeDirectory {
             let dir_path = path.join(dir.name.clone());
 
             match dir_path.to_str() {
-                Some(s) => { dir.flat_rec(String::from(s), map); },
+                Some(s) => {
+                    dir.flat_rec(String::from(s), map);
+                }
                 _ => (),
             };
         }

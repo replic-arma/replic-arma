@@ -4,7 +4,7 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../frontend/dist",
+    "distDir": "../dist",
     "devPath": "http://localhost:8080",
     "beforeDevCommand": "",
     "beforeBuildCommand": ""
@@ -50,13 +50,13 @@
     },
     "allowlist": {
       "all": false,
-	  "shell": {
-		  "execute": true,
-		  "open": true
-	  },
-	  "fs": {
-		  "all": true
-	  },
+      "shell": {
+        "execute": true,
+        "open": true
+      },
+      "fs": {
+        "all": true
+      },
       "notification": {
         "all": true
       },

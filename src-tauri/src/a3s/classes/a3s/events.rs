@@ -1,6 +1,6 @@
-use jaded::{FromValue, ConversionResult, ConversionError, Value};
-use super::super::java::{JavaHashMap, JavaArrayList};
+use super::super::java::{JavaArrayList, JavaHashMap};
 use crate::a3s::utils::{from_java_obj, FromJavaObject};
+use jaded::{ConversionError, ConversionResult, FromValue, Value};
 
 /* ----------------------------------------------------------------------- Event ---------------------------------------------------------------------- */
 use std::collections::HashMap;
@@ -9,7 +9,7 @@ pub struct Event {
     pub name: String,
     pub description: String,
     pub addon_names: HashMap<String, bool>,
-    pub userconfig_folder_names: HashMap<String, bool>
+    pub userconfig_folder_names: HashMap<String, bool>,
 }
 
 impl FromValue for Event {
@@ -19,12 +19,21 @@ impl FromValue for Event {
                 let name = data.get_field_as("name")?;
                 let description = data.get_field_as("description")?;
 
-                let addon_names = data.get_field_as::<JavaHashMap<String, bool>>("addonNames")?.value();
+                let addon_names = data
+                    .get_field_as::<JavaHashMap<String, bool>>("addonNames")?
+                    .value();
 
-                let userconfig_folder_names = data.get_field_as::<JavaHashMap<String, bool>>("userconfigFolderNames")?.value();
+                let userconfig_folder_names = data
+                    .get_field_as::<JavaHashMap<String, bool>>("userconfigFolderNames")?
+                    .value();
 
-                return Ok(Event{name,description,addon_names,userconfig_folder_names});
-            },
+                return Ok(Event {
+                    name,
+                    description,
+                    addon_names,
+                    userconfig_folder_names,
+                });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };
@@ -42,8 +51,8 @@ impl FromValue for Events {
         return match value {
             Value::Object(data) => {
                 let list = data.get_field_as::<JavaArrayList<Event>>("list")?.value();
-                return Ok(Events{list});
-            },
+                return Ok(Events { list });
+            }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
         };

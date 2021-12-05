@@ -6,7 +6,6 @@
         <div >
             <slot name="main" />
         </div>
-
     </div>
 </template>
 <script lang="ts">
@@ -62,11 +61,6 @@ export default class ReplicDialogVue extends Vue {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
     }
-    &__heading {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        font-size: 20pt;
-        font-weight: bold;
-    }
+    &__heading {}
 }
 </style>

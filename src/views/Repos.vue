@@ -12,13 +12,7 @@
       <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="i"></repo>
     </ul>
     <button class="repos__add">Add Repository</button>
-    <replic-dialog>
-      <template v-slot:header>
-        <mdicon role="button" name="close" @click="dialogStore.toggleDialog" size="35" />
-        <span>Downloads</span>
-        <canvas></canvas>
-      </template>
-    </replic-dialog>
+    <downloads />
   </div>
 </template>
 
@@ -29,11 +23,13 @@ import { useRepoStore } from '../store/repo';
 import { ReplicArmaRepository } from '@/models/Repository';
 import ReplicDialogVue from '@/components/util/ReplicDialog.vue';
 import { useDialogStore } from '@/store/dialog';
+import DownloadsVue from '@/components/download/Downloads.vue';
 
 @Options({
     components: {
         Repo: RepoVue,
-        ReplicDialog: ReplicDialogVue
+        ReplicDialog: ReplicDialogVue,
+        Downloads: DownloadsVue
     }
 })
 export default class ReposView extends Vue {
@@ -75,6 +71,9 @@ export default class ReposView extends Vue {
       color: #333333
     }
     .icon-group {
+      > span {
+        cursor: pointer;
+      }
       display: grid;
       grid-template-columns: repeat(3, 3rem);
       align-items: center;
@@ -90,21 +89,6 @@ export default class ReposView extends Vue {
     padding: .75rem 1rem;
     cursor: pointer;
     color: var(--c-text-2);
-  }
-}
-.replic-dialog {
-  top: 0;
-  margin:0;
-  height: fit-content;
-  &::after {
-    border-bottom-left-radius: 2rem;
-    border-bottom-right-radius: 2rem;
-  }
-  &__heading {
-      display: grid;
-      grid-template-columns: 3rem 1fr 1fr;
-      font-size: 20pt;
-      font-weight: bold;
   }
 }
 </style>

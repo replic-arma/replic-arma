@@ -33,7 +33,7 @@ repoStore.addRepo(
             { name: 'Gruppe Adler Test', port: '2402', host: 'arma.gruppe-adler.de' }
         ],
         modsets: [
-            { name: 'Gruppe Adler Main', status: 'ready', description: 'Hautprepo für die meisten Missionen' }
+            { name: 'Gruppe Adler Main', status: 'ready', description: 'Hautprepo für die meisten Missionen', mods: [{ name: 'RHS', mod_type: 'asd' }] }
         ]
     }
 );

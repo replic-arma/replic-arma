@@ -1,6 +1,6 @@
 <template>
     <ul class="modsets">
-       <modset v-for="(modset, i) of modsets" :key="i" :modset="modset"></modset>
+       <modset v-for="(modset, i) of modsets" :key="i" :modset="modset" :modsetIndex="i"></modset>
     </ul>
 </template>
 

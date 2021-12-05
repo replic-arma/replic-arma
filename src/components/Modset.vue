@@ -9,7 +9,7 @@
             <span>Play</span>
             <mdicon name="play" size="35"/>
         </div>
-        <router-link to="/repo" class="modset__open">
+        <router-link :to="'./modset/' + modsetIndex" class="modset__open">
             <mdicon name="folder-open"></mdicon>
         </router-link>
     </li>
@@ -24,6 +24,7 @@ import { Prop } from 'vue-property-decorator';
 })
 export default class ModsetVue extends Vue {
     @Prop({ type: Object }) private modset!: Modset;
+    @Prop({ type: Number }) private modsetIndex!: number;
 }
 </script>
 <style lang="scss" scoped>

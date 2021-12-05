@@ -38,6 +38,10 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import(/* webpackChunkName: "servers" */ '../views/ServerList.vue')
             }
         ]
+    },
+    {
+        path: '/repo/:id/modset/:mid',
+        component: () => import(/* webpackChunkName: "modset" */ '../views/Modset.vue')
     }
 ];
 

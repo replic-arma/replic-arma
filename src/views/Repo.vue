@@ -6,22 +6,26 @@
       <div class="icon-group">
         <button class="icon-group__play">Play</button>
         <router-link to="/settings/general"><mdicon name="download" size="35"/></router-link>
-        <router-link to="/settings/general"><mdicon name="cog" size="35"/></router-link>
+        <mdicon @click="toggleDialog" name="cog" size="35"/>
       </div>
     </div>
     <subnavi :subnaviItems="subnaviItems"></subnavi>
     <router-view />
+    <repo-settings></repo-settings>
   </div>
 </template>
 
 <script lang="ts">
-import SubnaviVue, { SubnaviItem } from '@/components/Subnavi.vue';
+import RepoSettingsVue from '@/components/RepoSettings.vue';
+import SubnaviVue, { SubnaviItem } from '@/components/util/Subnavi.vue';
 import { ReplicArmaRepository } from '@/models/Repository';
 import { Options, Vue } from 'vue-class-component';
 import { useRepoStore } from '../store/repo';
+import { useDialogStore } from '../store/dialog';
 @Options({
     components: {
-        Subnavi: SubnaviVue
+        Subnavi: SubnaviVue,
+        RepoSettings: RepoSettingsVue
     }
 })
 export default class RepoView extends Vue {
@@ -29,8 +33,10 @@ export default class RepoView extends Vue {
   private repositoryIndex!: number;
   private subnaviItems: SubnaviItem[] = [];
   private repoStore = useRepoStore();
+  private dialogStore = useDialogStore();
+  private toggleDialog = () => { this.dialogStore.toggleDialog(); };
 
-  public created () {
+  public created ():void {
       this.repositoryIndex = +this.$router.currentRoute.value.params.id;
       this.subnaviItems = [
           { label: 'Modset', link: '/repo/' + this.repositoryIndex + '/modsets' },
@@ -43,7 +49,7 @@ export default class RepoView extends Vue {
 
 <style lang="scss" scoped>
 .repo-view {
-
+  position: relative;
   &__heading {
     display: grid;
     grid-template-columns: 3rem 1fr auto auto;

@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import SubnaviVue, { SubnaviItem } from '@/components/Subnavi.vue';
+import SubnaviVue, { SubnaviItem } from '@/components/util/Subnavi.vue';
 import { Options, Vue } from 'vue-class-component';
 
 @Options({

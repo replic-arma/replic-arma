@@ -6,7 +6,6 @@
       <div class="icon-group">
         <button class="icon-group__play">Play</button>
         <router-link to="/settings/general"><mdicon name="download" size="35"/></router-link>
-        <mdicon name="cog" size="35"/>
       </div>
     </div>
     <ul class="modset__mods">

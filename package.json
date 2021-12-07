@@ -10,6 +10,7 @@
     "tauri:serve": "vue-cli-service tauri:serve"
   },
   "dependencies": {
+    "@ui5/webcomponents": "^1.0.2",
     "mdi-vue": "^3.0.12",
     "pinia": "^2.0.5",
     "vue": "^3.2.0",

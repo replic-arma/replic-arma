@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { GameLaunchSettings } from "./Settings";
+import { GameLaunchSettings } from './Settings';
 
 export interface File {
     path: string,

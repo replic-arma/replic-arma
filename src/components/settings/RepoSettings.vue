@@ -1,5 +1,7 @@
 <template>
-    <ul class="select"></ul>
+    <div>
+
+    </div>
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
@@ -7,10 +9,9 @@ import { Options, Vue } from 'vue-class-component';
 @Options({
     components: { }
 })
-export default class SelectVue extends Vue {}
+export default class RepoSettingsFormVue extends Vue {
+}
 </script>
 <style lang="scss" scoped>
-.select {
 
-}
 </style>

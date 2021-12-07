@@ -1,12 +1,12 @@
 <template>
-    <replic-dialog>
+    <replic-dialog :dialogName="'downloads'">
       <template v-slot:header>
-        <mdicon role="button" name="close" @click="dialogStore.toggleDialog" size="40" />
+        <mdicon role="button" name="close" @click="dialogStore.toggleDialog('downloads')" size="40" />
         <h1>Downloads</h1>
         <download-progress />
       </template>
       <template v-slot:main >
-        <ul>
+        <ul class="downloads">
           <download-item v-for="(item, i) of downloadItems" :key="i" :downloadItem="item"></download-item>
         </ul>
       </template>
@@ -32,17 +32,25 @@ export default class DownloadsVue extends Vue {
     private dialogStore = useDialogStore();
     private downloadStore = useDownloadStore();
     private downloadItems: DownloadItem[] = [];
-    private toggleDialog = () => { this.dialogStore.toggleDialog(); };
+    private toggleDialog = () => { this.dialogStore.toggleDialog('downloads'); };
     public mounted (): void {
         this.downloadItems = this.downloadStore.getDownloads ?? [];
     }
 }
 </script>
 <style lang="scss" scoped>
+.downloads {
+  box-sizing: border-box;
+  padding: 0;
+  li {
+    margin-bottom: 1rem;
+  }
+}
 .replic-dialog {
   top: 0;
   margin:0;
   height: fit-content;
+
   &::after {
     border-bottom-left-radius: 2rem;
     border-bottom-right-radius: 2rem;

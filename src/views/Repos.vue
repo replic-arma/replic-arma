@@ -13,30 +13,33 @@
     </ul>
     <button class="repos__add">Add Repository</button>
     <downloads />
+    <repo-add />
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import RepoVue from '@/components/Repo.vue';
+import RepoVue from '@/components/Repository.vue';
 import { useRepoStore } from '../store/repo';
 import { ReplicArmaRepository } from '@/models/Repository';
 import ReplicDialogVue from '@/components/util/ReplicDialog.vue';
 import { useDialogStore } from '@/store/dialog';
 import DownloadsVue from '@/components/download/Downloads.vue';
+import RepositoryAddVue from '@/components/RepositoryAdd.vue';
 
 @Options({
     components: {
         Repo: RepoVue,
         ReplicDialog: ReplicDialogVue,
-        Downloads: DownloadsVue
+        Downloads: DownloadsVue,
+        RepoAdd: RepositoryAddVue
     }
 })
 export default class ReposView extends Vue {
   private repoStore = useRepoStore();
   private repos: ReplicArmaRepository[] = [];
   private dialogStore = useDialogStore();
-  private toggleDialog = () => { this.dialogStore.toggleDialog(); };
+  private toggleDialog = () => { this.dialogStore.toggleDialog('downloads'); };
 
   public mounted (): void {
       this.repos = this.repoStore.getRepos;
@@ -44,7 +47,7 @@ export default class ReposView extends Vue {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .repos {
   display: flex;
   flex-direction: column;

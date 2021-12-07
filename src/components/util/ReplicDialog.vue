@@ -11,17 +11,20 @@
 <script lang="ts">
 import { useDialogStore } from '@/store/dialog';
 import { Options, Vue } from 'vue-class-component';
+import { Prop } from 'vue-property-decorator';
 
 @Options({
     components: { }
 })
 export default class ReplicDialogVue extends Vue {
+    @Prop({ type: String }) private dialogName!: string;
     public dialogStore = useDialogStore();
     private storeSubscription: (() => void)|undefined;
     private shown = false;
     public mounted (): void {
+        this.dialogStore.addDialog(this.dialogName);
         this.storeSubscription = this.dialogStore.$subscribe(() => {
-            this.shown = !this.shown;
+            this.shown = this.dialogStore.getDialog(this.dialogName)?.state ?? false;
         });
     }
 

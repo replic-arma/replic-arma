@@ -1,5 +1,9 @@
 {
     "repositories": "Repositories",
     "repository": "Repository",
-    "settings": "Settings"
+    "settings": "Settings",
+    "download-status": {
+        "queued": "Queued",
+        "finished": "Ready to play"
+    }
 }

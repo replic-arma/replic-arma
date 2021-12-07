@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import RepoSettingsVue from '@/components/RepoSettings.vue';
+import RepoSettingsVue from '@/components/RepositorySettings.vue';
 import SubnaviVue, { SubnaviItem } from '@/components/util/Subnavi.vue';
 import { ReplicArmaRepository } from '@/models/Repository';
 import { Options, Vue } from 'vue-class-component';
@@ -34,7 +34,7 @@ export default class RepoView extends Vue {
   private subnaviItems: SubnaviItem[] = [];
   private repoStore = useRepoStore();
   private dialogStore = useDialogStore();
-  private toggleDialog = () => { this.dialogStore.toggleDialog(); };
+  private toggleDialog = () => { this.dialogStore.toggleDialog('repoSettings'); };
 
   public created ():void {
       this.repositoryIndex = +this.$router.currentRoute.value.params.id;

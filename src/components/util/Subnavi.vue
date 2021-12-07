@@ -19,7 +19,7 @@ export interface SubnaviItem {
 export default class SubnaviVue extends Vue {
     @Prop({ type: Array }) private subnaviItems!: SubnaviItem[];
 
-    public created () {
+    public created (): void {
         this.onRouteChanged();
     }
 

@@ -16,7 +16,7 @@ pub struct Changelog {
 }
 impl FromValue for Changelog {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let revision = data.get_field_as("revision")?;
                 let content_updated = data.get_field_as("contentUpdated")?;
@@ -36,7 +36,7 @@ impl FromValue for Changelog {
 
                 let build_date = data.get_field_as::<JavaDate>("buildDate")?.value();
 
-                return Ok(Changelog {
+                Ok(Changelog {
                     revision,
                     addons,
                     new_addons,
@@ -44,11 +44,11 @@ impl FromValue for Changelog {
                     updated_addons,
                     content_updated,
                     build_date,
-                });
+                })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
@@ -60,21 +60,21 @@ pub struct Changelogs {
 
 impl FromValue for Changelogs {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let list = data
                     .get_field_as::<JavaArrayList<Changelog>>("list")?
                     .value();
-                return Ok(Changelogs { list });
+                Ok(Changelogs { list })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
 impl FromJavaObject for Changelogs {
     fn from_java_obj(slice: &[u8]) -> Result<Box<Changelogs>, Box<dyn std::error::Error>> {
-        return from_java_obj(slice);
+        from_java_obj(slice)
     }
 }

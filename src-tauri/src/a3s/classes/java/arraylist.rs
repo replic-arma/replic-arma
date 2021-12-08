@@ -21,8 +21,8 @@ impl<T: FromValue> FromValue for JavaArrayList<T> {
                 let size = BigEndian::read_i32(annotation[0].data());
 
                 let mut val: Vec<T> = Vec::new();
-                for i in 1..(size + 1) as usize {
-                    let item: T = T::from_value(annotation[i].value())?;
+                for iter_item in annotation.iter().take((size + 1) as usize).skip(1) {
+                    let item: T = T::from_value(iter_item.value())?;
                     val.push(item);
                 }
 

@@ -14,7 +14,7 @@ pub struct Event {
 
 impl FromValue for Event {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let name = data.get_field_as("name")?;
                 let description = data.get_field_as("description")?;
@@ -27,16 +27,16 @@ impl FromValue for Event {
                     .get_field_as::<JavaHashMap<String, bool>>("userconfigFolderNames")?
                     .value();
 
-                return Ok(Event {
+                Ok(Event {
                     name,
                     description,
                     addon_names,
                     userconfig_folder_names,
-                });
+                })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
@@ -48,19 +48,19 @@ pub struct Events {
 
 impl FromValue for Events {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let list = data.get_field_as::<JavaArrayList<Event>>("list")?.value();
-                return Ok(Events { list });
+                Ok(Events { list })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
 impl FromJavaObject for Events {
     fn from_java_obj(slice: &[u8]) -> Result<Box<Events>, Box<dyn std::error::Error>> {
-        return from_java_obj(slice);
+        from_java_obj(slice)
     }
 }

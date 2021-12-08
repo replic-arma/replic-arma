@@ -4,25 +4,29 @@
       <router-link to="/"><mdicon name="chevron-left" size="35"/></router-link>
       <h1>{{$t('settings')}}</h1>
     </div>
-    <subnavi :subnaviItems="subnaviItems"></subnavi>
+    <tabs :tabItems="subnaviItems"></tabs>
     <router-view />
   </div>
 </template>
 
 <script lang="ts">
 import SubnaviVue, { SubnaviItem } from '@/components/util/Subnavi.vue';
+import TabsVue, { TabsItem } from '@/components/util/Tabs.vue';
 import { Options, Vue } from 'vue-class-component';
-
+import GeneralVue from '@/components/settings/General.vue';
+import LaunchVue from '@/components/settings/Launch.vue';
+import AboutVue from '@/components/settings/About.vue';
 @Options({
     components: {
-        Subnavi: SubnaviVue
+        Subnavi: SubnaviVue,
+        Tabs: TabsVue
     }
 })
 export default class SettingsView extends Vue {
-  private subnaviItems: SubnaviItem[] = [
-      { label: 'General', link: '/settings/general' },
-      { label: 'Launch Options', link: '/settings/launch' },
-      { label: 'About', link: '/settings/about' }
+  private subnaviItems: TabsItem[] = [
+      { label: 'General', component: GeneralVue },
+      { label: 'Launch Options', component: LaunchVue },
+      { label: 'About', component: AboutVue }
   ];
 }
 </script>

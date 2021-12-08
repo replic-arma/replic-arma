@@ -9,21 +9,7 @@ const routes: Array<RouteRecordRaw> = [
     },
     {
         path: '/settings',
-        component: () => import(/* webpackChunkName: "settings" */ '../views/Settings.vue'),
-        children: [
-            {
-                path: 'general',
-                component: () => import(/* webpackChunkName: "general" */ '../views/404.vue')
-            },
-            {
-                path: 'launch',
-                component: () => import(/* webpackChunkName: "launch" */ '../views/404.vue')
-            },
-            {
-                path: 'about',
-                component: () => import(/* webpackChunkName: "about" */ '../views/404.vue')
-            }
-        ]
+        component: () => import(/* webpackChunkName: "settings" */ '../views/Settings.vue')
     },
     {
         path: '/repo/:id',

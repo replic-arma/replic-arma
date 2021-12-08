@@ -5,7 +5,7 @@
       <div class="icon-group">
         <mdicon name="download" size="35" @click="toggleDialog('downloads')"/>
         <mdicon name="refresh" size="35"/>
-        <router-link to="/settings/general"><mdicon name="cog" size="35"/></router-link>
+        <router-link to="/settings"><mdicon name="cog" size="35"/></router-link>
       </div>
     </div>
     <ul>

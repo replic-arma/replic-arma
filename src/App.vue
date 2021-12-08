@@ -50,4 +50,55 @@ a {
   color: #333333;
   text-decoration: none;
 }
+
+// SWITCH --------------------------------------------------------------
+$thumbSize: 1em;
+$trackPadding: 0.125em;
+
+input[type="checkbox"][role="switch"] {
+    appearance: none;
+    pointer-events: none;
+    inline-size: $thumbSize * 2;
+    block-size: $thumbSize;
+    background-color: var(--c-text-3);
+    border-radius: calc(#{$trackPadding} * 2 + #{$thumbSize});
+    transition: .15s ease-in-out;
+    border: $trackPadding solid var(--c-text-3);
+    box-sizing: content-box;
+    display: grid;
+    grid: [track] 1fr / [track] 1fr;
+    align-items: center;
+    outline: 0;
+
+    &::after {
+        content: '';
+        inline-size: $thumbSize;
+        block-size: $thumbSize;
+        background-color: var(--c-surf-1);
+        border-radius: 50%;
+        transition: inherit;
+        grid-area: track;
+    }
+
+    &:checked {
+        background-color: #66AA66;
+        border-color: #66AA66;
+
+        &::after {
+            transform: translateX(100%);
+        }
+    }
+
+    &:indeterminate {
+        &::after {
+            transform: translateX(50%);
+        }
+    }
+
+    &:focus, &:hover {
+        &::after {
+            box-shadow: 0 0 0 0.4 * $thumbSize var(--c-surf-3);
+        }
+    }
+}
 </style>

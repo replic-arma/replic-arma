@@ -57,7 +57,7 @@ export default class TabsVue extends Vue {
 
     &__item {
         z-index: 1;
-
+        cursor: pointer;
         > span {
             display: flex;
             flex-direction: column;

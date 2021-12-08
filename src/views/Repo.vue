@@ -4,7 +4,6 @@
       <router-link to="/"><mdicon name="chevron-left" size="45"/></router-link>
       <h1>{{repository.name}}</h1>
       <div class="icon-group">
-        <button class="icon-group__play">Play</button>
         <router-link to="/settings/general"><mdicon name="download" size="35"/></router-link>
         <mdicon @click="toggleDialog" name="cog" size="35"/>
       </div>
@@ -65,20 +64,9 @@ export default class RepoView extends Vue {
     }
     .icon-group {
       display: grid;
-      grid-template-columns: 10rem repeat(2, 3rem);
+      grid-template-columns: repeat(2, 3rem);
       align-items: center;
       justify-content: center;
-      &__play {
-        background: var(--c-surf-2);
-        border-radius: 9rem;
-        color: white;
-        text-align: center;
-        padding: .5rem .5rem;
-        margin-right: 2rem;
-        height: 100%;
-        font-size: 18pt;
-        cursor: pointer;
-      }
     }
   }
 }

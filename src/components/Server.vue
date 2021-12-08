@@ -2,7 +2,7 @@
     <li class="server">
         <div class="server__info">
             <span class="server__host">{{server.host}}</span>
-            <span class="server__name">{{server.name}}</span>
+            <small class="server__name">{{server.name}}</small>
         </div>
         <span class="server__port">{{server.port}}</span>
         <span class="server__password"><mdicon name="lock-outline" />{{server.password !== undefine ? server.password : '-'}}</span>
@@ -33,12 +33,11 @@ export default class ServerVue extends Vue {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;
     align-items: center;
-    justify-content:center;
+    justify-content: center;
     background: var(--c-surf-4);
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     border-radius: 12px;
     overflow: hidden;
-    font-size: 18pt;
 
     &__host {
         font-weight: bold;
@@ -46,7 +45,6 @@ export default class ServerVue extends Vue {
     }
 
     &__name {
-        font-size: 12pt;
         color: var(--c-text-3);
     }
 
@@ -66,19 +64,17 @@ export default class ServerVue extends Vue {
     }
 
     &__port {
+        font-size: 18pt;
         color: var(--c-text-3);
     }
 
     &__password {
-        &:first-child {
-            margin-right: .75rem;
-        }
+        font-size: 18pt;
     }
 
     &__info {
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
+        display: grid;
+        padding-inline-start: var(--space-sm);
     }
 }
 </style>

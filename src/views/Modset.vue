@@ -6,6 +6,7 @@
       <div class="icon-group">
         <button class="icon-group__play">Play</button>
         <router-link to="/settings/general"><mdicon name="download" size="35"/></router-link>
+        <mdicon @click="toggleDialog" name="cog" size="35"/>
       </div>
     </div>
     <ul class="modset__mods">
@@ -47,7 +48,6 @@ export default class ModsetVue extends Vue {
     justify-content: center;
     h1 {
       margin: 0;
-      font-style: normal;
       font-weight: bold;
       color: #333333
     }
@@ -58,12 +58,11 @@ export default class ModsetVue extends Vue {
       justify-content: center;
       &__play {
         background: var(--c-surf-2);
-        border-radius: 9rem;
+        border-radius: 1rem;
         color: white;
         text-align: center;
-        padding: .5rem .5rem;
-        margin-right: 2rem;
-        height: 100%;
+        block-size: var(--space-xl);
+        margin-inline-end: var(--space-md);
         font-size: 18pt;
         cursor: pointer;
       }
@@ -71,6 +70,8 @@ export default class ModsetVue extends Vue {
   }
 
   &__mods {
+    display: flex;
+    flex-flow: row wrap;
     list-style-type: none;
   }
 
@@ -78,7 +79,10 @@ export default class ModsetVue extends Vue {
     background: var(--c-surf-3);
     width: fit-content;
     border-radius: 999px;
-    padding: .25rem .5rem;
+    padding-inline: var(--space-md);
+    padding-block: var(--space-xs);
+    margin-inline: var(--space-xs);
+    margin-block: var(--space-xxs);
   }
 }
 </style>

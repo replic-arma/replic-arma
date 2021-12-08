@@ -40,11 +40,9 @@ export default class DownloadsVue extends Vue {
 </script>
 <style lang="scss" scoped>
 .downloads {
-  box-sizing: border-box;
-  padding: 0;
-  li {
-    margin-bottom: 1rem;
-  }
+  display: grid;
+  gap: var(--space-sm);
+  padding-inline-start: 0;
 }
 .replic-dialog {
   top: 0;

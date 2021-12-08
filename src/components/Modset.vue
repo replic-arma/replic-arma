@@ -2,7 +2,7 @@
     <li class="modset">
         <div class="modset__info">
             <span class="modset__name">{{modset.name}}</span>
-            <span class="modset__description">{{modset.description}}</span>
+            <small class="modset__description">{{modset.description}}</small>
         </div>
         <span class="repo__status">{{modset.status}}</span>
         <div class="modset__play">
@@ -35,7 +35,7 @@ export default class ModsetVue extends Vue {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 10%;
     align-items: center;
-    justify-content:center;
+    justify-content: center;
     background: var(--c-surf-4);
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     border-radius: 12px;
@@ -100,9 +100,8 @@ export default class ModsetVue extends Vue {
     }
 
     &__info {
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
+        display: grid;
+        padding-inline-start: var(--space-sm);
     }
 
     &__description {

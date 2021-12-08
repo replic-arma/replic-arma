@@ -28,9 +28,8 @@ export default class ModsetListVue extends Vue {
 
 <style lang="scss" scoped>
 .modsets {
-  padding: 0;
-  li {
-    margin-bottom: 1rem;
-  }
+    padding: 0;
+    display: grid;
+    gap: 1rem;
 }
 </style>

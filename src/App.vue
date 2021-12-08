@@ -17,36 +17,34 @@
 
     --shadow-1:  0 0 .125rem 0 rgb(0 0 0 / 20%);
     --shadow-2:  0 0 .25rem 0 rgb(0 0 0 / 40%);
+
+    --space-xxs: .25rem;
+    --space-xs:  .5rem;
+    --space-sm:  1rem;
+    --space-md:  1.5rem;
+    --space-lg:  2rem;
+    --space-xl:  3rem;
+    --space-xxl: 6rem;
 }
 
-// TODO: Uncomment and check colors
-// @media(prefers-color-scheme: dark) {
-//     :root {
-//         --c-text-1: #DEDEDE;
-//         --c-text-2: #A6A6A6;
-//         --c-text-3: #818181;
+* {
+  box-sizing: border-box;
+}
 
-//         --c-surf-1: #222222;
-//         --c-surf-2: #353535;
-//     }
-// }
+html {
+  block-size: 100%;
+}
 
-html, body {
-    margin: 0;
-    font-family: Source Sans Pro, sans-serif;
+body {
+    min-block-size: 100%;
+    padding-block-start: var(--space-xs);
+    padding-block-end: var(--space-xs);
+    padding-inline: var(--space-xl);
+    font-family: system-ui, sans-serif;
     background-color: var(--c-surf-1);
     color: var(--c-text-1);
-    padding: 1rem 2.5rem 0 2.5rem;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: Rubik, sans-serif;
-    margin: 0;
-}
-
-textarea, input, pre, code {
-    font-family: Source Code Pro, monospace;
-}
 a {
   cursor: pointer;
   color: #333333;

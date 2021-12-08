@@ -16,22 +16,22 @@ pub struct A3SRepository {
 impl A3SRepository {
     pub fn from_auto_config(url: String) -> Result<A3SRepository, Box<dyn std::error::Error>> {
         let auto_config = unzip(fetch(url)?)?;
-        let auto_config = *AutoConfig::from_java_obj(&auto_config.as_slice())?;
+        let auto_config = *AutoConfig::from_java_obj(auto_config.as_slice())?;
 
         let url = auto_config.protocol.to_url()?;
 
         let changelogs: Changelogs = fetch_meta_file(url.clone(), super::CHANGELOGS_FILE_NAME)?;
         let sync: SyncTreeDirectory = fetch_meta_file(url.clone(), super::SYNC_FILE_NAME)?;
         let server_info: ServerInfo = fetch_meta_file(url.clone(), super::SERVERINFO_FILE_NAME)?;
-        let events: Events = fetch_meta_file(url.clone(), super::EVENTS_FILE_NAME)?;
+        let events: Events = fetch_meta_file(url, super::EVENTS_FILE_NAME)?;
 
-        return Ok(A3SRepository {
+        Ok(A3SRepository {
             auto_config,
             changelogs,
             sync,
             server_info,
             events,
-        });
+        })
     }
 
     pub fn to_repository(&self) -> Result<Repository, Box<dyn std::error::Error>> {
@@ -51,7 +51,7 @@ impl A3SRepository {
             modsets.push(Modset {
                 name: event.name.clone(),
                 description: event.description.clone(),
-                mods: mods,
+                mods,
             });
         }
 
@@ -72,7 +72,7 @@ impl A3SRepository {
                 port: server.port.to_string(),
                 password: server.password.clone(),
                 name: server.name.clone(),
-                modset: if server.modset_name == "" {
+                modset: if server.modset_name.is_empty() {
                     None
                 } else {
                     Some(server.modset_name.clone())
@@ -87,14 +87,14 @@ impl A3SRepository {
             },
         };
 
-        return Ok(Repository {
+        Ok(Repository {
             open_repository_schema: 1,
             name: self.auto_config.repository_name.clone(),
             build_date: self.server_info.build_date,
-            files: files,
-            modsets: modsets,
-            game_servers: game_servers,
-            download_server: download_server,
-        });
+            files,
+            modsets,
+            game_servers,
+            download_server,
+        })
     }
 }

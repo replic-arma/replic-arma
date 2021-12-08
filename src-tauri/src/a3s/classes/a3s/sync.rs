@@ -22,8 +22,8 @@ impl FromValue for SyncTreeList {
 
                 let size = BigEndian::read_i32(vec[0].data());
 
-                for i in 1..(size + 1) as usize {
-                    let val = vec[i].value();
+                for item in vec.iter().take((size + 1) as usize).skip(1) {
+                    let val = item.value();
                     let d = val.object_data();
 
                     if d.class_name() == "fr.soe.a3s.domain.repository.SyncTreeDirectory" {
@@ -60,7 +60,7 @@ pub struct SyncTreeLeaf {
 
 impl FromValue for SyncTreeLeaf {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let name = data.get_field_as("name")?;
                 let sha1 = data.get_field_as("sha1")?;
@@ -69,7 +69,7 @@ impl FromValue for SyncTreeLeaf {
                 let updated = data.get_field_as("updated")?;
                 let deleted = data.get_field_as("deleted")?;
                 let compressed = data.get_field_as("compressed")?;
-                return Ok(SyncTreeLeaf {
+                Ok(SyncTreeLeaf {
                     name,
                     sha1,
                     size,
@@ -77,11 +77,11 @@ impl FromValue for SyncTreeLeaf {
                     updated,
                     deleted,
                     compressed,
-                });
+                })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
@@ -99,7 +99,7 @@ pub struct SyncTreeDirectory {
 
 impl FromValue for SyncTreeDirectory {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let name = data.get_field_as("name")?;
                 let mark_as_addon = data.get_field_as("markAsAddon")?;
@@ -111,7 +111,7 @@ impl FromValue for SyncTreeDirectory {
                 let directory_list = list.directory_list;
                 let file_list = list.file_list;
 
-                return Ok(SyncTreeDirectory {
+                Ok(SyncTreeDirectory {
                     name,
                     mark_as_addon,
                     deleted,
@@ -119,11 +119,11 @@ impl FromValue for SyncTreeDirectory {
                     hidden,
                     directory_list,
                     file_list,
-                });
+                })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
@@ -133,7 +133,7 @@ impl SyncTreeDirectory {
 
         self.flat_rec(base, &mut map);
 
-        return map;
+        map
     }
 
     fn flat_rec(&self, base: String, map: &mut HashMap<String, SyncTreeLeaf>) {
@@ -142,22 +142,16 @@ impl SyncTreeDirectory {
         for leaf in self.file_list.iter() {
             let file_path = path.join(leaf.name.clone());
 
-            match file_path.to_str() {
-                Some(s) => {
-                    map.insert(String::from(s), leaf.clone());
-                }
-                _ => (),
+            if let Some(s) = file_path.to_str() {
+                map.insert(String::from(s), leaf.clone());
             };
         }
 
         for dir in self.directory_list.iter() {
             let dir_path = path.join(dir.name.clone());
 
-            match dir_path.to_str() {
-                Some(s) => {
-                    dir.flat_rec(String::from(s), map);
-                }
-                _ => (),
+            if let Some(s) = dir_path.to_str() {
+                dir.flat_rec(String::from(s), map);
             };
         }
     }
@@ -165,6 +159,6 @@ impl SyncTreeDirectory {
 
 impl FromJavaObject for SyncTreeDirectory {
     fn from_java_obj(slice: &[u8]) -> Result<Box<SyncTreeDirectory>, Box<dyn std::error::Error>> {
-        return from_java_obj(slice);
+        from_java_obj(slice)
     }
 }

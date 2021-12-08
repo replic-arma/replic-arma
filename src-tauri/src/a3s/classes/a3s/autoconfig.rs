@@ -72,7 +72,7 @@ impl Protocol {
                 let _result = url.set_port(Some(port));
             };
 
-            return Ok(());
+            Ok(())
         }
 
         match &self.protocol_type[..] {
@@ -88,7 +88,7 @@ impl Protocol {
         let path;
         let host;
 
-        match self.url.find("/") {
+        match self.url.find('/') {
             Some(i) => {
                 host = &self.url[..i];
                 path = &self.url[i..];
@@ -102,7 +102,7 @@ impl Protocol {
         url.set_host(Some(host))?;
         url.set_path(path);
 
-        return Ok(url.into_string());
+        Ok(url.into_string())
     }
 }
 
@@ -120,7 +120,7 @@ pub struct FavoriteServer {
 /* ----------------------------------------------------------------- Favorite Server ------------------------------------------------------------------ */
 impl FromValue for FavoriteServer {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let name = data.get_field_as("name")?;
                 let ip_address = data.get_field_as("ipAddress")?;
@@ -133,7 +133,7 @@ impl FromValue for FavoriteServer {
                 };
                 let repository_name = data.get_field_as("repositoryName")?;
 
-                return Ok(FavoriteServer {
+                Ok(FavoriteServer {
                     name,
                     ip_address,
                     port,
@@ -141,11 +141,11 @@ impl FromValue for FavoriteServer {
                     selected,
                     modset_name,
                     repository_name,
-                });
+                })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
@@ -159,7 +159,7 @@ pub struct AutoConfig {
 
 impl FromValue for AutoConfig {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let repository_name = data.get_field_as("repositoryName")?;
                 let protocol: Protocol = data.get_field_as("protocole")?;
@@ -168,20 +168,20 @@ impl FromValue for AutoConfig {
                     .get_field_as::<JavaArrayList<FavoriteServer>>("favoriteServers")?
                     .value();
 
-                return Ok(AutoConfig {
+                Ok(AutoConfig {
                     repository_name,
                     protocol,
                     favorite_servers,
-                });
+                })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
 impl FromJavaObject for AutoConfig {
     fn from_java_obj(slice: &[u8]) -> Result<Box<AutoConfig>, Box<dyn std::error::Error>> {
-        return from_java_obj(slice);
+        from_java_obj(slice)
     }
 }

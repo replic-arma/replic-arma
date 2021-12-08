@@ -1,15 +1,11 @@
 use chrono::{DateTime, Utc};
 use sha1::{Digest, Sha1};
 use std::collections::HashMap;
+use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::mpsc::channel;
-use std::sync::Barrier;
 use std::sync::{Arc, RwLock};
-use std::thread;
 use std::time::Instant;
-use std::{fs, io};
 use threadpool::ThreadPool;
 
 #[derive(Debug)]
@@ -89,8 +85,8 @@ impl Repository {
 
         let base_dir = Path::new("E:/SteamLibrary/steamapps/common/Arma 3/Mods/");
 
-        let len = self.files.len();
-        let files = self.files.clone();
+        //let len = self.files.len();
+        let files = self.files; //.clone();
         let pool = ThreadPool::new(8);
 
         for file in files {
@@ -113,7 +109,7 @@ impl Repository {
                         abs_path,
                         FileMap {
                             foreign_hash: file.sha1,
-                            local_hash: local_hash,
+                            local_hash,
                             file_found: true,
                         },
                     );
@@ -145,7 +141,7 @@ pub fn create_hash_from_file<P: AsRef<Path>>(
     let mut file = fs::File::open(&path)?;
 
     let buf_size = std::cmp::min(file.metadata()?.len(), 4 * 1024 * 1024) as usize;
-    let mut vec = vec![0 as u8; buf_size];
+    let mut vec = vec![0_u8; buf_size];
     let mut buf = vec.as_mut_slice();
 
     let mut digest = Sha1::new();
@@ -164,5 +160,5 @@ pub fn create_hash_from_file<P: AsRef<Path>>(
     }
 
     let hash = format!("{:x}", digest.finalize());
-    return Ok(hash);
+    Ok(hash)
 }

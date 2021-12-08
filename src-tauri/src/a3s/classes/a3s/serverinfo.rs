@@ -19,7 +19,7 @@ pub struct ServerInfo {
 
 impl FromValue for ServerInfo {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
                 let revision = data.get_field_as("revision")?;
                 let build_date = data.get_field_as::<JavaDate>("buildDate")?.value();
@@ -32,7 +32,7 @@ impl FromValue for ServerInfo {
                 let hidden_folder_paths = data
                     .get_field_as::<JavaHashSet<String>>("hiddenFolderPaths")?
                     .value();
-                return Ok(ServerInfo {
+                Ok(ServerInfo {
                     revision,
                     build_date,
                     number_of_files,
@@ -42,16 +42,16 @@ impl FromValue for ServerInfo {
                     repository_content_updated,
                     compressed_pbo_files_only,
                     hidden_folder_paths,
-                });
+                })
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }
 
 impl FromJavaObject for ServerInfo {
     fn from_java_obj(slice: &[u8]) -> Result<Box<ServerInfo>, Box<dyn std::error::Error>> {
-        return from_java_obj(slice);
+        from_java_obj(slice)
     }
 }

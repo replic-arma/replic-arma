@@ -18,10 +18,10 @@ import { Options, Vue } from 'vue-class-component';
 })
 export default class ServerListVue extends Vue {
     private servers!: GameServer[];
-    private repositoryIndex!: number;
+    private repositoryIndex!: string;
     private repoStore = useRepoStore();
     public created (): void {
-        this.repositoryIndex = +this.$router.currentRoute.value.params.id;
+        this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
         this.servers = this.repoStore.getRepo(this.repositoryIndex)?.game_servers ?? [];
     }
 }

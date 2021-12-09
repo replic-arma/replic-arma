@@ -7,6 +7,7 @@ import * as mdijs from '@mdi/js';
 import { createPinia } from 'pinia';
 import { useRepoStore } from './store/repo';
 import { useDownloadStore } from './store/download';
+import { v4 as uuidv4 } from 'uuid';
 
 const app = createApp(App);
 app.use(router);
@@ -15,8 +16,6 @@ app.use(i18n);
 app.use(mdiVue, {
     icons: mdijs
 });
-
-app.config.compilerOptions.isCustomElement = (tag) => /^ui5-/.test(tag);
 app.mount('#app');
 
 // ADD DEMO DATA
@@ -24,6 +23,7 @@ const repoStore = useRepoStore();
 const downloadStore = useDownloadStore();
 repoStore.addRepo(
     {
+        id: '08b9132d-5894-4622-936f-7ceee438cf0c',
         build_date: '12.11',
         name: 'Anrop',
         type: 'a3s',
@@ -31,6 +31,7 @@ repoStore.addRepo(
         image: 'https://www.anrop.se/themes/Anrop2/images/logo-nav.png',
         status: 'updating',
         modsets: [{
+            id: '61d3b998-f7f5-4aae-9cbd-f2fcbdbf2a98',
             name: 'All Mods',
             status: 'ready',
             description: 'All Mods from the Repository',
@@ -340,6 +341,7 @@ repoStore.addRepo(
 );
 repoStore.addRepo(
     {
+        id: '3566ef17-af81-495f-af35-14b1d7306c4b',
         build_date: '12.11',
         name: 'Gruppe Adler',
         open_repository_schema: 1,
@@ -353,6 +355,7 @@ repoStore.addRepo(
         ],
         modsets: [
             {
+                id: '581728f1-ae8a-4cb8-a8a7-3511867b6f68',
                 name: 'All Mods',
                 status: 'ready',
                 description: 'All Mods from the Repository',
@@ -658,7 +661,7 @@ repoStore.addRepo(
                     mod_type: 'Mauv'
                 }]
             },
-            { name: 'Gruppe Adler Main', status: 'ready', description: 'Hautprepo für die meisten Missionen', mods: [{ name: 'RHS', mod_type: 'asd' }] }
+            { id: '581728f1-ae8a-4cb8-a7a7-3511867b6f68', name: 'Gruppe Adler Main', status: 'ready', description: 'Hautprepo für die meisten Missionen', mods: [{ name: 'RHS', mod_type: uuidv4() }] }
         ]
     }
 );
@@ -667,6 +670,7 @@ downloadStore.addDownload({
     status: 'inProgress',
     size: 1337,
     item: {
+        id: '3566ef17-af81-495f-af35-14b1d7306c4b',
         build_date: '12.11',
         name: 'Gruppe Adler',
         open_repository_schema: 1,
@@ -678,17 +682,21 @@ downloadStore.addDownload({
             { name: 'Gruppe Adler Test', port: '2402', host: 'arma.gruppe-adler.de' }
         ],
         modsets: [
-            { name: 'Gruppe Adler Main', status: 'ready', description: 'Hautprepo für die meisten Missionen', mods: [{ name: 'RHS', mod_type: 'asd' }] }
+            { id: '581728f1-ae8a-4cb8-a7a7-3511867b6f68', name: 'Gruppe Adler Main', status: 'ready', description: 'Hautprepo für die meisten Missionen', mods: [{ name: 'RHS', mod_type: uuidv4() }] }
         ]
-    }
+    },
+    done: 0,
+    total: 0
 }
 );
 
 downloadStore.addDownload({
     status: 'queued',
     size: 1337,
-    item:
-        { name: 'Gruppe Adler Main', status: 'ready', description: 'Hautprepo für die meisten Missionen', mods: [{ name: 'RHS', mod_type: 'asd' }] }
-
+    item: { id: 'eaadaa94-214b-4351-aeb9-17a4c1dee138', name: 'Gruppe Adler Main', status: 'ready', description: 'Hautprepo für die meisten Missionen', mods: [{ name: 'RHS', mod_type: uuidv4() }] },
+    done: 0,
+    total: 0
 }
 );
+
+console.log(uuidv4());

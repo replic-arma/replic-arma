@@ -12,6 +12,13 @@
                 <option>25 MB/s</option>
             </select>
         </div>
+        <div class="form-general__speed">
+            <label for="speed">language</label>
+            <select>
+                <option>EN</option>
+                <option>GER</option>
+            </select>
+        </div>
     </form>
 </template>
 <script lang="ts">

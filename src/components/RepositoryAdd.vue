@@ -14,7 +14,7 @@ import { Options, Vue } from 'vue-class-component';
 import ReplicDialogVue from './util/ReplicDialog.vue';
 import { useDialogStore } from '@/store/dialog';
 import { useRepoStore } from '@/store/repo';
-
+import { v4 as uuidv4 } from 'uuid';
 @Options({
     components: {
         ReplicDialog: ReplicDialogVue
@@ -27,12 +27,14 @@ export default class RepositoryAddVue extends Vue {
         const repoStore = useRepoStore();
         repoStore.addRepo(
             {
+                id: uuidv4(),
                 build_date: '12.11',
                 name: 'Saturday Skirmish',
                 open_repository_schema: 1,
                 status: 'ready',
                 type: 'local',
                 modsets: [{
+                    id: uuidv4(),
                     name: 'All Mods',
                     status: 'ready',
                     description: 'All Mods from the Repository',
@@ -362,3 +364,7 @@ export default class RepositoryAddVue extends Vue {
   }
 }
 </style>
+
+function uuidv4(): string {
+  throw new Error('Function not implemented.');
+}

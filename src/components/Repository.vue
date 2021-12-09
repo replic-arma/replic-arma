@@ -12,7 +12,7 @@
             <span>Play</span>
             <mdicon name="play" size="35"/>
         </div>
-        <router-link :to="'/repo/'+ repositoryIndex + '/modsets'" class="repo__open">
+        <router-link :to="'/repo/'+ repository.id + '/modsets'" class="repo__open">
             <mdicon name="folder-open"></mdicon>
         </router-link>
     </li>

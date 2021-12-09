@@ -9,7 +9,7 @@
       </div>
     </div>
     <ul>
-      <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="i"></repo>
+      <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="repo.id"></repo>
     </ul>
     <mdicon name="plus" class="repos__add" role="button" @click="toggleDialog('repoAdd')"></mdicon>
     <downloads />
@@ -41,7 +41,7 @@ export default class ReposView extends Vue {
   private dialogStore = useDialogStore();
   private toggleDialog = (dialogName: string) => { this.dialogStore.toggleDialog(dialogName); };
 
-  public mounted (): void {
+  public created (): void {
       this.repos = this.repoStore.getRepos;
   }
 }

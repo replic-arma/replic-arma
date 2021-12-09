@@ -24,15 +24,15 @@ import { Options, Vue } from 'vue-class-component';
     components: { }
 })
 export default class ModsetVue extends Vue {
-    private modset!: Modset;
-    private modsetIndex!: number;
+    private modset!: Modset|undefined;
+    private modsetIndex!: string;
     private repoStore = useRepoStore();
     public created (): void {
-        const repositoryIndex = +this.$router.currentRoute.value.params.id;
-        this.modsetIndex = +this.$router.currentRoute.value.params.mid;
+        const repositoryIndex = this.$router.currentRoute.value.params.id as string;
+        this.modsetIndex = this.$router.currentRoute.value.params.mid as string;
         const repository = this.repoStore.getRepo(repositoryIndex);
         if (repository === undefined || repository?.modsets === undefined) return;
-        this.modset = repository?.modsets[this.modsetIndex];
+        this.modset = repository?.modsets.find(modset => modset.id === this.modsetIndex);
     }
 }
 </script>

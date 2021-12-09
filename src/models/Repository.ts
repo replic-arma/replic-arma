@@ -15,6 +15,7 @@ export interface ModsetMod {
 }
 
 export interface Modset {
+    id: string;
     name: string,
     description: string,
     status: string,
@@ -59,6 +60,7 @@ export interface ReplicArmaRepositoryError {
 }
 
 export interface ReplicArmaRepository extends Repository {
+    id: string;
     image?: string;
     status: 'ready'|'error'|'updating'|'queued'|'outdated';
     error?: ReplicArmaRepositoryError;

@@ -3,7 +3,7 @@
       <template v-slot:header>
         <mdicon role="button" name="close" @click="dialogStore.toggleDialog('downloads')" size="40" />
         <h1>Downloads</h1>
-        <download-progress />
+        <download-progress v-model:speeds="speedOverTime" />
       </template>
       <template v-slot:main >
         <ul class="downloads">
@@ -32,9 +32,15 @@ export default class DownloadsVue extends Vue {
     private dialogStore = useDialogStore();
     private downloadStore = useDownloadStore();
     private downloadItems: DownloadItem[] = [];
+    private speedOverTime: number[] = [];
+
     private toggleDialog = () => { this.dialogStore.toggleDialog('downloads'); };
-    public mounted (): void {
+    public created (): void {
         this.downloadItems = this.downloadStore.getDownloads ?? [];
+
+        window.setInterval(() => {
+            this.speedOverTime.push(Math.round(Math.random() * 1000));
+        }, 2000);
     }
 }
 </script>

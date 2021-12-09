@@ -19,11 +19,11 @@ import { Options, Vue } from 'vue-class-component';
     components: { }
 })
 export default class RepoSettingsView extends Vue {
-  private repository!: ReplicArmaRepository;
-  private repositoryIndex!: number;
+  private repository!: ReplicArmaRepository|undefined;
+  private repositoryIndex!: string;
   private repoStore = useRepoStore();
   public created ():void {
-      this.repositoryIndex = +this.$router.currentRoute.value.params.id;
+      this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
 
       this.repository = this.repoStore.getRepo(this.repositoryIndex);
   }

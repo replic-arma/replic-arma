@@ -25,15 +25,15 @@ import { useDialogStore } from '../store/dialog';
     }
 })
 export default class RepoView extends Vue {
-  private repository!: ReplicArmaRepository;
-  private repositoryIndex!: number;
+  private repository!: ReplicArmaRepository|undefined;
+  private repositoryIndex!: string;
   private subnaviItems: SubnaviItem[] = [];
   private repoStore = useRepoStore();
   private dialogStore = useDialogStore();
   private toggleDialog = () => { this.dialogStore.toggleDialog('repoSettings'); };
 
   public created ():void {
-      this.repositoryIndex = +this.$router.currentRoute.value.params.id;
+      this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
       this.subnaviItems = [
           { label: 'Modset', link: '/repo/' + this.repositoryIndex + '/modsets' },
           { label: 'Server', link: '/repo/' + this.repositoryIndex + '/servers' }

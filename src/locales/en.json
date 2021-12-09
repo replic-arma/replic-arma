@@ -8,5 +8,7 @@
     },
     "server": {
         "empty": "No Server available"
-    }
+    },
+    "ready": "Ready to play",
+    "updating": "Updating"
 }

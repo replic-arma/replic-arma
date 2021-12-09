@@ -28,9 +28,10 @@ export default class RepositoryAddVue extends Vue {
         repoStore.addRepo(
             {
                 build_date: '12.11',
-                name: 'Anrop',
+                name: 'Saturday Skirmish',
                 open_repository_schema: 1,
                 status: 'ready',
+                type: 'local',
                 modsets: [{
                     name: 'All Mods',
                     status: 'ready',

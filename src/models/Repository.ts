@@ -54,8 +54,14 @@ export interface Repository {
     download_server?: DownloadServer,
 }
 
+export interface ReplicArmaRepositoryError {
+    message: string;
+}
+
 export interface ReplicArmaRepository extends Repository {
     image?: string;
-    status: string;
-    settings?: GameLaunchSettings
+    status: 'ready'|'error'|'updating'|'queued'|'outdated';
+    error?: ReplicArmaRepositoryError;
+    settings?: GameLaunchSettings;
+    type: 'local'|'a3s'|'swifty';
 }

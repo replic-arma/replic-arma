@@ -5,17 +5,15 @@
       <h1>{{repository.name}}</h1>
       <div class="icon-group">
         <router-link to="/settings/general"><mdicon name="download" size="35"/></router-link>
-        <mdicon @click="toggleDialog" name="cog" size="35"/>
+        <router-link :to="'/reposettings/'+ repositoryIndex"><mdicon  name="cog" size="35"/></router-link>
       </div>
     </div>
     <subnavi :subnaviItems="subnaviItems"></subnavi>
     <router-view />
-    <repo-settings></repo-settings>
   </div>
 </template>
 
 <script lang="ts">
-import RepoSettingsVue from '@/components/RepositorySettings.vue';
 import SubnaviVue, { SubnaviItem } from '@/components/util/Subnavi.vue';
 import { ReplicArmaRepository } from '@/models/Repository';
 import { Options, Vue } from 'vue-class-component';
@@ -23,8 +21,7 @@ import { useRepoStore } from '../store/repo';
 import { useDialogStore } from '../store/dialog';
 @Options({
     components: {
-        Subnavi: SubnaviVue,
-        RepoSettings: RepoSettingsVue
+        Subnavi: SubnaviVue
     }
 })
 export default class RepoView extends Vue {

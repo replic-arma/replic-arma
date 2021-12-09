@@ -36,7 +36,6 @@ html {
 }
 
 body {
-    min-block-size: 100%;
     padding-block-start: var(--space-xs);
     padding-block-end: var(--space-xs);
     padding-inline: var(--space-xl);

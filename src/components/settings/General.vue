@@ -1,10 +1,11 @@
 <template>
-    <form class="form-general">
-        <replic-path-selector :pathSelector="{label: 'Arma 3 Exe', name:'a3exe' }"></replic-path-selector>
-        <replic-path-selector :pathSelector="{label: 'Mod Directory', name:'modDirectory' }"></replic-path-selector>
-        <div class="form-general__speed">
-            <label for="speed">Max Download Speed</label>
-            <select>
+    <div class="general-settings">
+        <replic-path-selector :pathSelector="{label: $t('a3exe'), name:'a3exe' }"></replic-path-selector>
+        <replic-path-selector :pathSelector="{label: $t('mod_directory'), name:'modDirectory' }"></replic-path-selector>
+        <div class="general-settings__speed">
+            <label for="speed">{{$t('download_max_speed')}}<mdicon name="information" size="20" /></label>
+            <select name="speed">
+                <option>unlimited</option>
                 <option>1 MB/s</option>
                 <option>2 MB/s</option>
                 <option>5 MB/s</option>
@@ -12,18 +13,22 @@
                 <option>25 MB/s</option>
             </select>
         </div>
-        <div class="form-general__speed">
-            <label for="speed">language</label>
-            <select>
-                <option>EN</option>
-                <option>GER</option>
+        <div class="general-settings__language">
+            <label for="language">{{$t('language')}}<mdicon name="information" size="20" /></label>
+            <select name="language">
+                <option>English</option>
+                <option>German</option>
             </select>
         </div>
-    </form>
+        <div class="general-settings__buttons">
+            <button class="btn" type="button">{{$t('cache_clear')}}</button>
+            <button class="btn" type="button">{{$t('settings.reset')}}</button>
+        </div>
+    </div>
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import { open } from '@tauri-apps/api/dialog';
+
 import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
 @Options({
     components: {
@@ -31,29 +36,27 @@ import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
     }
 })
 export default class GeneralVue extends Vue {
-    public openDialog () {
-        open().then((filepath) => {
-            console.log('Selected path: ', filepath);
-        });
-    }
+
 }
 </script>
 <style lang="scss" scoped>
-.form-general {
+.general-settings {
     display: grid;
-    row-gap: 2rem;
+    row-gap: 1.5rem;
     grid-template-columns: 1fr;
     &__speed {
         display: grid;
+        grid-template-columns: max-content;
     }
-
-}
-@media only screen and (min-width: 600px) {
-    .form-general {
+    &__language {
         display: grid;
-        row-gap: 2rem;
-        grid-template-columns: 1fr /2;
-
+        grid-template-columns: max-content;
     }
+    &__buttons {
+        display: grid;
+        grid-template-columns: max-content;
+        row-gap: .5rem;
+    }
+
 }
 </style>

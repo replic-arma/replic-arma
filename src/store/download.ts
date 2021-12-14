@@ -10,14 +10,39 @@ export const useDownloadStore = defineStore('download', {
     getters: {
         getDownloads: (state) => {
             return Array.from(state.downloads.values());
+        },
+        getQueue: (state) => {
+            return Array.from(state.queue.values());
+        },
+        getUpdateNeeded: (state) => {
+            return Array.from(state.updateNeeded.values());
         }
     },
     actions: {
-        addDownload (download: DownloadItem) {
+        addToQueue (download: DownloadItem) {
+            this.queue.set(download.item.id, download);
+        },
+        startDownload (download: DownloadItem) {
+            const activeDownloads = Array.from(this.downloads.values());
+            activeDownloads.forEach((activeDownload: DownloadItem) => {
+                activeDownload.status = 'paused';
+                this.queue.set(activeDownload.item.id, activeDownload);
+            });
+            this.downloads.clear();
+            this.queue.delete(download.item.id);
+            download.status = 'inProgress';
             this.downloads.set(download.item.id, download);
         },
-        removeDownload (id: string) {
-            this.downloads.delete(id);
+        stopDownload () {
+            const activeDownloads = Array.from(this.downloads.values());
+            activeDownloads.forEach((activeDownload: DownloadItem) => {
+                activeDownload.status = 'paused';
+                this.queue.set(activeDownload.item.id, activeDownload);
+            });
+            this.downloads.clear();
+        },
+        pauseDownload (download: DownloadItem) {
+            download.status = 'paused';
         }
     }
 });

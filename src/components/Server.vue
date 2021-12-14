@@ -7,10 +7,6 @@
         <span class="server__port">{{server.port}}</span>
         <span class="server__password"><mdicon name="lock-outline" />{{server.password !== undefine ? server.password : '-'}}</span>
         <span class="server__modset">{{server.modset !== undefine ? server.modset : '-'}}</span>
-        <!-- <div class="modset__play">
-            <span>Play</span>
-            <mdicon name="play" size="35"/>
-        </div> -->
     </li>
 </template>
 <script lang="ts">

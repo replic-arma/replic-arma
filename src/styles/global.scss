@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css?family=Oswald|Source+Sans+Pro|Source+Code+Pro&display=swap');
+
+:root {
+    --c-text-1: #333333;
+    --c-text-2: #595959;
+    --c-text-3: #7D7D7D;
+
+    --c-surf-1: #F0F1F2; // BACKGROUND
+    --c-surf-2: #2F80ED; // "ACCENT"
+    --c-surf-3: rgba(0, 0, 0, 0.1); // HOVER
+    --c-surf-4: #FFFFFF;
+
+    --shadow-1:  0 0 .125rem 0 rgb(0 0 0 / 20%);
+    --shadow-2:  0 0 .25rem 0 rgb(0 0 0 / 40%);
+
+    --space-xxs: .25rem;
+    --space-xs:  .5rem;
+    --space-sm:  1rem;
+    --space-md:  1.5rem;
+    --space-lg:  2rem;
+    --space-xl:  3rem;
+    --space-xxl: 6rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  block-size: 100%;
+}
+
+body {
+    padding-block-start: var(--space-xs);
+    padding-block-end: var(--space-xs);
+    padding-inline: var(--space-xl);
+    font-family: 'Source Sans Pro', sans-serif;
+    background-color: var(--c-surf-1);
+    color: var(--c-text-1);
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: Oswald, sans-serif;
+}
+a {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+
+// SWITCH --------------------------------------------------------------
+$thumbSize: 1.5em;
+$trackPadding: 0.125em;
+
+input[type="checkbox"][role="switch"] {
+    appearance: none;
+    cursor: pointer;
+    inline-size: $thumbSize * 2;
+    block-size: $thumbSize;
+    background-color: var(--c-text-3);
+    border-radius: calc(#{$trackPadding} * 2 + #{$thumbSize});
+    transition: .15s ease-in-out;
+    border: $trackPadding solid var(--c-text-3);
+    box-sizing: content-box;
+    display: grid;
+    grid: [track] 1fr / [track] 1fr;
+    align-items: center;
+    outline: 0;
+
+    &::after {
+        content: '';
+        inline-size: $thumbSize;
+        block-size: $thumbSize;
+        background-color: var(--c-surf-1);
+        border-radius: 50%;
+        transition: inherit;
+        grid-area: track;
+    }
+
+    &:checked {
+        background-color: #66AA66;
+        border-color: #66AA66;
+
+        &::after {
+            transform: translateX(100%);
+        }
+    }
+
+    &:indeterminate {
+        &::after {
+            transform: translateX(50%);
+        }
+    }
+
+    &:focus, &:hover {
+        &::after {
+            box-shadow: 0 0 0 0.4 * $thumbSize var(--c-surf-3);
+        }
+    }
+}
+.txt {
+    &__input-wrapper {
+        block-size: 2.5rem;
+        padding-inline: 1rem;
+        position: relative;
+        background: #fff;
+        border-radius: .5rem;
+        margin-block-start: .25rem;
+    }
+    &__input {
+        inline-size: 100%;
+        block-size: 100%;
+        outline: 0;
+        border: none;
+        background: none;
+    }
+}
+
+.btn {
+    display: grid;
+    text-align: center;
+    background: var(--c-surf-2);
+    padding-inline: 1rem;
+    padding-block: 1rem;
+    border-radius: .75rem;
+    color: #fff;
+    cursor: pointer;
+}
+
+@keyframes spinner-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: inline-block;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #ffffff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spinner-spin 1.2s linear infinite;
+}
+
+.status--finished {
+    color: #27AE60;
+}
+.status--updating {
+    color: inherit;
+}

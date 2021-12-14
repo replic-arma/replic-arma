@@ -4,7 +4,7 @@
             <span class="modset__name">{{modset.name}}</span>
             <small class="modset__description">{{modset.description}}</small>
         </div>
-        <span class="repo__status">{{modset.status}}</span>
+        <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
         <div class="modset__play">
             <span>Play</span>
             <mdicon name="play" size="35"/>
@@ -16,6 +16,7 @@
 </template>
 <script lang="ts">
 import { Modset } from '@/models/Repository';
+import { useDownloadStore } from '@/store/download';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 
@@ -25,6 +26,17 @@ import { Prop } from 'vue-property-decorator';
 export default class ModsetVue extends Vue {
     @Prop({ type: Object }) private modset!: Modset;
     @Prop({ type: Number }) private modsetIndex!: number;
+    private downloadStore = useDownloadStore();
+    private get status () {
+        if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+            return 'outdated';
+        } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+            return 'downloading';
+        } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+            return 'queued';
+        }
+        return 'finished';
+    }
 }
 </script>
 <style lang="scss" scoped>

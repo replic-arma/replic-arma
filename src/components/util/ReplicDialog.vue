@@ -3,7 +3,7 @@
         <div class="replic-dialog__heading">
             <slot name="header" />
         </div>
-        <div >
+        <div class="replic-dialog__content">
             <slot name="main" />
         </div>
     </div>

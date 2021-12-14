@@ -1,8 +1,8 @@
 <template>
   <div class="settings">
     <div class="settings__heading">
-      <router-link to="/"><mdicon name="chevron-left" size="35"/></router-link>
-      <h1>{{$t('settings')}}</h1>
+      <router-link to="/"><mdicon name="chevron-left" size="55"/></router-link>
+      <h1>{{$t('settings.title')}}</h1>
     </div>
     <tabs :tabItems="subnaviItems"></tabs>
     <router-view />
@@ -10,7 +10,6 @@
 </template>
 
 <script lang="ts">
-import SubnaviVue, { SubnaviItem } from '@/components/util/Subnavi.vue';
 import TabsVue, { TabsItem } from '@/components/util/Tabs.vue';
 import { Options, Vue } from 'vue-class-component';
 import GeneralVue from '@/components/settings/General.vue';
@@ -18,7 +17,6 @@ import LaunchVue from '@/components/settings/Launch.vue';
 import AboutVue from '@/components/settings/About.vue';
 @Options({
     components: {
-        Subnavi: SubnaviVue,
         Tabs: TabsVue
     }
 })
@@ -36,7 +34,7 @@ export default class SettingsView extends Vue {
 
   &__heading {
     display: grid;
-    grid-template-columns: 2.5rem 1fr;
+    grid-template-columns: 3rem 1fr;
     font-size: 22pt;
     align-items: center;
     justify-content: center;

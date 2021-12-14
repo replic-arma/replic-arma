@@ -1,27 +1,35 @@
 <template>
   <div class="repo-settings">
     <div class="repo-settings__heading">
-      <router-link :to="'/repo/'+ repositoryIndex + '/modsets'"><mdicon name="close" size="45"/></router-link>
+      <router-link :to="'/repo/'+ repositoryIndex + '/modsets'"><mdicon name="close" size="55"/></router-link>
       <h1 style="color: grey">{{repository.name}}</h1>
-      <mdicon name="chevron-right" size="45"/>
+      <mdicon name="chevron-right" size="55"/>
       <h1>Settings</h1>
     </div>
-
+      <tabs :tabItems="subnaviItems"></tabs>
   </div>
 </template>
 
 <script lang="ts">
+import GeneralRepoVue from '@/components/settings/GeneralRepo.vue';
+import LaunchVue from '@/components/settings/Launch.vue';
+import TabsVue, { TabsItem } from '@/components/util/Tabs.vue';
 import { ReplicArmaRepository } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
 
 @Options({
-    components: { }
+    components: { Tabs: TabsVue }
 })
 export default class RepoSettingsView extends Vue {
   private repository!: ReplicArmaRepository|undefined;
   private repositoryIndex!: string;
   private repoStore = useRepoStore();
+  private subnaviItems: TabsItem[] = [
+      { label: 'General', component: GeneralRepoVue },
+      { label: 'Launch Options', component: LaunchVue }
+  ];
+
   public created ():void {
       this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
 

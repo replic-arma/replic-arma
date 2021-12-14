@@ -1,11 +1,10 @@
 <template>
   <div class="repo-view">
     <div class="repo-view__heading">
-      <router-link to="/"><mdicon name="chevron-left" size="45"/></router-link>
+      <router-link to="/"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>{{repository.name}}</h1>
       <div class="icon-group">
-        <router-link to="/settings/general"><mdicon name="download" size="35"/></router-link>
-        <router-link :to="'/reposettings/'+ repositoryIndex"><mdicon  name="cog" size="35"/></router-link>
+        <router-link :to="'/reposettings/'+ repositoryIndex"><mdicon  name="cog-outline" size="45"/></router-link>
       </div>
     </div>
     <subnavi :subnaviItems="subnaviItems"></subnavi>
@@ -52,18 +51,17 @@ export default class RepoView extends Vue {
     font-size: 22pt;
     align-items: center;
     justify-content: center;
-
     h1 {
       margin: 0;
       font-style: normal;
       font-weight: bold;
-      color: #333333
     }
     .icon-group {
       display: grid;
-      grid-template-columns: repeat(2, 3rem);
+      grid-template-columns: 3rem;
       align-items: center;
       justify-content: center;
+      color: var(--c-text-3);
     }
   }
 }

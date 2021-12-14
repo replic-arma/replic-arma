@@ -11,10 +11,10 @@
         <span v-else class="download-item__status">{{$t('download-status.' + downloadItem.status)}}</span>
         <div class="download-item__controls">
             <template v-if="downloadItem.status === 'inProgress'">
-                <mdicon name="pause" />
-                <mdicon name="close" />
+                <mdicon @click="pauseDownload" name="pause" />
+                <mdicon @click="stopDownload" name="close" />
             </template>
-            <mdicon v-else name="play" />
+            <mdicon v-else name="download" @click="startDownload" />
         </div>
     </li>
 </template>
@@ -30,6 +30,9 @@ import { Prop } from 'vue-property-decorator';
 export default class DownloadItemVue extends Vue {
     @Prop({ type: Object }) private downloadItem!: DownloadItem;
     private downloadStore = useDownloadStore();
+    private startDownload = () => this.downloadStore.startDownload(this.downloadItem);
+    private stopDownload = () => this.downloadStore.stopDownload();
+    private pauseDownload = () => this.downloadStore.pauseDownload(this.downloadItem);
 }
 </script>
 <style lang="scss" scoped>

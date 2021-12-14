@@ -2,7 +2,7 @@
     <li class="repo">
         <img class="repo__img" :src="repository.image">
         <span class="repo__name">{{repository.name}}</span>
-        <span class="repo__status" :class="`status--${repository.status}`">{{$t(repository.status)}}</span>
+        <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
         <div class="repo__modset">
             <select>
                 <option v-for="(modset, i) of repository.modsets" :key="i">{{modset.name}}</option>
@@ -19,6 +19,7 @@
 </template>
 <script lang="ts">
 import { ReplicArmaRepository } from '@/models/Repository';
+import { useDownloadStore } from '@/store/download';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 @Options({
@@ -27,15 +28,20 @@ import { Prop } from 'vue-property-decorator';
 export default class RepoVue extends Vue {
     @Prop({ type: Object }) private repository!: ReplicArmaRepository;
     @Prop({ type: Number }) private repositoryIndex!: number;
+    private downloadStore = useDownloadStore();
+    private get status () {
+        if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.repository?.id)) {
+            return 'outdated';
+        } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.repository?.id)) {
+            return 'downloading';
+        } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.repository?.id)) {
+            return 'queued';
+        }
+        return 'finished';
+    }
 }
 </script>
 <style lang="scss" scoped>
-.status--ready {
-    color: #27AE60;
-}
-.status--updating {
-    color: inherit;
-}
 .repo {
     height: 5rem;
     width: 100%;

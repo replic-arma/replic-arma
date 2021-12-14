@@ -9,7 +9,7 @@ export interface ApplicationSettings {
 export interface GameLaunchSettings {
     noPause: boolean;
     window: boolean;
-    showScriptErros: boolean;
+    showScriptErrors: boolean;
     noSplash: boolean;
     name?: string;
     checkSignatures:boolean;
@@ -23,4 +23,5 @@ export interface GameLaunchSettings {
     emptyWorld: boolean;
     noLogs: boolean;
     customParameter: string;
+    battleye: boolean;
 }

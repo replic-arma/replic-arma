@@ -33,6 +33,10 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/reposettings/:id',
         component: () => import(/* webpackChunkName: "repoSettings" */ '../views/RepoSettings.vue')
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        redirect: '/'
     }
 ];
 

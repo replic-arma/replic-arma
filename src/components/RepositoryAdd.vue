@@ -5,7 +5,19 @@
             <mdicon role="button" @click="dialogStore.toggleDialog('repoAdd')" name="close" size="35" />
         </template>
         <template v-slot:main>
-            <button @click="addRepo">Add Repository</button>
+            <div class="txt">
+                <label for="repoName">{{$t('repository.autoconfig')}}</label>
+                <div class="txt__input-wrapper">
+                    <input class="txt__input" type="text" name="repoName" />
+                </div>
+            </div>
+            <div class="txt">
+                <label for="repoName">{{$t('repository.name')}}</label>
+                <div class="txt__input-wrapper">
+                    <input class="txt__input" type="text" name="repoName" />
+                </div>
+            </div>
+            <button class="btn" @click="addRepo">Add Repository</button>
         </template>
     </replic-dialog>
 </template>
@@ -31,12 +43,10 @@ export default class RepositoryAddVue extends Vue {
                 build_date: '12.11',
                 name: 'Saturday Skirmish',
                 open_repository_schema: 1,
-                status: 'ready',
                 type: 'local',
                 modsets: [{
                     id: uuidv4(),
                     name: 'All Mods',
-                    status: 'ready',
                     description: 'All Mods from the Repository',
                     mods: [{
                         name: '@3cb factions',

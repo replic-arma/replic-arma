@@ -1,48 +1,44 @@
-use byteorder::{BigEndian, ByteOrder};
-use jaded::{ConversionError, ConversionResult, FromValue, Value};
 use std::collections::HashSet;
 use std::hash::Hash;
 
-#[derive(Debug)]
+use jaded::{ConversionError, ConversionResult, FromJava, Value};
+
+#[derive(Debug, Clone)]
 pub struct JavaHashSet<T> {
-    val: HashSet<T>,
+    pub set: HashSet<T>,
     capacity: i32,
     load_factor: f32,
     size: i32,
 }
 
-impl<T: std::clone::Clone> JavaHashSet<T> {
-    pub fn value(&self) -> HashSet<T> {
-        self.val.clone()
-    }
-}
-
-impl<T: FromValue + Eq + Hash> FromValue for JavaHashSet<T> {
+impl<T: FromJava + Eq + Hash> FromJava for JavaHashSet<T> {
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
-                let annotation = data.get_annotation(0).unwrap();
-                let block = annotation[0].data();
+                if let Some(mut annotation) = data.get_annotation(0) {
+                    let capacity = annotation.read_i32()?;
+                    let load_factor = annotation.read_f32()?;
+                    let size = annotation.read_i32()?;
 
-                let capacity = BigEndian::read_i32(&block[0..4]);
-                let load_factor = BigEndian::read_f32(&block[4..8]);
-                let size = BigEndian::read_i32(&block[8..]);
+                    let mut set = HashSet::<T>::new();
 
-                let mut val = HashSet::<T>::new();
-                for iter_item in annotation.iter().take((size + 1) as usize).skip(1) {
-                    let item: T = T::from_value(iter_item.value())?;
-                    val.insert(item);
+                    for _ in 0..size {
+                        let item: T = annotation.read_object_as()?;
+                        set.insert(item);
+                    }
+
+                    Ok(JavaHashSet {
+                        set,
+                        capacity,
+                        load_factor,
+                        size,
+                    })
+                } else {
+                    Err(ConversionError::NullPointerException)
                 }
-
-                return Ok(JavaHashSet {
-                    val,
-                    capacity,
-                    load_factor,
-                    size,
-                });
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }

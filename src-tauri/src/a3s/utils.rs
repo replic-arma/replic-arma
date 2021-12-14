@@ -1,22 +1,24 @@
 use core::time::Duration;
 use curl::easy::Easy;
 use flate2::read::GzDecoder;
-use jaded::{FromValue, Parser};
+use jaded::{FromJava, Parser};
 use std::io::prelude::*;
 use std::io::Cursor;
 use url::Url;
 
-pub trait FromJavaObject {
-    fn from_java_obj(slice: &[u8]) -> Result<Box<Self>, Box<dyn std::error::Error>>;
-}
+use crate::util::types::Result;
 
-pub fn from_java_obj<T: FromValue>(slice: &[u8]) -> Result<Box<T>, Box<dyn std::error::Error>> {
-    let mut parser = Parser::new(slice).expect("Bytes stream was not valid");
-    let val: T = parser.read_as()?;
-    Ok(Box::new(val))
-}
+// pub trait FromJavaObject {
+//     fn from_java_obj(slice: &[u8]) -> Result<Box<Self>>;
+// }
 
-pub fn fetch(url: String) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+// pub fn from_java_obj<T: FromJava>(slice: &[u8]) -> Result<Box<T>> {
+//     let mut parser = Parser::new(slice).expect("Bytes stream was not valid");
+//     let val: T = parser.read_as()?;
+//     Ok(Box::new(val))
+// }
+
+pub fn fetch(url: String) -> Result<Vec<u8>> {
     let mut response_body = Vec::new();
     let mut easy = Easy::new();
     easy.timeout(Duration::from_secs(3))?;
@@ -42,7 +44,7 @@ pub fn fetch(url: String) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     Ok(response_body)
 }
 
-pub fn unzip(zipped_data: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub fn unzip(zipped_data: Vec<u8>) -> Result<Vec<u8>> {
     let file = Cursor::new(zipped_data);
 
     let mut file_unzipped = GzDecoder::new(file);
@@ -52,19 +54,25 @@ pub fn unzip(zipped_data: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>
     Ok(data)
 }
 
-pub fn fetch_meta_file<T: FromJavaObject>(
-    base_url: String,
-    file_name: &str,
-) -> Result<T, Box<dyn std::error::Error>> {
-    let mut url = Url::parse(&base_url)?;
-    {
-        let mut seg = url.path_segments_mut().unwrap();
-        seg.push(super::A3S_FOLDER_NAME);
-        seg.push(file_name);
+pub fn fetch_java_object<T: FromJava>(mut base_url: Url, file_name: Option<&str>) -> Result<T> {
+    if let Some(file) = file_name {
+        base_url = base_url.join(file)?;
     }
-
-    let bytes = unzip(fetch(url.into_string())?)?;
-    let value = T::from_java_obj(bytes.as_slice())?;
-
-    Ok(*value)
+    println!("{}", base_url.to_string());
+    let mut parser = Parser::new(Cursor::new(unzip(fetch(base_url.to_string())?)?))?;
+    Ok(parser.read_as()?)
 }
+
+// pub fn fetch_meta_file<T: FromJavaObject>(base_url: String, file_name: &str) -> Result<T> {
+//     let mut url = Url::parse(&base_url)?;
+//     {
+//         let mut seg = url.path_segments_mut().unwrap();
+//         seg.push(super::A3S_FOLDER_NAME);
+//         seg.push(file_name);
+//     }
+
+//     let bytes = unzip(fetch(url.into_string())?)?;
+//     let value = T::from_java_obj(bytes.as_slice())?;
+
+//     Ok(*value)
+// }

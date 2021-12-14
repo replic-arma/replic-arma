@@ -1,43 +1,44 @@
-use byteorder::{BigEndian, ByteOrder};
-use jaded::{ConversionError, ConversionResult, FromValue, Value};
 use std::collections::HashMap;
 use std::hash::Hash;
 
-#[derive(Debug)]
-pub struct JavaHashMap<K, V> {
-    val: HashMap<K, V>,
+use jaded::{ConversionError, ConversionResult, FromJava, Value};
+
+#[derive(Debug, Clone)]
+pub struct JavaHashMap<K, V>
+where
+    K: FromJava + Eq + Hash,
+    V: FromJava,
+{
+    pub hash_map: HashMap<K, V>,
     buckets: i32,
 }
 
-impl<K: std::clone::Clone, V: std::clone::Clone> JavaHashMap<K, V> {
-    pub fn value(&self) -> HashMap<K, V> {
-        self.val.clone()
-    }
-}
-
-impl<K: FromValue + Eq + Hash, V: FromValue> FromValue for JavaHashMap<K, V> {
+impl<K, V> FromJava for JavaHashMap<K, V>
+where
+    K: FromJava + Eq + Hash,
+    V: FromJava,
+{
     fn from_value(value: &Value) -> ConversionResult<Self> {
-        return match value {
+        match value {
             Value::Object(data) => {
-                let annotation = data.get_annotation(0).unwrap();
-                let block = annotation[0].data();
+                if let Some(mut annotation) = data.get_annotation(0) {
+                    let buckets = annotation.read_i32()?;
+                    let size = annotation.read_i32()?;
 
-                let buckets = BigEndian::read_i32(&block[0..4]);
-                let size = BigEndian::read_i32(&block[4..]);
+                    let mut hash_map = HashMap::<K, V>::new();
+                    for _ in 0..size {
+                        let key: K = annotation.read_object_as()?;
+                        let value: V = annotation.read_object_as()?;
 
-                let mut val = HashMap::<K, V>::new();
-                for i in 0..size {
-                    let index = 1 + (i as usize) * 2;
-                    let key: K = K::from_value(annotation[index].value())?;
-                    let value: V = V::from_value(annotation[index + 1].value())?;
-
-                    val.insert(key, value);
+                        hash_map.insert(key, value);
+                    }
+                    Ok(JavaHashMap { hash_map, buckets })
+                } else {
+                    Err(ConversionError::NullPointerException)
                 }
-
-                return Ok(JavaHashMap { val, buckets });
             }
             Value::Null => Err(ConversionError::NullPointerException),
             _ => Err(ConversionError::InvalidType("object")),
-        };
+        }
     }
 }

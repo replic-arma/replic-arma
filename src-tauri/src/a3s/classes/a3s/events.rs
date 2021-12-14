@@ -1,66 +1,19 @@
-use super::super::java::{JavaArrayList, JavaHashMap};
-use crate::a3s::utils::{from_java_obj, FromJavaObject};
-use jaded::{ConversionError, ConversionResult, FromValue, Value};
+use jaded::FromJava;
 
-/* ----------------------------------------------------------------------- Event ---------------------------------------------------------------------- */
-use std::collections::HashMap;
-#[derive(Debug, Clone)]
+use crate::a3s::classes::java::{arraylist::ArrayList, hashmap::JavaHashMap};
+
+#[derive(Debug, Clone, FromJava)]
+pub struct Events {
+    #[jaded(field = "list")]
+    pub events: ArrayList<Event>,
+}
+
+#[derive(Debug, Clone, FromJava)]
 pub struct Event {
     pub name: String,
     pub description: String,
-    pub addon_names: HashMap<String, bool>,
-    pub userconfig_folder_names: HashMap<String, bool>,
-}
-
-impl FromValue for Event {
-    fn from_value(value: &Value) -> ConversionResult<Self> {
-        match value {
-            Value::Object(data) => {
-                let name = data.get_field_as("name")?;
-                let description = data.get_field_as("description")?;
-
-                let addon_names = data
-                    .get_field_as::<JavaHashMap<String, bool>>("addonNames")?
-                    .value();
-
-                let userconfig_folder_names = data
-                    .get_field_as::<JavaHashMap<String, bool>>("userconfigFolderNames")?
-                    .value();
-
-                Ok(Event {
-                    name,
-                    description,
-                    addon_names,
-                    userconfig_folder_names,
-                })
-            }
-            Value::Null => Err(ConversionError::NullPointerException),
-            _ => Err(ConversionError::InvalidType("object")),
-        }
-    }
-}
-
-/* ---------------------------------------------------------------------- Events ---------------------------------------------------------------------- */
-#[derive(Debug)]
-pub struct Events {
-    pub list: Vec<Event>,
-}
-
-impl FromValue for Events {
-    fn from_value(value: &Value) -> ConversionResult<Self> {
-        match value {
-            Value::Object(data) => {
-                let list = data.get_field_as::<JavaArrayList<Event>>("list")?.value();
-                Ok(Events { list })
-            }
-            Value::Null => Err(ConversionError::NullPointerException),
-            _ => Err(ConversionError::InvalidType("object")),
-        }
-    }
-}
-
-impl FromJavaObject for Events {
-    fn from_java_obj(slice: &[u8]) -> Result<Box<Events>, Box<dyn std::error::Error>> {
-        from_java_obj(slice)
-    }
+    #[jaded(field = "addonNames")]
+    pub addon_names: JavaHashMap<String, bool>,
+    #[jaded(field = "userconfigFolderNames")]
+    pub userconfig_folder_names: JavaHashMap<String, bool>,
 }

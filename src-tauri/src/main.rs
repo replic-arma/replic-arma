@@ -3,15 +3,12 @@
     windows_subsystem = "windows"
 )]
 
-mod util;
-
 mod a3s;
 mod repository;
 mod swifty;
-use crate::a3s::A3SRepository;
-use crate::swifty::SwiftyRepository;
+mod util;
+use crate::{a3s::A3SRepository, swifty::SwiftyRepository};
 use directories::ProjectDirs;
-use tauri::api::notification::Notification;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let a3s_repo = A3SRepository::from_auto_config(String::from(
         "http://a3s.gruppe-adler.de/mods/.a3s/autoconfig",
@@ -23,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let a3s_repo = A3SRepository::from_auto_config(String::from("ftp://195.201.245.42/opt/.a3s/autoconfig"))?;
     // let a3s_repo = A3SRepository::from_auto_config(String::from("https://repo.3commandobrigade.com/autoconfig"))?;
     let repo = a3s_repo.to_repository()?;
-    //println!("{}", repo);
+    println!("{}", repo.build_date);
     // let swifty = SwiftyRepository::from_repo_json(String::from("https://swifty.projectawesome.net/event/repo.json"));
     //repo.generate_file_map();
     tauri::Builder::default()

@@ -45,8 +45,10 @@ export default class SubnaviVue extends Vue {
 .subnavi {
     list-style-type: none;
     border-bottom: 1px solid #333333;
-    display: flex;
-    padding: 0 0 1rem 0;
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
+    padding-block-end: var(--space-md);
+    padding-inline-start: 0;
     position: relative;
     user-select: text;
 
@@ -61,7 +63,7 @@ export default class SubnaviVue extends Vue {
             font-size: 16pt;
             color: var(--c-text-1);
             height: 1.5rem;
-            padding: .75rem .75rem;
+            block-size: 3.25rem;
             border-radius: .25rem;
         }
     }

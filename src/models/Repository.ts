@@ -15,9 +15,10 @@ export interface ModsetMod {
 }
 
 export interface Modset {
+    id: string;
     name: string,
     description: string,
-    status: string,
+    // status: string,
     mods?: Array<ModsetMod>,
 }
 
@@ -30,7 +31,7 @@ export interface GameServer {
 }
 
 export interface DownloadServerOptions {
-    max_connections: number,
+    max_connections: number
 }
 
 export interface DownloadServer {
@@ -54,8 +55,15 @@ export interface Repository {
     download_server?: DownloadServer,
 }
 
+export interface ReplicArmaRepositoryError {
+    message: string;
+}
+
 export interface ReplicArmaRepository extends Repository {
+    id: string;
     image?: string;
-    status: string;
-    settings?: GameLaunchSettings
+    // status: 'ready'|'error'|'updating'|'queued'|'outdated';
+    error?: ReplicArmaRepositoryError;
+    settings?: GameLaunchSettings;
+    type: 'local'|'a3s'|'swifty';
 }

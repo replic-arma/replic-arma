@@ -3,7 +3,7 @@
         <div class="replic-dialog__heading">
             <slot name="header" />
         </div>
-        <div >
+        <div class="replic-dialog__content">
             <slot name="main" />
         </div>
     </div>
@@ -64,6 +64,5 @@ export default class ReplicDialogVue extends Vue {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
     }
-    &__heading {}
 }
 </style>

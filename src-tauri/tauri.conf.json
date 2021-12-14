@@ -1,6 +1,6 @@
 {
   "package": {
-    "productName": "TF47 Mod Launcher POC",
+    "productName": "ReplicArma",
     "version": "0.1.0"
   },
   "build": {
@@ -66,7 +66,7 @@
     },
     "windows": [
       {
-        "title": "TF47 Mod Launcher POC",
+        "title": "ReplicArma",
         "width": 1280,
         "height": 720,
         "minHeight": 850,
@@ -76,7 +76,7 @@
       }
     ],
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'"
+      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
     }
   }
 }

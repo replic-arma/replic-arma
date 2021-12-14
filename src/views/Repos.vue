@@ -3,15 +3,15 @@
     <div class="repos__heading">
       <h1>{{$t('repositories')}}</h1>
       <div class="icon-group">
-        <mdicon name="download" size="35" @click="toggleDialog"/>
-        <mdicon name="refresh" size="35"/>
-        <router-link to="/settings/general"><mdicon name="cog" size="35"/></router-link>
+        <mdicon name="download-outline" size="45" @click="toggleDialog('downloads')"/>
+        <mdicon name="refresh" size="45"/>
+        <router-link to="/settings"><mdicon name="cog-outline" size="45"/></router-link>
       </div>
     </div>
-    <ul>
-      <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="i"></repo>
+    <ul class="repos__list">
+      <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="repo.id"></repo>
     </ul>
-    <button class="repos__add">Add Repository</button>
+    <mdicon name="plus" class="repos__add" role="button" @click="toggleDialog('repoAdd')"></mdicon>
     <downloads />
     <repo-add />
   </div>
@@ -39,26 +39,31 @@ export default class ReposView extends Vue {
   private repoStore = useRepoStore();
   private repos: ReplicArmaRepository[] = [];
   private dialogStore = useDialogStore();
-  private toggleDialog = () => { this.dialogStore.toggleDialog('downloads'); };
+  private storeSubscription: (() => void)|undefined;
+  private toggleDialog = (dialogName: string) => { this.dialogStore.toggleDialog(dialogName); };
 
-  public mounted (): void {
+  public created (): void {
       this.repos = this.repoStore.getRepos;
+      this.storeSubscription = this.repoStore.$subscribe(() => {
+          this.repos = this.repoStore.getRepos;
+      });
+  }
+
+  public unmounted (): void {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      this.storeSubscription = () => { };
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .repos {
-  display: flex;
-  flex-direction: column;
-  ul {
+  &__list {
     padding: 0;
+    display: grid;
+    gap: var(--space-sm);
   }
-
-  li {
-    margin-bottom: 1rem;
-  }
-
+  display: grid;
   &__heading {
     display: grid;
     grid-template-columns: 1fr auto auto;
@@ -69,27 +74,30 @@ export default class ReposView extends Vue {
 
     h1 {
       margin: 0;
-      font-style: normal;
       font-weight: bold;
-      color: #333333
     }
+
     .icon-group {
       > span {
         cursor: pointer;
       }
+      color: var(--c-text-3);
       display: grid;
-      grid-template-columns: repeat(3, 3rem);
+      grid-template-columns: repeat(3, 4rem);
       align-items: center;
       justify-content: center;
     }
   }
 
   &__add {
-    justify-self: center;
-    align-self: center;
+    display: grid;
     background: var(--c-surf-3);
-    border-radius: 9rem;
-    padding: .75rem 1rem;
+    border-radius: 2rem;
+    inline-size: var(--space-xl);
+    block-size: var(--space-xl);
+    place-self: center center;
+    justify-content: center;
+    align-content: center;
     cursor: pointer;
     color: var(--c-text-2);
   }

@@ -48,14 +48,16 @@ export default class TabsVue extends Vue {
 .tabs {
     list-style-type: none;
     border-bottom: 1px solid #333333;
-    display: flex;
-    padding: 0 0 1rem 0;
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
+    padding-block-end: var(--space-md);
+    padding-inline-start: 0;
     position: relative;
     user-select: text;
 
     &__item {
         z-index: 1;
-
+        cursor: pointer;
         > span {
             display: flex;
             flex-direction: column;
@@ -64,7 +66,7 @@ export default class TabsVue extends Vue {
             font-size: 16pt;
             color: var(--c-text-1);
             height: 1.5rem;
-            padding: .75rem .75rem;
+            block-size: 3.25rem;
             border-radius: .25rem;
         }
     }

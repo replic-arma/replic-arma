@@ -11,10 +11,10 @@
         <span v-else class="download-item__status">{{$t('download-status.' + downloadItem.status)}}</span>
         <div class="download-item__controls">
             <template v-if="downloadItem.status === 'inProgress'">
-                <mdicon name="pause" />
-                <mdicon name="close" />
+                <mdicon @click="pauseDownload" name="pause" />
+                <mdicon @click="stopDownload" name="close" />
             </template>
-            <mdicon v-else name="play" />
+            <mdicon v-else name="download" @click="startDownload" />
         </div>
     </li>
 </template>
@@ -30,6 +30,9 @@ import { Prop } from 'vue-property-decorator';
 export default class DownloadItemVue extends Vue {
     @Prop({ type: Object }) private downloadItem!: DownloadItem;
     private downloadStore = useDownloadStore();
+    private startDownload = () => this.downloadStore.startDownload(this.downloadItem);
+    private stopDownload = () => this.downloadStore.stopDownload();
+    private pauseDownload = () => this.downloadStore.pauseDownload(this.downloadItem);
 }
 </script>
 <style lang="scss" scoped>
@@ -38,7 +41,8 @@ export default class DownloadItemVue extends Vue {
     width: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 5rem 15rem 1fr 10%;
+    grid-template-columns: 4rem minmax(15ch, 15rem) 1fr 10%;
+    padding-inline-start: var(--space-sm);
     align-items: center;
     justify-content:center;
     background: var(--c-surf-4);
@@ -59,32 +63,34 @@ export default class DownloadItemVue extends Vue {
     }
 
     &__img {
-        height: 3rem;
-        width: 3rem;
-        padding: 1rem;
+        block-size: var(--space-xl);
     }
     &__name {
         font-weight: bold;
-        font-size: 24pt;
+        font-size: 18pt;
     }
     &__controls {
         display: flex;
         justify-content: flex-end;
-        margin-right: 1.5rem;
+        padding-inline-end: var(--space-md);
 
         span:first-of-type {
-            border-top-left-radius: .5rem;
-            border-bottom-left-radius: .5rem;
+            border-top-left-radius: var(--space-xs);
+            border-bottom-left-radius: var(--space-xs);
         }
 
         span:last-of-type {
-            border-top-right-radius: .5rem;
-            border-bottom-right-radius: .5rem;
+            border-top-right-radius: var(--space-xs);
+            border-bottom-right-radius: var(--space-xs);
         }
 
         span {
             background: var(--c-surf-2);
-            padding: .5rem .5rem;
+            block-size: var(--space-lg);
+            inline-size: var(--space-lg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             color: white;
             cursor: pointer;
         }
@@ -103,7 +109,7 @@ export default class DownloadItemVue extends Vue {
         grid-area: canvas;
         background: lightgrey;
         height: .5rem;
-        margin: .2rem 0;
+        margin-block-start: var(--space-xxs);
         border-radius: 1rem;
         position: relative;
         &::before {
@@ -117,12 +123,12 @@ export default class DownloadItemVue extends Vue {
     }
 
     &__time {
-        margin-top: -.25rem;
+        margin-block-start: -.25rem;
         grid-area: time;
     }
 
     &__status {
-        padding-right: 2rem;
+        padding-inline-end: var(--space-xs);
         color: grey;
     }
 }

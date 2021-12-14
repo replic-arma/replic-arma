@@ -2,9 +2,9 @@
     <li class="modset">
         <div class="modset__info">
             <span class="modset__name">{{modset.name}}</span>
-            <span class="modset__description">{{modset.description}}</span>
+            <small class="modset__description">{{modset.description}}</small>
         </div>
-        <span class="repo__status">{{modset.status}}</span>
+        <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
         <div class="modset__play">
             <span>Play</span>
             <mdicon name="play" size="35"/>
@@ -16,6 +16,7 @@
 </template>
 <script lang="ts">
 import { Modset } from '@/models/Repository';
+import { useDownloadStore } from '@/store/download';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 
@@ -25,6 +26,17 @@ import { Prop } from 'vue-property-decorator';
 export default class ModsetVue extends Vue {
     @Prop({ type: Object }) private modset!: Modset;
     @Prop({ type: Number }) private modsetIndex!: number;
+    private downloadStore = useDownloadStore();
+    private get status () {
+        if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+            return 'outdated';
+        } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+            return 'downloading';
+        } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+            return 'queued';
+        }
+        return 'finished';
+    }
 }
 </script>
 <style lang="scss" scoped>
@@ -35,11 +47,15 @@ export default class ModsetVue extends Vue {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 10%;
     align-items: center;
-    justify-content:center;
+    justify-content: center;
     background: var(--c-surf-4);
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
     border-radius: 12px;
     overflow: hidden;
+
+    &:hover {
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
+    }
 
     &__name {
         font-weight: bold;
@@ -100,9 +116,8 @@ export default class ModsetVue extends Vue {
     }
 
     &__info {
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
+        display: grid;
+        padding-inline-start: var(--space-sm);
     }
 
     &__description {

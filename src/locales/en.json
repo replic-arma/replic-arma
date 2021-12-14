@@ -1,9 +1,45 @@
 {
     "repositories": "Repositories",
-    "repository": "Repository",
-    "settings": "Settings",
+    "repository": {
+        "title": "Repository",
+        "name": "Repository Name",
+        "autoconfig": "Repository Autoconfig"
+    },
     "download-status": {
-        "queued": "Queued",
-        "finished": "Ready to play"
+        "outdated": "Outdated",
+        "queued": "Update Pending",
+        "paused": "Paused",
+        "downloading": "Downloading",
+        "finished": "Ready to play",
+        "play": "Play"
+    },
+    "server": {
+        "empty": "No Server available"
+    },
+    "ready": "Ready to play",
+    "updating": "Updating",
+    "select": "Select",
+    "a3exe": "Arma 3 Exe",
+    "mod_directory": "Mod Directory",
+    "language": "Language",
+    "download_max_speed": "Max Download Speed",
+    "cache_clear": "Clear Cache",
+    "settings": {
+        "title": "Settings",
+        "developer": "Developer",
+        "reset": "Reset Settings",
+        "base": "General",
+        "noPause": "No Pause",
+        "window": "Windowed",
+        "battleye": "Enable Battleye",
+        "checkSignatures": "Check Signatures",
+        "performance": "Performance",
+        "hugepages": "Huge Pages",
+        "emptyWorld": "Default World Empty",
+        "noLogs": "No Logs",
+        "noSplash": "No Splash Screen",
+        "filePatching": "File Patching",
+        "showScriptErrors": "Show Script Errors",
+        "custom_parameter": "Custom Parameters"
     }
 }

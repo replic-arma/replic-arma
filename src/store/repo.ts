@@ -2,23 +2,24 @@ import { ReplicArmaRepository } from '@/models/Repository';
 import { defineStore } from 'pinia';
 
 export const useRepoStore = defineStore('repo', {
-    state: (): {repos: ReplicArmaRepository[]} => ({
-        repos: []
+    state: (): {repos: Map<string, ReplicArmaRepository>} => ({
+        repos: new Map<string, ReplicArmaRepository>()
     }),
     getters: {
         getRepos: (state) => {
-            return state.repos;
+            return Array.from(state.repos.values());
         },
         getRepo: (state) => {
-            return (index: number) => state.repos[index];
+            return (id: string) => state.repos.get(id);
         }
     },
     actions: {
         addRepo (repo: ReplicArmaRepository) {
-            this.repos.push(repo);
+            if (repo.image === undefined) repo.image = 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32';
+            this.repos.set(repo.id, repo);
         },
-        removeRepo (index: number) {
-            this.repos.splice(index, 1);
+        removeRepo (id: string) {
+            this.repos.delete(id);
         }
     }
 });

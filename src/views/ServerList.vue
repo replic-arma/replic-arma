@@ -1,6 +1,7 @@
 <template>
     <ul class="servers">
        <server v-for="(server, i) of servers" :key="i" :server="server"></server>
+       <li class="servers__empty" v-if="servers.length === 0">{{$t('server.empty')}}</li>
     </ul>
 </template>
 
@@ -17,10 +18,10 @@ import { Options, Vue } from 'vue-class-component';
 })
 export default class ServerListVue extends Vue {
     private servers!: GameServer[];
-    private repositoryIndex!: number;
+    private repositoryIndex!: string;
     private repoStore = useRepoStore();
     public created (): void {
-        this.repositoryIndex = +this.$router.currentRoute.value.params.id;
+        this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
         this.servers = this.repoStore.getRepo(this.repositoryIndex)?.game_servers ?? [];
     }
 }
@@ -28,9 +29,12 @@ export default class ServerListVue extends Vue {
 
 <style lang="scss" scoped>
 .servers {
-  padding: 0;
-  li {
-    margin-bottom: 1rem;
-  }
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    list-style-type: none;
+    &__empty{
+        text-align: center;
+    }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
     <ul class="modsets">
-       <modset v-for="(modset, i) of modsets" :key="i" :modset="modset" :modsetIndex="i"></modset>
+       <modset v-for="(modset, i) of modsets" :key="i" :modset="modset" :modsetIndex="modset.id"></modset>
     </ul>
 </template>
 
@@ -17,10 +17,10 @@ import { Options, Vue } from 'vue-class-component';
 })
 export default class ModsetListVue extends Vue {
     private modsets!: Modset[];
-    private repositoryIndex!: number;
+    private repositoryIndex!: string;
     private repoStore = useRepoStore();
     public created (): void {
-        this.repositoryIndex = +this.$router.currentRoute.value.params.id;
+        this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
         this.modsets = this.repoStore.getRepo(this.repositoryIndex)?.modsets ?? [];
     }
 }
@@ -28,9 +28,8 @@ export default class ModsetListVue extends Vue {
 
 <style lang="scss" scoped>
 .modsets {
-  padding: 0;
-  li {
-    margin-bottom: 1rem;
-  }
+    padding: 0;
+    display: grid;
+    gap: 1rem;
 }
 </style>

@@ -34,12 +34,13 @@ pub fn fetch(url: String) -> Result<Vec<u8>> {
     }
 
     let code = easy.response_code()?;
-    if code >= 400 {
-        return Err(Box::<dyn std::error::Error>::from(format!(
-            "Received non okay status code {:?}",
-            code
-        )));
-    }
+    // if code >= 400 {
+
+    //     return Err(Box::<dyn std::error::Error>::from(format!(
+    //         "Received non okay status code {:?}",
+    //         code
+    //     )));
+    // }
 
     Ok(response_body)
 }

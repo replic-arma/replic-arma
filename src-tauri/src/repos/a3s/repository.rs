@@ -5,8 +5,9 @@ use url::Url;
 use super::utils::fetch_java_object;
 use crate::a3s::classes::{AutoConfig, Changelogs, Events, ServerInfo, SyncTreeDirectory};
 use crate::repository::{
-    DownloadServer, DownloadServerOptions, File, GameServer, Modset, ModsetMod, Repository,
+    DownloadServer, DownloadServerOptions, File, GameServer, Modset, ModsetMod, Repo, Repository,
 };
+use crate::util::types::RepoType;
 
 #[derive(Debug)]
 pub struct A3SRepository {
@@ -15,6 +16,8 @@ pub struct A3SRepository {
     pub sync: SyncTreeDirectory,
     pub server_info: ServerInfo,
     pub events: Events,
+
+    pub url: String,
 }
 
 impl A3SRepository {
@@ -49,6 +52,7 @@ impl A3SRepository {
             sync,
             server_info,
             events,
+            url: autoconfig,
         })
     }
 
@@ -114,5 +118,14 @@ impl A3SRepository {
             game_servers,
             download_server,
         })
+    }
+}
+impl Repo for A3SRepository {
+    fn get_url(&self) -> String {
+        self.url.clone()
+    }
+
+    fn get_type(&self) -> RepoType {
+        RepoType::A3S
     }
 }

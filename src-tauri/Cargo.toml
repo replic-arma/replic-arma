@@ -28,6 +28,11 @@ url = "2.2.1"
 sha-1 = "0.9.4"
 path-slash = "0.x"
 threadpool = "1.8.1"
+uuid = { version = "0.8.2", features = ["v4", "serde"] }
+bimap = "0.6.1"
+walkdir = "2"
+rayon = "1.5.1"
+hex = "0.4.3"
 
 [features]
 default = [ "custom-protocol" ]

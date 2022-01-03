@@ -3,7 +3,7 @@
     <div class="repo-settings__heading">
       <router-link :to="'/repo/'+ repositoryIndex + '/modsets'"><mdicon name="close" size="55"/></router-link>
       <h1 style="color: grey">{{repository.name}}</h1>
-      <mdicon name="chevron-right" size="55"/>
+      <mdicon name="chevron-right" size="75"/>
       <h1>Settings</h1>
     </div>
       <tabs :tabItems="subnaviItems"></tabs>
@@ -43,7 +43,7 @@ export default class RepoSettingsView extends Vue {
   position: relative;
   &__heading {
     display: grid;
-    grid-template-columns: 3rem max-content 3rem 1fr;
+    grid-template-columns: 4rem max-content 4rem 1fr;
     font-size: 22pt;
     align-items: center;
     justify-content: center;

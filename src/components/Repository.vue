@@ -107,6 +107,7 @@ export default class RepoVue extends Vue {
         justify-content:center;
         cursor: pointer;
         border-radius: 5rem;
+        margin-inline-start: 1rem;
         & > span:first-child {
             color: var(--c-surf-2);
         }

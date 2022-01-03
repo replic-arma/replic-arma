@@ -41,5 +41,7 @@
         "filePatching": "File Patching",
         "showScriptErrors": "Show Script Errors",
         "custom_parameter": "Custom Parameters"
-    }
+    },
+    "remove": "Remove",
+    "save": "Save"
 }

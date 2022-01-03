@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Oswald|Source+Sans+Pro|Source+Code+Pro&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Rubik|Source+Sans+Pro|Source+Code+Pro&display=swap');
 
 :root {
     --c-text-1: #333333;
@@ -124,6 +124,12 @@ input[type="checkbox"][role="switch"] {
     border-radius: .75rem;
     color: #fff;
     cursor: pointer;
+}
+
+.btn--disabled {
+    cursor: initial;
+    background-color: grey;
+    opacity: .20;
 }
 
 @keyframes spinner-spin {

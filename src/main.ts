@@ -8,8 +8,10 @@ import { createPinia } from 'pinia';
 import { useRepoStore } from './store/repo';
 import { useDownloadStore } from './store/download';
 import { v4 as uuidv4 } from 'uuid';
+import TransitionVue from './components/util/Transition.vue';
 
 const app = createApp(App);
+app.component('rtransition', TransitionVue);
 app.use(router);
 app.use(createPinia());
 app.use(i18n);

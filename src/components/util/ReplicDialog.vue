@@ -1,12 +1,14 @@
 <template>
-    <div class="replic-dialog" v-show="shown">
-        <div class="replic-dialog__heading">
-            <slot name="header" />
+    <transition name="fade" mode="out-in">
+        <div class="replic-dialog" v-show="shown">
+            <div class="replic-dialog__heading">
+                <slot name="header" />
+            </div>
+            <div class="replic-dialog__content">
+                <slot name="main" />
+            </div>
         </div>
-        <div class="replic-dialog__content">
-            <slot name="main" />
-        </div>
-    </div>
+    </transition>
 </template>
 <script lang="ts">
 import { useDialogStore } from '@/store/dialog';
@@ -65,4 +67,15 @@ export default class ReplicDialogVue extends Vue {
         top: 0; left: 0; right: 0; bottom: 0;
     }
 }
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 </style>

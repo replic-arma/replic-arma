@@ -4,7 +4,7 @@
       <router-link to="/"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>{{repository.name}}</h1>
       <div class="icon-group">
-        <router-link :to="'/reposettings/'+ repositoryIndex"><mdicon  name="cog-outline" size="45"/></router-link>
+        <router-link :to="'/reposettings/'+ repositoryIndex"><mdicon  name="cog" size="55"/></router-link>
       </div>
     </div>
     <subnavi :subnaviItems="subnaviItems"></subnavi>
@@ -47,7 +47,7 @@ export default class RepoView extends Vue {
   position: relative;
   &__heading {
     display: grid;
-    grid-template-columns: 3rem 1fr auto auto;
+    grid-template-columns: 4rem 1fr auto auto;
     font-size: 22pt;
     align-items: center;
     justify-content: center;

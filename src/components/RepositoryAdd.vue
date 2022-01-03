@@ -368,11 +368,17 @@ export default class RepositoryAddVue extends Vue {
     grid-template-columns: 1fr auto;
     align-items: center;
     font-size: 20pt;
+    margin-block-end: 2rem;
     span:not(:first-child) {
         cursor: pointer;
     }
   }
+  &::v-deep &__content {
+      display: grid;
+      row-gap: 1rem;
+  }
 }
+
 </style>
 
 function uuidv4(): string {

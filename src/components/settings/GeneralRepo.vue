@@ -12,6 +12,7 @@
                 <input class="txt__input" type="text" name="repoName" />
             </div>
         </div>
+        <button class="btn" type="button">{{$t('remove')}}</button>
     </div>
 </template>
 <script lang="ts">

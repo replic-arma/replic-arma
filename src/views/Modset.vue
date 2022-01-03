@@ -10,7 +10,7 @@
           <mdicon v-else name="play" />
           {{ $t('download-status.' + status) }}
         </button>
-        <mdicon @click="toggleDialog" name="cog-outline" size="45" />
+        <mdicon @click="toggleDialog" name="cog" size="55" />
       </div>
     </div>
     <ul class="modset__mods">
@@ -74,7 +74,7 @@ export default class ModsetVue extends Vue {
 .modset {
   &__heading {
     display: grid;
-    grid-template-columns: 3rem 1fr auto auto;
+    grid-template-columns: 4rem 1fr auto auto;
     font-size: 22pt;
     align-items: center;
     justify-content: center;
@@ -91,6 +91,7 @@ export default class ModsetVue extends Vue {
       grid-template-columns: max-content 4rem;
       align-items: center;
       justify-content: center;
+      color: var(--c-text-3);
       span {
         cursor: pointer;
       }
@@ -120,11 +121,12 @@ export default class ModsetVue extends Vue {
   text-align: center;
   block-size: var(--space-xl);
   margin-inline-end: var(--space-md);
+  padding-inline-end: var(--space-md);
   font-size: 18pt;
   cursor: pointer;
   display: grid;
   grid-template-columns: 2rem auto;
-  column-gap: 1rem;
+  column-gap: .75rem;
   justify-content: center;
   align-content: center;
 }

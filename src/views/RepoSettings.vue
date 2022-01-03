@@ -1,9 +1,7 @@
 <template>
   <div class="repo-settings">
     <div class="repo-settings__heading">
-      <router-link :to="'/repo/'+ repositoryIndex + '/modsets'"><mdicon name="close" size="55"/></router-link>
-      <h1 style="color: grey">{{repository.name}}</h1>
-      <mdicon name="chevron-right" size="75"/>
+      <router-link :to="'/repo/'+ repositoryIndex + '/modsets'"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>Settings</h1>
     </div>
       <tabs :tabItems="subnaviItems"></tabs>

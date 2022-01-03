@@ -87,7 +87,7 @@ export default class DownloadsVue extends Vue {
       position: absolute;
       height: 2px;
       background: grey;
-      width: inherit;
+      width: fill-available;
       margin-inline-start: .5rem;
     }
 }
@@ -103,7 +103,7 @@ export default class DownloadsVue extends Vue {
   }
   &::v-deep &__heading {
     display: grid;
-    grid-template-columns: 3rem 18rem auto;
+    grid-template-columns: 4rem 18rem auto;
     border-bottom: 1px solid black;
     align-items: center;
     font-size: 20pt;

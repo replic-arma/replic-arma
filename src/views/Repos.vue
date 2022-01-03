@@ -3,9 +3,9 @@
     <div class="repos__heading">
       <h1>{{$t('repositories')}}</h1>
       <div class="icon-group">
-        <mdicon name="download-outline" size="45" @click="toggleDialog('downloads')"/>
+        <mdicon name="download" size="45" @click="toggleDialog('downloads')"/>
         <mdicon name="refresh" size="45"/>
-        <router-link to="/settings"><mdicon name="cog-outline" size="45"/></router-link>
+        <router-link to="/settings"><mdicon name="cog" size="45"/></router-link>
       </div>
     </div>
     <ul class="repos__list">

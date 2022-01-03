@@ -8,6 +8,8 @@ use std::sync::{Arc, RwLock};
 use std::time::Instant;
 use threadpool::ThreadPool;
 
+use crate::util::types::RepoType;
+
 #[derive(Debug)]
 pub struct Repository {
     pub open_repository_schema: u32,
@@ -161,4 +163,9 @@ pub fn create_hash_from_file<P: AsRef<Path>>(
 
     let hash = format!("{:x}", digest.finalize());
     Ok(hash)
+}
+
+pub trait Repo {
+    fn get_url(&self) -> String;
+    fn get_type(&self) -> RepoType;
 }

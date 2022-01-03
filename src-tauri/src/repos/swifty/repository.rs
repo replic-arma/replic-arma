@@ -1,4 +1,5 @@
 use crate::a3s::utils::fetch;
+use crate::repository::Repo;
 use crate::util::types::Result;
 use serde::{Deserialize, Serialize};
 use std::str;
@@ -50,4 +51,14 @@ pub struct Server {
     pub password: String,
     #[serde(rename = "battleEye")]
     pub battle_eye: bool,
+}
+
+impl Repo for SwiftyRepository {
+    fn get_url(&self) -> String {
+        todo!()
+    }
+
+    fn get_type(&self) -> crate::util::types::RepoType {
+        todo!()
+    }
 }

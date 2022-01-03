@@ -1,38 +1,41 @@
-use crate::a3s::utils::{from_java_obj, FromJavaObject};
-use byteorder::{BigEndian, ByteOrder};
-use jaded::{ConversionError, ConversionResult, FromValue, Value};
-use std::collections::HashMap;
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
-/* --------------------------------------------------------------------- Tree List -------------------------------------------------------------------- */
+use jaded::{ConversionError, ConversionResult, FromJava, Value};
+
 #[derive(Debug)]
 struct SyncTreeList {
     file_list: Vec<SyncTreeLeaf>,
     directory_list: Vec<SyncTreeDirectory>,
 }
 
-impl FromValue for SyncTreeList {
+impl FromJava for SyncTreeList {
     fn from_value(value: &Value) -> ConversionResult<Self> {
         return match value {
             Value::Object(data) => {
                 let mut file_list: Vec<SyncTreeLeaf> = Vec::new();
                 let mut directory_list: Vec<SyncTreeDirectory> = Vec::new();
 
-                let vec = data.get_annotation(0).unwrap();
+                let mut annotation = data.get_annotation(0).unwrap();
 
-                let size = BigEndian::read_i32(vec[0].data());
+                let size = annotation.read_i32()?;
 
-                for item in vec.iter().take((size + 1) as usize).skip(1) {
-                    let val = item.value();
-                    let d = val.object_data();
+                for _ in 0..size {
+                    let object = annotation.read_object()?;
 
-                    if d.class_name() == "fr.soe.a3s.domain.repository.SyncTreeDirectory" {
-                        let val: SyncTreeDirectory = SyncTreeDirectory::from_value(val)?;
-                        directory_list.push(val);
-                    } else {
-                        let val: SyncTreeLeaf = SyncTreeLeaf::from_value(val)?;
-                        file_list.push(val);
-                    }
+                    match object {
+                        Value::Object(data) => {
+                            if data.class_name() == "fr.soe.a3s.domain.repository.SyncTreeDirectory"
+                            {
+                                let val: SyncTreeDirectory = SyncTreeDirectory::from_value(object)?;
+                                directory_list.push(val);
+                            } else {
+                                let val: SyncTreeLeaf = SyncTreeLeaf::from_value(object)?;
+                                file_list.push(val);
+                            }
+                        }
+                        Value::Null => return Err(ConversionError::NullPointerException),
+                        _ => return Err(ConversionError::InvalidType("not an object")),
+                    };
                 }
 
                 return Ok(SyncTreeList {
@@ -46,7 +49,6 @@ impl FromValue for SyncTreeList {
     }
 }
 
-/* --------------------------------------------------------------------- Tree Leaf -------------------------------------------------------------------- */
 #[derive(Debug, Clone)]
 pub struct SyncTreeLeaf {
     pub name: String,
@@ -58,7 +60,7 @@ pub struct SyncTreeLeaf {
     pub compressed: bool,
 }
 
-impl FromValue for SyncTreeLeaf {
+impl FromJava for SyncTreeLeaf {
     fn from_value(value: &Value) -> ConversionResult<Self> {
         match value {
             Value::Object(data) => {
@@ -85,7 +87,6 @@ impl FromValue for SyncTreeLeaf {
     }
 }
 
-/* ------------------------------------------------------------------ Tree Directory ------------------------------------------------------------------ */
 #[derive(Debug)]
 pub struct SyncTreeDirectory {
     name: String,
@@ -97,7 +98,7 @@ pub struct SyncTreeDirectory {
     directory_list: Vec<SyncTreeDirectory>,
 }
 
-impl FromValue for SyncTreeDirectory {
+impl FromJava for SyncTreeDirectory {
     fn from_value(value: &Value) -> ConversionResult<Self> {
         match value {
             Value::Object(data) => {
@@ -154,11 +155,5 @@ impl SyncTreeDirectory {
                 dir.flat_rec(String::from(s), map);
             };
         }
-    }
-}
-
-impl FromJavaObject for SyncTreeDirectory {
-    fn from_java_obj(slice: &[u8]) -> Result<Box<SyncTreeDirectory>, Box<dyn std::error::Error>> {
-        from_java_obj(slice)
     }
 }

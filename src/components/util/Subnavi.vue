@@ -1,7 +1,7 @@
 <template>
     <ul class="subnavi">
         <li class="subnavi__item" v-for="(item, i) of subnaviItems" :key="i">
-            <router-link :to="item.link">{{item.label}}</router-link>
+            <router-link class="button" :to="item.link">{{item.label}}</router-link>
         </li>
     </ul>
 </template>
@@ -45,8 +45,8 @@ export default class SubnaviVue extends Vue {
 .subnavi {
     list-style-type: none;
     border-bottom: 1px solid #333333;
-    display: grid;
-    grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
+    display: flex;
+    gap: .5rem;
     padding-block-end: var(--space-md);
     padding-inline-start: 0;
     position: relative;
@@ -62,6 +62,7 @@ export default class SubnaviVue extends Vue {
             align-items: center;
             font-size: 16pt;
             color: var(--c-text-1);
+            padding-inline: 1rem;
             height: 1.5rem;
             block-size: 3.25rem;
             border-radius: .25rem;

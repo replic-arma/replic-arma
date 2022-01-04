@@ -4,7 +4,7 @@
         <replic-path-selector :pathSelector="{label: $t('mod_directory'), name:'modDirectory' }"></replic-path-selector>
         <div class="general-settings__speed">
             <label for="speed">{{$t('download_max_speed')}}<mdicon name="information" size="20" /></label>
-            <select name="speed">
+            <select class="select" name="speed">
                 <option>unlimited</option>
                 <option>1 MB/s</option>
                 <option>2 MB/s</option>
@@ -15,14 +15,14 @@
         </div>
         <div class="general-settings__language">
             <label for="language">{{$t('language')}}<mdicon name="information" size="20" /></label>
-            <select name="language">
+            <select class="select" name="language">
                 <option>English</option>
                 <option>German</option>
             </select>
         </div>
         <div class="general-settings__buttons">
-            <button class="btn" type="button">{{$t('cache_clear')}}</button>
-            <button class="btn" type="button">{{$t('settings.reset')}}</button>
+            <button class="button" type="button">{{$t('cache_clear')}}</button>
+            <button class="button button--outline button--danger" type="button">{{$t('settings.reset')}}</button>
         </div>
     </div>
 </template>

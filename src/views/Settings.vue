@@ -1,9 +1,9 @@
 <template>
   <div class="settings">
     <div class="settings__heading">
-      <router-link to="/"><mdicon name="chevron-left" size="55"/></router-link>
+      <router-link class="button" to="/"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>{{$t('settings.title')}}</h1>
-      <button class="btn settings__save btn--disabled">{{$t('save')}}</button>
+      <button class="button settings__save">{{$t('save')}}</button>
     </div>
     <tabs :tabItems="subnaviItems"></tabs>
     <router-view />

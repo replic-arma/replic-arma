@@ -9,7 +9,7 @@
             <span>Play</span>
             <mdicon name="play" size="35"/>
         </div>
-        <router-link :to="'./modset/' + modsetIndex" class="modset__open">
+        <router-link :to="'./modset/' + modsetIndex" class="modset__open button">
             <mdicon name="folder-open"></mdicon>
         </router-link>
     </li>

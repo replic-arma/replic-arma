@@ -22,7 +22,7 @@ export default class ServerListVue extends Vue {
     private repoStore = useRepoStore();
     public created (): void {
         this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
-        this.servers = this.repoStore.getRepo(this.repositoryIndex)?.game_servers ?? [];
+        this.servers = Array.from(this.repoStore.getRepo(this.repositoryIndex)?.game_servers?.values() ?? []);
     }
 }
 </script>

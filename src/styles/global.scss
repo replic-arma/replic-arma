@@ -1,5 +1,6 @@
-@import url('https://fonts.googleapis.com/css?family=Rubik|Source+Sans+Pro|Source+Code+Pro&display=swap');
-
+@import url('https://fonts.googleapis.com/css?family=Oswald|Source+Sans+Pro|Source+Code+Pro&display=swap');
+$btnColor: #3e68ff;
+$btnColorDanger: #EB5757;
 :root {
     --c-text-1: #333333;
     --c-text-2: #595959;
@@ -41,10 +42,79 @@ body {
 h1, h2, h3, h4, h5, h6 {
     font-family: Oswald, sans-serif;
 }
-a {
-  cursor: pointer;
-  color: inherit;
+// a {
+//   cursor: pointer;
+//   color: inherit;
+//   text-decoration: none;
+// }
+a.button {
   text-decoration: none;
+}
+button.button {
+  border: none;
+  background-color: transparent;
+  font-family: inherit;
+  padding: 0;
+  cursor: pointer;
+
+  @media screen and (-ms-high-contrast: active) {
+    border: 2px solid currentcolor;
+  }
+}
+
+a.button,
+button.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.button {
+  background-color: $btnColor;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.18);
+  padding: 0.25em 0.75em;
+  min-width: 10ch;
+  min-height: 44px;
+  text-align: center;
+  line-height: 1.1;
+  transition: 150ms all ease-in-out;
+  align-self: start;
+  &:hover {
+    background-color: scale-color($btnColor, $lightness: -20%);
+  }
+  &:focus {
+    outline-style: solid;
+    outline-color: transparent;
+    box-shadow: 0 0 0 4px scale-color($btnColor, $lightness: -40%);
+  }
+  &:hover,
+  &:active {
+    background-color: scale-color($btnColor, $lightness: -20%);
+  }
+  &--block {
+    inline-size: 100%;
+  }
+  &--outline {
+    background: transparent;
+    &:hover {
+      background: transparent;
+    }
+  }
+  &--danger {
+    color: $btnColorDanger;
+    border: 1px solid scale-color($btnColorDanger, $lightness: -20%);
+    &:focus {
+      outline-style: solid;
+      outline-color: transparent;
+      box-shadow: 0 0 0 4px scale-color($btnColorDanger, $lightness: -40%);
+    }
+    &:hover {
+      color: white;
+      background-color: scale-color($btnColorDanger, $lightness: -15%);
+    }
+  }
 }
 
 // SWITCH --------------------------------------------------------------
@@ -115,22 +185,23 @@ input[type="checkbox"][role="switch"] {
     }
 }
 
-.btn {
-    display: grid;
-    text-align: center;
-    background: var(--c-surf-2);
-    padding-inline: 1rem;
-    padding-block: 1rem;
-    border-radius: .75rem;
-    color: #fff;
-    cursor: pointer;
-}
+// .btn {
+//     display: grid;
+//     text-align: center;
+//     background: var(--c-surf-2);
+//     padding-inline: 1rem;
+//     padding-block: 1rem;
+//     border-radius: .75rem;
+//     color: #fff;
+//     cursor: pointer;
+//     max-width: max-content;
+// }
 
-.btn--disabled {
-    cursor: initial;
-    background-color: grey;
-    opacity: .20;
-}
+// .btn--disabled {
+//     cursor: initial;
+//     background-color: grey;
+//     opacity: .20;
+// }
 
 @keyframes spinner-spin {
   0% {
@@ -156,4 +227,75 @@ input[type="checkbox"][role="switch"] {
 }
 .status--updating {
     color: inherit;
+}
+
+.gui-toast-group {
+  position: fixed;
+  z-index: 1;
+  inset-block-end: 0;
+  inset-inline: 0;
+  padding-block-end: 5vh;
+
+  display: grid;
+  justify-items: center;
+  justify-content: center;
+  gap: 1vh;
+
+  /* optimizations */
+  pointer-events: none;
+}
+
+.gui-toast {
+  --_duration: 3s;
+  --_bg-lightness: 90%;
+  --_travel-distance: 0;
+
+  font-family: system-ui, sans-serif;
+  color: black;
+  background: hsl(0 0% var(--_bg-lightness) / 90%);
+  
+  max-inline-size: 90vw;
+  padding-block: .5ch;
+  padding-inline: 1ch;
+  border-radius: 3px;
+  font-size: 1rem;
+
+  will-change: transform;
+  animation: 
+    fade-in .3s ease,
+    slide-in .3s ease,
+    fade-out .3s ease var(--_duration);
+
+  @media (--dark) {
+    color: white;
+    --_bg-lightness: 20%;
+  }
+
+  @media (--motionOK) {
+    --_travel-distance: 5vh;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0 }
+}
+
+@keyframes fade-out {
+  to { opacity: 0 }
+}
+
+@keyframes slide-in {
+  from { transform: translateY(var(--_travel-distance, 10px)) }
+}
+
+.select {
+  block-size: 2.5rem;
+  inline-size: 5rem;
+}
+.select--lg {
+  inline-size: 10rem;
+}
+
+.select--xxl {
+  inline-size: 100%;
 }

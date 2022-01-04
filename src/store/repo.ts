@@ -1,6 +1,6 @@
-import { ReplicArmaRepository } from '@/models/Repository';
+import { GameServer, Modset, ReplicArmaRepository } from '@/models/Repository';
 import { defineStore } from 'pinia';
-
+import { v4 as uuidv4 } from 'uuid';
 export const useRepoStore = defineStore('repo', {
     state: (): {repos: Map<string, ReplicArmaRepository>} => ({
         repos: new Map<string, ReplicArmaRepository>()
@@ -20,6 +20,26 @@ export const useRepoStore = defineStore('repo', {
         },
         removeRepo (id: string) {
             this.repos.delete(id);
+        },
+        addServerToRepo (id: string, server: GameServer) {
+            const repositoriy = this.repos.get(id);
+            server.id = uuidv4();
+            repositoriy?.game_servers?.set(server.id, server);
+            if (repositoriy === undefined) return;
+            this.repos.set(id, repositoriy);
+        },
+        addModsetToRepo (id: string, modset: Modset) {
+            const repositoriy = this.repos.get(id);
+            modset.id = uuidv4();
+            repositoriy?.modsets?.set(modset.id, modset);
+            if (repositoriy === undefined) return;
+            this.repos.set(id, repositoriy);
+        },
+        loadRepositories () {
+            // TODO call tauri
+        },
+        saveRepoState (id: string) {
+            // TODO call tauri
         }
     }
 });

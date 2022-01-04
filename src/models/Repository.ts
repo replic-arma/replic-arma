@@ -23,6 +23,7 @@ export interface Modset {
 }
 
 export interface GameServer {
+    id: string,
     name: string,
     host: string,
     port: string,
@@ -50,8 +51,8 @@ export interface Repository {
     name: string,
     build_date: string,
     files?: Array<File>,
-    modsets?: Array<Modset>,
-    game_servers?: Array<GameServer>,
+    modsets?: Map<string, Modset>,
+    game_servers?: Map<string, GameServer>,
     download_server?: DownloadServer,
 }
 
@@ -66,4 +67,5 @@ export interface ReplicArmaRepository extends Repository {
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
     type: 'local'|'a3s'|'swifty';
+    autoconfig: string;
 }

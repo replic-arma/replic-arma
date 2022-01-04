@@ -4,13 +4,13 @@
       <mdicon name="chevron-left" size="55" @click="$router.back()" />
       <h1>{{ modset.name }}</h1>
       <div class="icon-group">
-        <button class="btn">
+        <button class="button">
           <span v-if="status === 'downloading'" class="spinner spinner-spin" />
           <mdicon v-else-if="status === 'outdated'" name="download" />
           <mdicon v-else name="play" />
           {{ $t('download-status.' + status) }}
         </button>
-        <mdicon @click="toggleDialog" name="cog" size="55" />
+        <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
       </div>
     </div>
     <ul class="modset__mods">
@@ -63,9 +63,7 @@ export default class ModsetVue extends Vue {
       this.modsetIndex = this.$router.currentRoute.value.params.mid as string;
       const repository = this.repoStore.getRepo(repositoryIndex);
       if (repository === undefined || repository?.modsets === undefined) return;
-      this.modset = repository?.modsets.find(
-          (modset) => modset.id === this.modsetIndex
-      );
+      this.modset = repository.modsets.get(this.modsetIndex);
   }
 }
 </script>
@@ -114,20 +112,20 @@ export default class ModsetVue extends Vue {
     margin-block: var(--space-xxs);
   }
 }
-.btn {
-  background: var(--c-surf-2);
-  border-radius: 1rem;
-  color: white;
-  text-align: center;
-  block-size: var(--space-xl);
-  margin-inline-end: var(--space-md);
-  padding-inline-end: var(--space-md);
-  font-size: 18pt;
-  cursor: pointer;
-  display: grid;
-  grid-template-columns: 2rem auto;
-  column-gap: .75rem;
-  justify-content: center;
-  align-content: center;
-}
+// .btn {
+//   background: var(--c-surf-2);
+//   border-radius: 1rem;
+//   color: white;
+//   text-align: center;
+//   block-size: var(--space-xl);
+//   margin-inline-end: var(--space-md);
+//   padding-inline-end: var(--space-md);
+//   font-size: 18pt;
+//   cursor: pointer;
+//   display: grid;
+//   grid-template-columns: 2rem auto;
+//   column-gap: .75rem;
+//   justify-content: center;
+//   align-content: center;
+// }
 </style>

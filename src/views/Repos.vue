@@ -4,8 +4,8 @@
       <h1>{{$t('repositories')}}</h1>
       <div class="icon-group">
         <mdicon name="download" size="45" @click="toggleDialog('downloads')"/>
-        <mdicon name="refresh" size="45"/>
-        <router-link to="/settings"><mdicon name="cog" size="45"/></router-link>
+        <mdicon name="refresh" size="45" @click="reloadRepos"/>
+        <router-link class="button" to="/settings"><mdicon name="cog" size="45"/></router-link>
       </div>
     </div>
     <ul class="repos__list">
@@ -26,6 +26,7 @@ import ReplicDialogVue from '@/components/util/ReplicDialog.vue';
 import { useDialogStore } from '@/store/dialog';
 import DownloadsVue from '@/components/download/Downloads.vue';
 import RepositoryAddVue from '@/components/RepositoryAdd.vue';
+import Toast from '@/components/util/Toast';
 
 @Options({
     components: {
@@ -41,6 +42,8 @@ export default class ReposView extends Vue {
   private dialogStore = useDialogStore();
   private storeSubscription: (() => void)|undefined;
   private toggleDialog = (dialogName: string) => { this.dialogStore.toggleDialog(dialogName); };
+
+  private reloadRepos = () => { Toast('Reloading Repositories'); };
 
   public created (): void {
       this.repos = this.repoStore.getRepos;

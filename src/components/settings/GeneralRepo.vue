@@ -3,7 +3,7 @@
         <div class="txt">
             <label for="repoName">{{$t('repository.name')}}</label>
             <div class="txt__input-wrapper">
-                <input class="txt__input" type="text" name="repoName" />
+                <input class="txt__input" type="text" name="repoName" v-model="repository.name" />
             </div>
         </div>
         <div class="txt">
@@ -12,20 +12,35 @@
                 <input class="txt__input" type="text" name="repoName" />
             </div>
         </div>
-        <button class="btn" type="button">{{$t('remove')}}</button>
+        <button class="button" type="button" @click="removeRepo">{{$t('remove')}}</button>
     </div>
 </template>
 <script lang="ts">
+import { ReplicArmaRepository } from '@/models/Repository';
+import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
-
 import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
+import Toast from '../util/Toast';
 @Options({
     components: {
         ReplicPathSelector: ReplicPathSelectorVue
     }
 })
 export default class GeneralRepoVue extends Vue {
+    private repoStore = useRepoStore();
+    private repositoryIndex!: string;
+    private repository!: ReplicArmaRepository|undefined;
 
+    public created (): void {
+        this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
+        this.repository = this.repoStore.getRepo(this.repositoryIndex);
+    }
+
+    public removeRepo (): void {
+        this.repoStore.removeRepo(this.repositoryIndex);
+        this.$router.push('/');
+        Toast('Removed Repository ' + this.repository?.name);
+    }
 }
 </script>
 <style lang="scss" scoped>
@@ -34,4 +49,5 @@ export default class GeneralRepoVue extends Vue {
     row-gap: 1.5rem;
     grid-template-columns: 1fr;
 }
+
 </style>

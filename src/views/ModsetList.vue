@@ -21,7 +21,7 @@ export default class ModsetListVue extends Vue {
     private repoStore = useRepoStore();
     public created (): void {
         this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
-        this.modsets = this.repoStore.getRepo(this.repositoryIndex)?.modsets ?? [];
+        this.modsets = Array.from(this.repoStore.getRepo(this.repositoryIndex)?.modsets?.values() ?? []);
     }
 }
 </script>

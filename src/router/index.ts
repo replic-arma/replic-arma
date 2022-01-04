@@ -23,6 +23,10 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: 'servers',
                 component: () => import(/* webpackChunkName: "servers" */ '../views/ServerList.vue')
+            },
+            {
+                path: 'collections',
+                component: () => import(/* webpackChunkName: "collections" */ '../views/CollectionsList.vue')
             }
         ]
     },

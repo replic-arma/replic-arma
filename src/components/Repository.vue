@@ -5,14 +5,14 @@
         <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
         <div class="repo__modset">
             <select>
-                <option v-for="(modset, i) of repository.modsets" :key="i">{{modset.name}}</option>
+                <option v-for="(modset, i) of modsets" :key="i">{{modset.name}}</option>
             </select>
         </div>
         <div class="repo__play">
             <span>Play</span>
             <mdicon name="play" size="35"/>
         </div>
-        <router-link :to="'/repo/'+ repository.id + '/modsets'" class="repo__open">
+        <router-link :to="'/repo/'+ repository.id + '/modsets'" class="repo__open button">
             <mdicon name="folder-open"></mdicon>
         </router-link>
     </li>
@@ -39,12 +39,16 @@ export default class RepoVue extends Vue {
         }
         return 'finished';
     }
+
+    private get modsets () {
+        return Array.from(this.repository?.modsets?.values() ?? []);
+    }
 }
 </script>
 <style lang="scss" scoped>
 .repo {
-    height: 5rem;
-    width: 100%;
+    block-size: 5rem;
+    inline-size: 100%;
     list-style-type: none;
     display: grid;
     grid-template-columns: 4rem 1fr 1fr 1fr 1fr 10%;

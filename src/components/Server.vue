@@ -7,6 +7,10 @@
         <span class="server__port">{{server.port}}</span>
         <span class="server__password"><mdicon name="lock-outline" />{{server.password !== undefine ? server.password : '-'}}</span>
         <span class="server__modset">{{server.modset !== undefine ? server.modset : '-'}}</span>
+        <div class="server__play">
+            <span>Play</span>
+            <mdicon name="play" size="35"/>
+        </div>
     </li>
 </template>
 <script lang="ts">
@@ -23,11 +27,12 @@ export default class ServerVue extends Vue {
 </script>
 <style lang="scss" scoped>
 .server {
-    height: 5rem;
+    block-size: 5rem;
+    padding-inline: 1rem;
     width: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);
@@ -53,6 +58,7 @@ export default class ServerVue extends Vue {
         justify-content:center;
         cursor: pointer;
         border-radius: 5rem;
+        margin-inline-start: 1rem;
         & > span:first-child {
             color: var(--c-surf-2);
         }
@@ -73,7 +79,6 @@ export default class ServerVue extends Vue {
 
     &__info {
         display: grid;
-        padding-inline-start: var(--space-sm);
     }
 }
 </style>

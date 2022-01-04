@@ -3,6 +3,7 @@ use serde::Serialize;
 use uuid::Uuid;
 
 use crate::repository::Repo;
+use crate::repository::Repository;
 use crate::util::types::ReplicArmaError;
 use crate::util::types::RepoType;
 use crate::util::types::Result;
@@ -13,7 +14,7 @@ use std::fs::{self, OpenOptions};
 use std::path::PathBuf;
 
 pub struct RepoManager {
-    pub repos: HashMap<Uuid, Box<dyn Repo + Send + Sync>>,
+    pub repos: HashMap<Uuid, Repository>,
 
     pub data_dir: PathBuf,
 }
@@ -35,24 +36,13 @@ impl From<(&Uuid, &Box<dyn Repo + Send + Sync>)> for RepoJSON {
     }
 }
 
-//impl
-
 impl RepoManager {
     const FILE_NAME: &'static str = "repos.json";
 
     pub fn add(&mut self, url: String) -> Result<Uuid> {
-        // if url.ends_with("autoconfig") {
-        //     repo = Box::new(A3SRepository::from_auto_config(url)?);
-        // } else if url.ends_with(".json") {
-        //     //Err(Error"nope")
-        //     repo = Box::new(SwiftyRepository::from_repo_json(url)?);
-        // } else {
-        //     return Err(Box::new(ReplicArmaError("repo".into())));
-        // }
-
-        let id = Uuid::new_v4();
-        self.repos.insert(id, Self::repo_from_url(url)?);
-
+        let repo = Self::repo_from_url(url)?;
+        let id = repo.id;
+        self.repos.insert(repo.id, repo);
         Ok(id)
     }
 
@@ -61,10 +51,9 @@ impl RepoManager {
             .read(true)
             .open(self.data_dir.join(Self::FILE_NAME))?;
 
-        let v: Vec<RepoJSON> = serde_json::from_reader(repo_file)?;
-
-        for repo in v {
-            self.repos.insert(repo.id, Self::repo_from_url(repo.url)?);
+        let repos: Vec<Repository> = serde_json::from_reader(repo_file)?;
+        for repo in repos {
+            self.repos.insert(repo.id, repo);
         }
 
         Ok(())
@@ -77,12 +66,12 @@ impl RepoManager {
         }
     }
 
-    fn repo_from_url(url: String) -> Result<Box<dyn Repo + Send + Sync>> {
-        let repo: Box<dyn Repo + Send + Sync>;
+    fn repo_from_url(url: String) -> Result<Repository> {
+        let repo: Repository;
         if url.ends_with("autoconfig") {
-            repo = Box::new(A3SRepository::from_auto_config(url)?);
+            repo = A3SRepository::from_auto_config(url)?.to_repository();
         } else if url.ends_with(".json") {
-            repo = Box::new(SwiftyRepository::from_repo_json(url)?);
+            repo = SwiftyRepository::from_repo_json(url)?.to_repository();
         } else {
             return Err(Box::new(ReplicArmaError { msg: "repo".into() }));
         }
@@ -90,9 +79,7 @@ impl RepoManager {
     }
 
     pub fn save(&self) -> Result<()> {
-        let v: Vec<RepoJSON> = self.repos.iter().map(RepoJSON::from).collect();
-
-        //let s = serde_json::to_string(&v).unwrap();
+        let repos: Vec<Repository> = self.repos.values().cloned().collect();
 
         fs::create_dir_all(self.data_dir.clone())?;
 
@@ -102,9 +89,7 @@ impl RepoManager {
             .truncate(true)
             .open(self.data_dir.join(Self::FILE_NAME))?;
 
-        serde_json::to_writer(repo_file, &v)?;
-        //println!("{}", s);
-
+        serde_json::to_writer(repo_file, &repos)?;
         Ok(())
     }
 }

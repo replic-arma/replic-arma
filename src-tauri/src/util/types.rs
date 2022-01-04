@@ -7,7 +7,7 @@ pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 pub type ResultThread<T> = std::result::Result<T, Box<dyn error::Error + Send + Sync>>;
 pub type JSResult<T> = std::result::Result<T, ErrorJson>;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum RepoType {
     A3S = 1,
     Swifty = 2,

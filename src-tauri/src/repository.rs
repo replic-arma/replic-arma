@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use std::collections::HashMap;
 use std::fs;
@@ -7,15 +8,22 @@ use std::path::Path;
 use std::sync::{Arc, RwLock};
 use std::time::Instant;
 use threadpool::ThreadPool;
+use uuid::Uuid;
 
 use crate::util::types::RepoType;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Repository {
+    pub id: Uuid,
+    pub config_url: String,
+    #[serde(rename = "type")]
+    pub repo_typ: RepoType,
     pub open_repository_schema: u32,
     pub name: String,
-    pub build_date: DateTime<Utc>,
+    pub build_date: i64,
+    #[serde(skip)]
     pub files: Vec<File>,
+    #[serde(skip)]
     pub modsets: Vec<Modset>,
     pub game_servers: Vec<GameServer>,
     pub download_server: DownloadServer,
@@ -35,25 +43,25 @@ impl std::fmt::Display for Repository {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct File {
     pub path: String,
     pub size: i64,
     pub sha1: String,
 }
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Modset {
     pub name: String,
     pub description: String,
     pub mods: Vec<ModsetMod>,
 }
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ModsetMod {
     pub mod_type: String,
     pub name: String,
     pub allow_compat: Option<bool>,
 }
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GameServer {
     pub name: String,
     pub host: String,
@@ -62,17 +70,17 @@ pub struct GameServer {
     pub modset: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DownloadServer {
     pub url: String,
     pub options: DownloadServerOptions,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DownloadServerOptions {
     pub max_connections: i32,
 }
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct FileMap {
     foreign_hash: String,
     local_hash: String,
@@ -165,7 +173,14 @@ pub fn create_hash_from_file<P: AsRef<Path>>(
     Ok(hash)
 }
 
+impl<T: Repo> From<T> for Repository {
+    fn from(t: T) -> Self {
+        t.to_repository()
+    }
+}
+
 pub trait Repo {
     fn get_url(&self) -> String;
     fn get_type(&self) -> RepoType;
+    fn to_repository(&self) -> Repository;
 }

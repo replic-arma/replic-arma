@@ -61,4 +61,8 @@ impl Repo for SwiftyRepository {
     fn get_type(&self) -> crate::util::types::RepoType {
         todo!()
     }
+
+    fn to_repository(&self) -> crate::repository::Repository {
+        todo!()
+    }
 }

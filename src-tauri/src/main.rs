@@ -39,7 +39,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     //println!("{}", proj_dirs.data_local_dir().to_str().unwrap());
     // let a3s_repo = A3SRepository::from_auto_config(String::from("ftp://195.201.245.42/opt/.a3s/autoconfig"))?;
     // let a3s_repo = A3SRepository::from_auto_config(String::from("https://repo.3commandobrigade.com/autoconfig"))?;
-    let repo = a3s_repo.to_repository()?;
+    let repo = a3s_repo.to_repository();
     println!("{}", repo.build_date);
     // let swifty = SwiftyRepository::from_repo_json(String::from("https://swifty.projectawesome.net/event/repo.json"));
     //repo.generate_file_map();
@@ -114,13 +114,13 @@ fn test_manager() {
     assert!(m.save().is_ok());
 
     println!("{:?}", m.data_dir);
-    println!(
-        "{:?}",
-        m.repos
-            .get(&Uuid::from_str("cd3506bf-8ed2-4fb7-9021-3373e1493f81").unwrap())
-            .unwrap()
-            .get_url()
-    );
+    // println!(
+    //     "{:?}",
+    //     m.repos
+    //         .get(&Uuid::from_str("cd3506bf-8ed2-4fb7-9021-3373e1493f81").unwrap())
+    //         .unwrap()
+    //         .get_url()
+    // );
 }
 
 #[test]

@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use url::Url;
+use uuid::Uuid;
 
 use super::utils::fetch_java_object;
 use crate::a3s::classes::{AutoConfig, Changelogs, Events, ServerInfo, SyncTreeDirectory};
@@ -16,7 +17,7 @@ pub struct A3SRepository {
     pub sync: SyncTreeDirectory,
     pub server_info: ServerInfo,
     pub events: Events,
-
+    pub config_url: String,
     pub url: String,
 }
 
@@ -44,7 +45,7 @@ impl A3SRepository {
         let sync: SyncTreeDirectory = fetch_java_object(url.clone(), Some(super::SYNC_FILE_NAME))?;
         let server_info: ServerInfo =
             fetch_java_object(url.clone(), Some(super::SERVERINFO_FILE_NAME))?;
-        let events: Events = fetch_java_object(url, Some(super::EVENTS_FILE_NAME))?;
+        let events: Events = fetch_java_object(url.clone(), Some(super::EVENTS_FILE_NAME))?;
 
         Ok(A3SRepository {
             auto_config,
@@ -52,11 +53,12 @@ impl A3SRepository {
             sync,
             server_info,
             events,
-            url: autoconfig,
+            config_url: autoconfig,
+            url: url.to_string(),
         })
     }
 
-    pub fn to_repository(&self) -> Result<Repository, Box<dyn std::error::Error>> {
+    pub fn to_repository(&self) -> Repository {
         // modsets
         let mut modsets = Vec::<Modset>::new();
         for event in self.events.events.list.iter() {
@@ -109,15 +111,18 @@ impl A3SRepository {
             },
         };
 
-        Ok(Repository {
+        Repository {
+            id: Uuid::new_v4(),
+            config_url: self.url.clone(),
+            repo_typ: RepoType::A3S,
             open_repository_schema: 1,
             name: self.auto_config.repository_name.clone(),
-            build_date: self.server_info.build_date.date,
+            build_date: self.server_info.build_date.date.timestamp_nanos(),
             files,
             modsets,
             game_servers,
             download_server,
-        })
+        }
     }
 }
 impl Repo for A3SRepository {
@@ -127,5 +132,9 @@ impl Repo for A3SRepository {
 
     fn get_type(&self) -> RepoType {
         RepoType::A3S
+    }
+
+    fn to_repository(&self) -> Repository {
+        self.to_repository()
     }
 }

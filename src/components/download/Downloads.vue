@@ -87,7 +87,7 @@ export default class DownloadsVue extends Vue {
       position: absolute;
       height: 2px;
       background: grey;
-      width: fill-available;
+      width: stretch;
       margin-inline-start: .5rem;
     }
 }

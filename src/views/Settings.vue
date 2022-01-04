@@ -3,7 +3,7 @@
     <div class="settings__heading">
       <router-link class="button" to="/"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>{{$t('settings.title')}}</h1>
-      <button class="button settings__save">{{$t('save')}}</button>
+      <button class="button settings__save button--center">{{$t('save')}}</button>
     </div>
     <tabs :tabItems="subnaviItems"></tabs>
     <router-view />
@@ -48,7 +48,6 @@ export default class SettingsView extends Vue {
   }
   &__save {
     font-size: 18pt;
-    padding-inline: 3rem;
   }
 }
 </style>

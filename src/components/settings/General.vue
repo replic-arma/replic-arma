@@ -21,7 +21,7 @@
             </select>
         </div>
         <div class="general-settings__buttons">
-            <button class="button" type="button">{{$t('cache_clear')}}</button>
+            <button class="button button--outline button--danger" type="button">{{$t('cache_clear')}}</button>
             <button class="button button--outline button--danger" type="button">{{$t('settings.reset')}}</button>
         </div>
     </div>
@@ -41,21 +41,22 @@ export default class GeneralVue extends Vue {
 </script>
 <style lang="scss" scoped>
 .general-settings {
-    display: grid;
-    row-gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     grid-template-columns: 1fr;
     &__speed {
-        display: grid;
-        grid-template-columns: max-content;
+        display: flex;
+        flex-direction: column;
     }
     &__language {
-        display: grid;
-        grid-template-columns: max-content;
+        display: flex;
+        flex-direction: column;
     }
     &__buttons {
-        display: grid;
-        grid-template-columns: max-content;
-        row-gap: .5rem;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
     }
 
 }

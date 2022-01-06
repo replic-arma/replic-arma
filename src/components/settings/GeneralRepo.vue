@@ -28,16 +28,14 @@ import Toast from '../util/Toast';
 })
 export default class GeneralRepoVue extends Vue {
     private repoStore = useRepoStore();
-    private repositoryIndex!: string;
     private repository!: ReplicArmaRepository|undefined;
 
     public created (): void {
-        this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
-        this.repository = this.repoStore.getRepo(this.repositoryIndex);
+        this.repository = this.repoStore.getRepo(this.repoStore.currentRepoId);
     }
 
     public removeRepo (): void {
-        this.repoStore.removeRepo(this.repositoryIndex);
+        this.repoStore.removeRepo(this.repoStore.currentRepoId);
         this.$router.push('/');
         Toast('Removed Repository ' + this.repository?.name);
     }

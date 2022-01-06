@@ -2,27 +2,31 @@
     <ul class="modsets">
        <modset v-for="(modset, i) of modsets" :key="i" :modset="modset" :modsetIndex="modset.id"></modset>
     </ul>
+    <mdicon name="plus" class="add-button" role="button" @click="dialogStore.toggleDialog('modsetAdd')"></mdicon>
+    <modset-add />
 </template>
 
 <script lang="ts">
 import ModsetVue from '@/components/Modset.vue';
-import { Modset } from '@/models/Repository';
+import ModsetAddVue from '@/components/ModsetAdd.vue';
+import { useDialogStore } from '@/store/dialog';
 import { useRepoStore } from '@/store/repo';
+import { mapState } from 'pinia';
 import { Options, Vue } from 'vue-class-component';
 
 @Options({
     components: {
-        Modset: ModsetVue
+        Modset: ModsetVue,
+        ModsetAdd: ModsetAddVue
+    },
+    computed: {
+        ...mapState(useRepoStore, {
+            modsets: store => store.getModsets(useRepoStore().currentRepoId)
+        })
     }
 })
 export default class ModsetListVue extends Vue {
-    private modsets!: Modset[];
-    private repositoryIndex!: string;
-    private repoStore = useRepoStore();
-    public created (): void {
-        this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
-        this.modsets = Array.from(this.repoStore.getRepo(this.repositoryIndex)?.modsets?.values() ?? []);
-    }
+    private dialogStore = useDialogStore();
 }
 </script>
 

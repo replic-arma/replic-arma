@@ -1,20 +1,14 @@
 <template>
-    <replic-dialog :dialogName="'repoAdd'">
+    <replic-dialog :dialogName="'modsetAdd'">
         <template v-slot:header>
-            <span>{{$t('repository.add')}}</span>
-            <mdicon role="button" @click="dialogStore.toggleDialog('repoAdd')" name="close" size="35" />
+            <span>{{$t('modset.add')}}</span>
+            <mdicon role="button" @click="dialogStore.toggleDialog('modsetAdd')" name="close" size="35" />
         </template>
         <template v-slot:main>
             <div class="txt">
-                <label for="repoName">{{$t('repository.autoconfig')}}</label>
+                <label for="modsetName">{{$t('modset.name')}}</label>
                 <div class="txt__input-wrapper">
-                    <input class="txt__input" type="text" name="repoName" />
-                </div>
-            </div>
-            <div class="txt">
-                <label for="repoName">{{$t('repository.name')}}</label>
-                <div class="txt__input-wrapper">
-                    <input class="txt__input" type="text" name="repoName" />
+                    <input class="txt__input" type="text" name="modsetName" />
                 </div>
             </div>
             <button class="button" @click="addRepo">{{$t('submit')}}</button>
@@ -33,25 +27,15 @@ import Toast from './util/Toast';
         ReplicDialog: ReplicDialogVue
     }
 })
-export default class RepositoryAddVue extends Vue {
+export default class ModsetAddVue extends Vue {
+    private repoStore = useRepoStore();
     private dialogStore = useDialogStore();
-    private toggleDialog = () => { this.dialogStore.toggleDialog('repoAdd'); };
+    private toggleDialog = () => { this.dialogStore.toggleDialog('modsetAdd'); };
     private addRepo () {
         const repoStore = useRepoStore();
-        const uuid = uuidv4();
-        repoStore.addRepo(
-            {
-                id: uuidv4(),
-                build_date: '12.11',
-                name: 'Saturday Skirmish',
-                open_repository_schema: 1,
-                type: 'local',
-                modsets: new Map().set(uuid, { id: uuid, name: 'All Mods', description: 'All Mods from the Repository' }),
-                collections: new Map()
-            }
-        );
+        repoStore.addModsetToRepo(this.repoStore.currentRepoId, { id: uuidv4(), name: 'Test' });
         this.toggleDialog();
-        Toast('Added Repository');
+        Toast('Added Modset');
     }
 }
 </script>

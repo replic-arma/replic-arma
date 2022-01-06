@@ -32,7 +32,7 @@ repoStore.addRepo(
         open_repository_schema: 1,
         image: 'https://forums.bohemia.net/uploads/profile/photo-774621.png',
         modsets: new Map()
-            .set('12cee614-8c19-4579-a45c-54357e43e8d8', {
+            .set('581728f1-ae8a-4cb8-a8a7-3511867b6f68', {
                 id: '581728f1-ae8a-4cb8-a8a7-3511867b6f68',
                 name: 'All Mods',
                 description: 'All Mods from the Repository',
@@ -338,18 +338,19 @@ repoStore.addRepo(
                     mod_type: 'Mauv'
                 }]
             })
-            .set('d5ad74c6-2d05-4d6d-9c9a-200dcd24e445', {
-                id: '581728f1-ae8a-4cb8-a7a7-3511867b6f68',
+            .set('66932475-98c0-4892-86d6-9f3b01cb8ac5', {
+                id: '66932475-98c0-4892-86d6-9f3b01cb8ac5',
                 name: 'Gruppe Adler Main',
                 description: 'Hautprepo für die meisten Missionen',
                 mods: [{ name: 'RHS', mod_type: uuidv4() }]
             })
             .set('89e8a177-d9f7-4ecc-b1f6-afcf2732a73f', {
-                id: '581728f1-ae8a-4cb8-a7a7-3511867b6f69',
+                id: '89e8a177-d9f7-4ecc-b1f6-afcf2732a73f',
                 name: 'Gruppe Adler Joint Ops',
                 description: 'Tailored for each event',
                 mods: [{ name: 'RHS', mod_type: uuidv4() }]
-            })
+            }),
+        collections: new Map()
     }
 );
 repoStore.addRepo(
@@ -361,7 +362,7 @@ repoStore.addRepo(
         open_repository_schema: 1,
         image: 'https://www.anrop.se/themes/Anrop2/images/logo-nav.png',
         modsets: new Map()
-            .set('12cee614-8c19-4579-a45c-54357e43e8d8', {
+            .set('581728f1-ae8a-4cb8-a8a7-3511867b6f68', {
                 id: '581728f1-ae8a-4cb8-a8a7-3511867b6f68',
                 name: 'All Mods',
                 description: 'All Mods from the Repository',
@@ -668,17 +669,18 @@ repoStore.addRepo(
                 }]
             })
             .set('d5ad74c6-2d05-4d6d-9c9a-200dcd24e445', {
-                id: '581728f1-ae8a-4cb8-a7a7-3511867b6f68',
+                id: 'd5ad74c6-2d05-4d6d-9c9a-200dcd24e445',
                 name: 'Gruppe Adler Main',
                 description: 'Hautprepo für die meisten Missionen',
                 mods: [{ name: 'RHS', mod_type: uuidv4() }]
             })
             .set('89e8a177-d9f7-4ecc-b1f6-afcf2732a73f', {
-                id: '581728f1-ae8a-4cb8-a7a7-3511867b6f69',
+                id: '89e8a177-d9f7-4ecc-b1f6-afcf2732a73f',
                 name: 'Gruppe Adler Joint Ops',
                 description: 'Tailored for each event',
                 mods: [{ name: 'RHS', mod_type: uuidv4() }]
-            })
+            }),
+        collections: new Map()
     }
 );
 repoStore.addRepo(
@@ -1011,7 +1013,8 @@ repoStore.addRepo(
                 name: 'Gruppe Adler Joint Ops',
                 description: 'Tailored for each event',
                 mods: [{ name: 'RHS', mod_type: uuidv4() }]
-            })
+            }),
+        collections: new Map()
     }
 );
 

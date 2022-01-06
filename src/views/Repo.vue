@@ -4,7 +4,7 @@
       <router-link class="button" to="/"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>{{repository.name}}</h1>
       <div class="icon-group">
-        <router-link class="button" :to="'/reposettings/'+ repositoryIndex"><mdicon  name="cog" size="55"/></router-link>
+        <router-link class="button" :to="'/reposettings/'+ repository.id"><mdicon  name="cog" size="55"/></router-link>
       </div>
     </div>
     <subnavi :subnaviItems="subnaviItems"></subnavi>
@@ -18,6 +18,7 @@ import { ReplicArmaRepository } from '@/models/Repository';
 import { Options, Vue } from 'vue-class-component';
 import { useRepoStore } from '../store/repo';
 import { useDialogStore } from '../store/dialog';
+import { Prop } from 'vue-property-decorator';
 @Options({
     components: {
         Subnavi: SubnaviVue
@@ -25,20 +26,18 @@ import { useDialogStore } from '../store/dialog';
 })
 export default class RepoView extends Vue {
   private repository!: ReplicArmaRepository|undefined;
-  private repositoryIndex!: string;
   private subnaviItems: SubnaviItem[] = [];
   private repoStore = useRepoStore();
   private dialogStore = useDialogStore();
   private toggleDialog = () => { this.dialogStore.toggleDialog('repoSettings'); };
 
   public created ():void {
-      this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
       this.subnaviItems = [
-          { label: 'Modset', link: '/repo/' + this.repositoryIndex + '/modsets' },
-          { label: 'Collections', link: '/repo/' + this.repositoryIndex + '/collections' },
-          { label: 'Server', link: '/repo/' + this.repositoryIndex + '/servers' }
+          { label: this.$t('modsets'), link: '/repo/' + this.repoStore.currentRepoId + '/modsets' },
+          { label: this.$t('collections'), link: '/repo/' + this.repoStore.currentRepoId + '/collections' },
+          { label: this.$t('server'), link: '/repo/' + this.repoStore.currentRepoId + '/servers' }
       ];
-      this.repository = this.repoStore.getRepo(this.repositoryIndex);
+      this.repository = this.repoStore.getRepo(this.repoStore.currentRepoId);
   }
 }
 </script>
@@ -63,6 +62,10 @@ export default class RepoView extends Vue {
       align-items: center;
       justify-content: center;
       color: var(--c-text-3);
+      .mdi {
+        display: inline-flex;
+        justify-content: center;
+      }
     }
   }
 }

@@ -27,7 +27,6 @@ import { Prop } from 'vue-property-decorator';
 })
 export default class RepoVue extends Vue {
     @Prop({ type: Object }) private repository!: ReplicArmaRepository;
-    @Prop({ type: Number }) private repositoryIndex!: number;
     private downloadStore = useDownloadStore();
     private get status () {
         if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.repository?.id)) {

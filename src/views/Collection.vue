@@ -1,8 +1,8 @@
 <template>
-  <div class="modset">
-    <div class="modset__heading">
+  <div class="collection">
+    <div class="collection__heading">
       <mdicon name="chevron-left" size="55" @click="$router.back()" />
-      <h1>{{ modset.name }}</h1>
+      <h1>{{ collection.name }}</h1>
       <div class="icon-group">
         <button class="button">
           <span v-if="status === 'downloading'" class="spinner spinner-spin" />
@@ -10,11 +10,10 @@
           <mdicon v-else name="play" />
           {{ $t('download-status.' + status) }}
         </button>
-        <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
       </div>
     </div>
-    <ul class="modset__mods">
-      <li class="modset__mod" v-for="(mod, i) of modset.mods" :key="i">
+    <ul class="collection__mods">
+      <li class="collection__mod" v-for="(mod, i) of collection.mods" :key="i">
         {{ mod.name }}
       </li>
     </ul>
@@ -22,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { Modset } from '@/models/Repository';
+import { Collection } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
@@ -30,15 +29,15 @@ import { Options, Vue } from 'vue-class-component';
 @Options({
     components: {}
 })
-export default class ModsetView extends Vue {
-  private modset!: Modset | undefined;
+export default class CollectionView extends Vue {
+  private collection!: Collection | undefined;
   private repoStore = useRepoStore();
   private downloadStore = useDownloadStore();
   private startDownload () {
-      if (this.modset !== undefined) {
+      if (this.collection !== undefined) {
           this.downloadStore.addToQueue({
               status: 'queued',
-              item: this.modset,
+              item: this.collection,
               size: 0,
               done: 0,
               total: 0
@@ -47,24 +46,24 @@ export default class ModsetView extends Vue {
   }
 
   private get status () {
-      if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+      if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.collection?.id)) {
           return 'outdated';
-      } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+      } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.collection?.id)) {
           return 'downloading';
-      } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
+      } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.collection?.id)) {
           return 'queued';
       }
       return 'play';
   }
 
   public created (): void {
-      this.modset = this.repoStore.getModset(this.repoStore.currentRepoId, this.repoStore.currentModsetId);
+      this.collection = this.repoStore.getCollection(this.repoStore.currentRepoId, this.repoStore.currentCollectionId);
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.modset {
+.collection {
   &__heading {
     display: grid;
     grid-template-columns: 4rem 1fr auto;

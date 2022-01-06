@@ -1,7 +1,7 @@
 <template>
   <div class="repo-settings">
     <div class="repo-settings__heading">
-      <router-link class="button" :to="'/repo/'+ repositoryIndex + '/modsets'"><mdicon name="chevron-left" size="55"/></router-link>
+      <router-link class="button" :to="'/repo/'+ repoStore.currentRepoId + '/modsets'"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>Settings</h1>
     </div>
       <tabs :tabItems="subnaviItems"></tabs>
@@ -21,7 +21,6 @@ import { Options, Vue } from 'vue-class-component';
 })
 export default class RepoSettingsView extends Vue {
   private repository!: ReplicArmaRepository|undefined;
-  private repositoryIndex!: string;
   private repoStore = useRepoStore();
   private subnaviItems: TabsItem[] = [
       { label: 'General', component: GeneralRepoVue },
@@ -29,8 +28,7 @@ export default class RepoSettingsView extends Vue {
   ];
 
   public created ():void {
-      this.repositoryIndex = this.$router.currentRoute.value.params.id as string;
-      this.repository = this.repoStore.getRepo(this.repositoryIndex);
+      this.repository = this.repoStore.getRepo(this.repoStore.currentRepoId);
   }
 }
 </script>

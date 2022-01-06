@@ -3,7 +3,14 @@
     "repository": {
         "title": "Repository",
         "name": "Repository Name",
-        "autoconfig": "Repository Autoconfig"
+        "autoconfig": "Repository Autoconfig",
+        "add": "Add Repository"
+    },
+    "modsets": "Modsets",
+    "modset": {
+        "title": "Modset",
+        "name": "Modset Name",
+        "add": "Add Modset"
     },
     "download-status": {
         "outdated": "Outdated",
@@ -16,6 +23,7 @@
     "server": {
         "empty": "No Server available"
     },
+    "submit": "Submit",
     "ready": "Ready to play",
     "updating": "Updating",
     "select": "Select",
@@ -43,5 +51,7 @@
         "custom_parameter": "Custom Parameters"
     },
     "remove": "Remove",
-    "save": "Save"
+    "save": "Save",
+    "server": "Server",
+    "collections": "Collections"
 }

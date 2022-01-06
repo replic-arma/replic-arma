@@ -1,32 +1,36 @@
 <template>
   <div class="collections">
     <ul class="collections__list">
-      <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="repo.id"></repo>
+      <collection-item v-for="(collection, i) of collections" :key="i" :collection="collection"></collection-item>
     </ul>
+    <mdicon name="plus" class="add-button" role="button" @click="dialogStore.toggleDialog('collectionAdd')"></mdicon>
+    <collection-add />
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import RepoVue from '@/components/Repository.vue';
 import { useRepoStore } from '../store/repo';
-import { ReplicArmaRepository } from '@/models/Repository';
+import { Collection } from '@/models/Repository';
 import { useDialogStore } from '@/store/dialog';
-import Toast from '@/components/util/Toast';
+import CollectionItemVue from '@/components/CollectionItem.vue';
+import { mapState } from 'pinia';
+import CollectionAddVue from '@/components/CollectionAdd.vue';
 
 @Options({
     components: {
-        Repo: RepoVue
+        CollectionItem: CollectionItemVue,
+        CollectionAdd: CollectionAddVue
+    },
+    computed: {
+        ...mapState(useRepoStore, {
+            collections: store => store.getCollections(useRepoStore().currentRepoId)
+        })
     }
 })
 export default class CollectionsList extends Vue {
   private repoStore = useRepoStore();
-  private repos: ReplicArmaRepository[] = [];
   private dialogStore = useDialogStore();
-
-  public created (): void {
-      this.repos = this.repoStore.getRepos;
-  }
 }
 </script>
 

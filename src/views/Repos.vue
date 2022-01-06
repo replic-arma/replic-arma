@@ -9,9 +9,9 @@
       </div>
     </div>
     <ul class="repos__list">
-      <repo v-for="(repo, i) of repos" :key="i" :repository="repo" :repositoryIndex="repo.id"></repo>
+      <repo v-for="(repo, i) of repos" :key="i" :repository="repo"></repo>
     </ul>
-    <mdicon name="plus" class="repos__add" role="button" @click="toggleDialog('repoAdd')"></mdicon>
+    <mdicon name="plus" class="add-button" role="button" @click="dialogStore.toggleDialog('repoAdd')"></mdicon>
     <downloads />
     <repo-add />
   </div>
@@ -21,12 +21,12 @@
 import { Options, Vue } from 'vue-class-component';
 import RepoVue from '@/components/Repository.vue';
 import { useRepoStore } from '../store/repo';
-import { ReplicArmaRepository } from '@/models/Repository';
 import ReplicDialogVue from '@/components/util/ReplicDialog.vue';
 import { useDialogStore } from '@/store/dialog';
 import DownloadsVue from '@/components/download/Downloads.vue';
 import RepositoryAddVue from '@/components/RepositoryAdd.vue';
 import Toast from '@/components/util/Toast';
+import { mapState } from 'pinia';
 
 @Options({
     components: {
@@ -34,28 +34,16 @@ import Toast from '@/components/util/Toast';
         ReplicDialog: ReplicDialogVue,
         Downloads: DownloadsVue,
         RepoAdd: RepositoryAddVue
+    },
+    computed: {
+        ...mapState(useRepoStore, {
+            repos: store => store.getRepos
+        })
     }
 })
 export default class ReposView extends Vue {
-  private repoStore = useRepoStore();
-  private repos: ReplicArmaRepository[] = [];
   private dialogStore = useDialogStore();
-  private storeSubscription: (() => void)|undefined;
-  private toggleDialog = (dialogName: string) => { this.dialogStore.toggleDialog(dialogName); };
-
   private reloadRepos = () => { Toast('Reloading Repositories'); };
-
-  public created (): void {
-      this.repos = this.repoStore.getRepos;
-      this.storeSubscription = this.repoStore.$subscribe(() => {
-          this.repos = this.repoStore.getRepos;
-      });
-  }
-
-  public unmounted (): void {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      this.storeSubscription = () => { };
-  }
 }
 </script>
 
@@ -89,20 +77,11 @@ export default class ReposView extends Vue {
       grid-template-columns: repeat(3, 4rem);
       align-items: center;
       justify-content: center;
+      .mdi {
+        display: inline-flex;
+        justify-content: center;
+      }
     }
-  }
-
-  &__add {
-    display: grid;
-    background: var(--c-surf-3);
-    border-radius: 2rem;
-    inline-size: var(--space-xl);
-    block-size: var(--space-xl);
-    place-self: center center;
-    justify-content: center;
-    align-content: center;
-    cursor: pointer;
-    color: var(--c-text-2);
   }
 }
 </style>

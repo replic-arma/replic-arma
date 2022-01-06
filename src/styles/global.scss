@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto|Source+Sans+Pro|Source+Code+Pro&display=swap');
-$btnColor: #3e68ff;
+$btnColor: #2F80ED;
 $btnColorDanger: #EB5757;
 :root {
     --c-text-1: #333333;
@@ -300,4 +300,17 @@ input[type="checkbox"][role="switch"] {
 
 .select--xxl {
   inline-size: 100%;
+}
+
+.add-button {
+  display: grid;
+  background: var(--c-surf-3);
+  border-radius: 2rem;
+  inline-size: var(--space-xl);
+  block-size: var(--space-xl);
+  justify-content: center;
+  align-content: center;
+  margin: auto;
+  cursor: pointer;
+  color: var(--c-text-2);
 }

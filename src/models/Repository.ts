@@ -17,7 +17,7 @@ export interface ModsetMod {
 export interface Modset {
     id: string;
     name: string,
-    description: string,
+    description?: string,
     // status: string,
     mods?: Array<ModsetMod>,
 }
@@ -45,6 +45,14 @@ export interface FileMap{
     local_hash: string,
     file_found: boolean
 }
+export interface Collection {
+    id: string;
+    name: string,
+    description?: string,
+    modsets?: Map<string, Modset>
+    dlc?: Array<string>,
+    localMods?: Array<ModsetMod>
+}
 
 export interface Repository {
     open_repository_schema: number,
@@ -54,6 +62,7 @@ export interface Repository {
     modsets?: Map<string, Modset>,
     game_servers?: Map<string, GameServer>,
     download_server?: DownloadServer,
+    collections?: Map<string, Collection>
 }
 
 export interface ReplicArmaRepositoryError {
@@ -67,5 +76,5 @@ export interface ReplicArmaRepository extends Repository {
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
     type: 'local'|'a3s'|'swifty';
-    autoconfig: string;
+    autoconfig?: string;
 }

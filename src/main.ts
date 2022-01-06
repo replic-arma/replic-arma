@@ -350,7 +350,7 @@ repoStore.addRepo(
                 description: 'Tailored for each event',
                 mods: [{ name: 'RHS', mod_type: uuidv4() }]
             }),
-        collections: new Map()
+        collections: new Map().set('8578d596-a17e-4f74-95f3-a48e41240f24', { id: '8578d596-a17e-4f74-95f3-a48e41240f24', name: 'Dev' })
     }
 );
 repoStore.addRepo(

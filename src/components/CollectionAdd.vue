@@ -1,17 +1,17 @@
 <template>
     <replic-dialog :dialogName="'collectionAdd'">
         <template v-slot:header>
-            <span>Add Collection</span>
+            <span>{{$t('collection.add')}}</span>
             <mdicon role="button" @click="dialogStore.toggleDialog('collectionAdd')" name="close" size="35" />
         </template>
         <template v-slot:main>
             <div class="txt">
-                <label for="collectionName">{{$t('repository.name')}}</label>
+                <label for="collectionName">{{$t('collection.name')}}</label>
                 <div class="txt__input-wrapper">
-                    <input class="txt__input" type="text" name="collectionName" />
+                    <input class="txt__input" type="text" name="collectionName" v-model="collectionName" />
                 </div>
             </div>
-            <button class="button" @click="addCollection">Add Collection</button>
+            <button class="button" @click="addCollection">{{$t('collection.add')}}</button>
         </template>
     </replic-dialog>
 </template>
@@ -27,17 +27,18 @@ import Toast from './util/Toast';
         ReplicDialog: ReplicDialogVue
     }
 })
-export default class RepositoryAddVue extends Vue {
+export default class CollectionAddVue extends Vue {
     private dialogStore = useDialogStore();
+    private collectionName: string|undefined;
     private addCollection () {
         const repoStore = useRepoStore();
+        if (this.collectionName === undefined) return;
         repoStore.addCollectionToRepo(repoStore.currentRepoId,
             {
                 id: uuidv4(),
-                name: 'Adler Dev'
+                name: this.collectionName
             }
         );
-        console.log(repoStore.getRepo(repoStore.currentRepoId));
         this.dialogStore.toggleDialog('collectionAdd');
         Toast('Added Collection');
     }

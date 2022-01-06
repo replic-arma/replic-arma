@@ -12,6 +12,12 @@
         "name": "Modset Name",
         "add": "Add Modset"
     },
+    "collections": "Collections",
+    "collection": {
+        "title": "Collection",
+        "name": "Collection Name",
+        "add": "Add Collection"
+    },
     "download-status": {
         "outdated": "Outdated",
         "queued": "Update Pending",
@@ -21,6 +27,7 @@
         "play": "Play"
     },
     "server": {
+        "title": "Server",
         "empty": "No Server available"
     },
     "submit": "Submit",
@@ -51,7 +58,5 @@
         "custom_parameter": "Custom Parameters"
     },
     "remove": "Remove",
-    "save": "Save",
-    "server": "Server",
-    "collections": "Collections"
+    "save": "Save"
 }

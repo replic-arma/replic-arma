@@ -18,7 +18,6 @@ import { ReplicArmaRepository } from '@/models/Repository';
 import { Options, Vue } from 'vue-class-component';
 import { useRepoStore } from '../store/repo';
 import { useDialogStore } from '../store/dialog';
-import { Prop } from 'vue-property-decorator';
 @Options({
     components: {
         Subnavi: SubnaviVue
@@ -35,7 +34,7 @@ export default class RepoView extends Vue {
       this.subnaviItems = [
           { label: this.$t('modsets'), link: '/repo/' + this.repoStore.currentRepoId + '/modsets' },
           { label: this.$t('collections'), link: '/repo/' + this.repoStore.currentRepoId + '/collections' },
-          { label: this.$t('server'), link: '/repo/' + this.repoStore.currentRepoId + '/servers' }
+          { label: this.$t('server.title'), link: '/repo/' + this.repoStore.currentRepoId + '/servers' }
       ];
       this.repository = this.repoStore.getRepo(this.repoStore.currentRepoId);
   }

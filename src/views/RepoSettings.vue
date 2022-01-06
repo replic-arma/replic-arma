@@ -4,7 +4,7 @@
       <router-link class="button" :to="'/repo/'+ repoStore.currentRepoId + '/modsets'"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>Settings</h1>
     </div>
-      <tabs :tabItems="subnaviItems"></tabs>
+    <tabs :tabItems="subnaviItems"></tabs>
   </div>
 </template>
 

@@ -3,7 +3,7 @@
     <div class="repos__heading">
       <h1>{{$t('repositories')}}</h1>
       <div class="icon-group">
-        <mdicon name="download" size="45" @click="toggleDialog('downloads')"/>
+        <mdicon name="download" size="45" @click="dialogStore.toggleDialog('downloads')"/>
         <mdicon name="refresh" size="45" @click="reloadRepos"/>
         <router-link class="button" to="/settings"><mdicon name="cog" size="45"/></router-link>
       </div>

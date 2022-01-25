@@ -4,10 +4,7 @@
             <span>Modsets</span>
             <ul class="item-group">
                 <li class="item item-modset" v-for="(modset, i) of repoStore.getModsets(repoStore.currentRepoId)" :key="i">
-                    <div class="replic-checkbox">
-                        <input type="checkbox" :id="'check-'+ i">
-                        <label class="" :for="'check-'+ i"><span>{{modset.name}}</span></label>
-                    </div>
+                    <replic-checkbox :label="modset.name" :value="modset" />
                 </li>
             </ul>
         </div>
@@ -15,25 +12,25 @@
             <span>DLC</span>
             <ul class="item-group">
                 <li class="item" v-for="(dlc, i) of dlc" :key="i">
-                    <div class="replic-checkbox">
-                        <input type="checkbox" :id="'check-'+ i">
-                        <label class="" :for="'check-'+ i"><span>{{dlc}}</span></label>
-                    </div>
+                    <replic-checkbox :label="dlc" :value="dlc" />
                 </li>
             </ul>
         </div>
         <div class="collection-mods__local-mods">
-            <span>Lokale Mods</span>
+            <span>Local Mods</span>
         </div>
     </div>
 </template>
 <script lang="ts">
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
+import { Watch } from 'vue-property-decorator';
+import ReplicCheckboxVue from './util/ReplicCheckbox.vue';
 import ReplicDialogVue from './util/ReplicDialog.vue';
 @Options({
     components: {
-        ReplicDialog: ReplicDialogVue
+        ReplicDialog: ReplicDialogVue,
+        ReplicCheckbox: ReplicCheckboxVue
     }
 })
 export default class CollectionMods extends Vue {
@@ -78,36 +75,6 @@ export default class CollectionMods extends Vue {
                 box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.25);
             }
         }
-    }
-}
-
-.replic-checkbox {
-    input[type=checkbox] {
-        display: none;
-    }
-
-    input[type=checkbox]:checked ~ div {
-     display: block;
-    }
-
-    label {
-        display: flex;
-        align-items: center;
-    }
-    span {
-        margin-inline-start: 1rem;
-    }
-    label::before {
-        content: "";
-        block-size: 2rem;
-        inline-size: 2rem;
-        border-radius: 2rem;
-        background: white;
-        display: inline-flex;
-    }
-
-    input[type=checkbox]:checked ~ label::before {
-        content: "";
     }
 }
 </style>

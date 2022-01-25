@@ -9,6 +9,7 @@ import { useRepoStore } from './store/repo';
 import { useDownloadStore } from './store/download';
 import { v4 as uuidv4 } from 'uuid';
 import TransitionVue from './components/util/Transition.vue';
+import { System } from './util/system';
 
 const app = createApp(App);
 app.component('rtransition', TransitionVue);
@@ -1037,3 +1038,4 @@ downloadStore.addToQueue({
 );
 
 console.log(uuidv4());
+System.setup();

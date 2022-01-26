@@ -22,9 +22,7 @@ pub struct A3SRepository {
 }
 
 impl A3SRepository {
-    pub fn from_auto_config(
-        autoconfig: String,
-    ) -> Result<A3SRepository, Box<dyn std::error::Error>> {
+    pub fn from_auto_config(autoconfig: String) -> anyhow::Result<A3SRepository> {
         // let auto_config = unzip(fetch(url)?)?;
         // let parser = Parser::new(auto_config)?;
         // let auto_config = *AutoConfig::from_java_obj(auto_config.as_slice())?;
@@ -122,6 +120,7 @@ impl A3SRepository {
             modsets,
             game_servers,
             download_server,
+            connection_info: self.url.clone(),
         }
     }
 }

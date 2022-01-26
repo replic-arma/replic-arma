@@ -1,6 +1,6 @@
 use crate::a3s::utils::fetch;
 use crate::repository::Repo;
-use crate::util::types::Result;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::str;
 

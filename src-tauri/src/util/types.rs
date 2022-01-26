@@ -1,10 +1,9 @@
 use core::fmt;
-use std::error::{self, Error};
 
 use serde::{Deserialize, Serialize};
 
-pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
-pub type ResultThread<T> = std::result::Result<T, Box<dyn error::Error + Send + Sync>>;
+// pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
+// pub type ResultThread<T> = std::result::Result<T, Box<dyn error::Error + Send + Sync>>;
 pub type JSResult<T> = std::result::Result<T, ErrorJson>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -13,7 +12,7 @@ pub enum RepoType {
     Swifty = 2,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ErrorJson {
     pub description: String,
     pub source: String,
@@ -28,6 +27,15 @@ impl From<Box<dyn std::error::Error>> for ErrorJson {
     }
 }
 
+impl From<anyhow::Error> for ErrorJson {
+    fn from(err: anyhow::Error) -> Self {
+        ErrorJson {
+            description: err.to_string(),
+            source: err.source().unwrap().to_string(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct ReplicArmaError {
     pub msg: String,
@@ -38,5 +46,3 @@ impl fmt::Display for ReplicArmaError {
         write!(f, "There is an error: {}", self.msg)
     }
 }
-
-impl Error for ReplicArmaError {}

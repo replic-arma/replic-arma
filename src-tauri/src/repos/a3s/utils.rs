@@ -1,3 +1,4 @@
+use anyhow::Result;
 use core::time::Duration;
 use curl::easy::Easy;
 use flate2::read::GzDecoder;
@@ -5,8 +6,6 @@ use jaded::{FromJava, Parser};
 use std::io::prelude::*;
 use std::io::Cursor;
 use url::Url;
-
-use crate::util::types::Result;
 
 // pub trait FromJavaObject {
 //     fn from_java_obj(slice: &[u8]) -> Result<Box<Self>>;
@@ -33,7 +32,7 @@ pub fn fetch(url: String) -> Result<Vec<u8>> {
         transfer.perform()?;
     }
 
-    let code = easy.response_code()?;
+    let _code = easy.response_code()?;
     // if code >= 400 {
 
     //     return Err(Box::<dyn std::error::Error>::from(format!(
@@ -59,7 +58,7 @@ pub fn fetch_java_object<T: FromJava>(mut base_url: Url, file_name: Option<&str>
     if let Some(file) = file_name {
         base_url = base_url.join(file)?;
     }
-    println!("{}", base_url.to_string());
+    println!("{}", base_url);
     let mut parser = Parser::new(Cursor::new(unzip(fetch(base_url.to_string())?)?))?;
     Ok(parser.read_as()?)
 }

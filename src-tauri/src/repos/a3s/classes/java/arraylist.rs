@@ -2,7 +2,7 @@ use jaded::{AnnotationIter, ConversionResult, FromJava};
 
 #[derive(Debug, FromJava, Clone)]
 pub struct ArrayList<T: FromJava> {
-    size: i32,
+    pub size: i32,
     #[jaded(extract(read_values))]
     pub list: Vec<T>,
 }

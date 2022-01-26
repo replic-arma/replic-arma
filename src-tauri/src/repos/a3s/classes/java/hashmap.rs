@@ -10,7 +10,7 @@ where
     V: FromJava,
 {
     pub hash_map: HashMap<K, V>,
-    buckets: i32,
+    pub buckets: i32,
 }
 
 impl<K, V> FromJava for JavaHashMap<K, V>

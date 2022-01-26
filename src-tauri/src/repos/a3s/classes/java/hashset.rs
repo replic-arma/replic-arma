@@ -6,9 +6,9 @@ use jaded::{ConversionError, ConversionResult, FromJava, Value};
 #[derive(Debug, Clone)]
 pub struct JavaHashSet<T> {
     pub set: HashSet<T>,
-    capacity: i32,
-    load_factor: f32,
-    size: i32,
+    pub capacity: i32,
+    pub load_factor: f32,
+    pub size: i32,
 }
 
 impl<T: FromJava + Eq + Hash> FromJava for JavaHashSet<T> {

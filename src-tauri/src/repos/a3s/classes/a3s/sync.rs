@@ -89,13 +89,13 @@ impl FromJava for SyncTreeLeaf {
 
 #[derive(Debug)]
 pub struct SyncTreeDirectory {
-    name: String,
-    mark_as_addon: bool,
-    updated: bool,
-    deleted: bool,
-    hidden: bool,
-    file_list: Vec<SyncTreeLeaf>,
-    directory_list: Vec<SyncTreeDirectory>,
+    pub name: String,
+    pub mark_as_addon: bool,
+    pub updated: bool,
+    pub deleted: bool,
+    pub hidden: bool,
+    pub file_list: Vec<SyncTreeLeaf>,
+    pub directory_list: Vec<SyncTreeDirectory>,
 }
 
 impl FromJava for SyncTreeDirectory {

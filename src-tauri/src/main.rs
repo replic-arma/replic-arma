@@ -74,35 +74,35 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             file_exists,
             dir_exists
         ])
-        .build(tauri::generate_context!())
+        // .build(tauri::generate_context!())
+        // .expect("error while running tauri application")
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
-    //.run(tauri::generate_context!())
-    //.expect("error while running tauri application");
 
-    app.run(|app_handle, e| {
-        if let Event::CloseRequested { label, api, .. } = e {
-            let app_handle = app_handle.clone();
-            let window = app_handle.get_window(&label).unwrap();
-            // use the exposed close api, and prevent the event loop to close
-            api.prevent_close();
-            // ask the user if he wants to quit
-            std::thread::spawn(move || {
-                ask(
-                    Some(&window),
-                    "Tauri API",
-                    "Are you sure that you want to close this window?",
-                    move |answer| {
-                        if answer {
-                            // .close() cannot be called on the main thread
-                            std::thread::spawn(move || {
-                                app_handle.get_window(&label).unwrap().close().unwrap();
-                            });
-                        }
-                    },
-                );
-            });
-        }
-    });
+    // app.run(|app_handle, e| {
+    //     if let Event::CloseRequested { label, api, .. } = e {
+    //         let app_handle = app_handle.clone();
+    //         let window = app_handle.get_window(&label).unwrap();
+    //         // use the exposed close api, and prevent the event loop to close
+    //         api.prevent_close();
+    //         // ask the user if he wants to quit
+    //         std::thread::spawn(move || {
+    //             ask(
+    //                 Some(&window),
+    //                 "Tauri API",
+    //                 "Are you sure that you want to close this window?",
+    //                 move |answer| {
+    //                     if answer {
+    //                         // .close() cannot be called on the main thread
+    //                         std::thread::spawn(move || {
+    //                             app_handle.get_window(&label).unwrap().close().unwrap();
+    //                         });
+    //                     }
+    //                 },
+    //             );
+    //         });
+    //     }
+    // });
 
     println!("Done");
     Ok(())

@@ -84,6 +84,7 @@ pub enum ProtocolType {
 #[derive(Debug, Clone, FromJava)]
 pub struct FavoriteServer {
     pub name: String,
+    #[jaded(field = "ipAddress")]
     pub ip_address: String,
     pub port: i32,
     pub password: String,

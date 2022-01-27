@@ -141,6 +141,28 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_a3s_3cb() {
+        let a3s = A3SRepository::from_auto_config(String::from(
+            "http://repo.3commandobrigade.com/autoconfig",
+        ));
+
+        assert!(a3s.is_ok());
+
+        assert!(a3s.unwrap().auto_config.protocol.url == "repo.3commandobrigade.com");
+    }
+
+    #[test]
+    fn test_a3s_402() {
+        let a3s = A3SRepository::from_auto_config(String::from(
+            "http://repo.pzgrenbtl402.de/main/.a3s/autoconfig",
+        ));
+
+        assert!(a3s.is_ok());
+
+        assert!(a3s.unwrap().auto_config.protocol.url == "repo.pzgrenbtl402.de/main");
+    }
+
     #[tokio::test]
     async fn test_get_a3s() {
         let a3s = get_repo("http://a3s.gruppe-adler.de/mods/.a3s/autoconfig".to_string())

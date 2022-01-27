@@ -58,7 +58,6 @@ pub fn fetch_java_object<T: FromJava>(mut base_url: Url, file_name: Option<&str>
     if let Some(file) = file_name {
         base_url = base_url.join(file)?;
     }
-    println!("{}", base_url);
     let mut parser = Parser::new(Cursor::new(unzip(fetch(base_url.to_string())?)?))?;
     Ok(parser.read_as()?)
 }

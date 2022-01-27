@@ -1,9 +1,10 @@
-import { Collection, GameServer, Modset, ReplicArmaRepository } from '@/models/Repository';
+import { Collection, GameServer, JSONMap, Modset, ReplicArmaRepository } from '@/models/Repository';
+import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 export const useRepoStore = defineStore('repo', {
-    state: (): {repos: Map<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null} => ({
-        repos: new Map<string, ReplicArmaRepository>(),
+    state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null} => ({
+        repos: new JSONMap<string, ReplicArmaRepository>(),
         currentRepoId: null,
         currentModsetId: null,
         currentCollectionId: null,
@@ -32,7 +33,9 @@ export const useRepoStore = defineStore('repo', {
     actions: {
         addRepo (repo: ReplicArmaRepository) {
             if (repo.image === undefined) repo.image = 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32';
+            repo.id = uuidv4();
             this.repos.set(repo.id, repo);
+            this.saveRepoState();
         },
         removeRepo (id: string|null) {
             if (id !== null) this.repos.delete(id);
@@ -60,11 +63,14 @@ export const useRepoStore = defineStore('repo', {
             repositoriy.collections?.set(collection.id, collection);
             this.repos.set(id, repositoriy);
         },
-        loadRepositories () {
-            // TODO call tauri
+        async loadRepositories () {
+            const repoJson = await System.getRepoJson();
+            if (repoJson !== null) {
+                this.repos = new JSONMap(repoJson);
+            }
         },
-        saveRepoState (id: string) {
-            // TODO call tauri
+        saveRepoState () {
+            System.updateRepoJson(this.repos).then();
         }
     }
 });

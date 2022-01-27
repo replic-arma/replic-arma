@@ -54,12 +54,18 @@ export interface Collection {
     localMods?: Array<ModsetMod>
 }
 
+export class JSONMap<K extends string|number, V> extends Map<K, V> {
+    public toJSON () {
+        return Array.from(this.entries());
+    }
+}
+
 export interface Repository {
     open_repository_schema: number,
     name: string,
     build_date: string,
     files?: Array<File>,
-    modsets?: Map<string, Modset>,
+    modsets?: JSONMap<string, Modset>,
     game_servers?: Map<string, GameServer>,
     download_server?: DownloadServer,
     collections?: Map<string, Collection>

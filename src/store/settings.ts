@@ -1,34 +1,11 @@
 import { ApplicationSettings, GameLaunchSettings } from '@/models/Settings';
+import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 
 export const useSettingsStore = defineStore('settings', {
     state: (): {settings: ApplicationSettings, launchOptions: GameLaunchSettings} => ({
-        settings: {
-            language: 'en',
-            theme: 'dark',
-            gamePath: '',
-            downloadDirectoryPath: '',
-            maxDownloadSpeed: -1
-        },
-        launchOptions: {
-            noPause: false,
-            window: false,
-            showScriptErrors: false,
-            noSplash: false,
-            name: null,
-            checkSignatures: false,
-            filePatching: false,
-            maxMem: null,
-            cpuCount: null,
-            malloc: null,
-            exThreads: null,
-            enableHT: false,
-            hugepages: false,
-            emptyWorld: false,
-            noLogs: false,
-            customParameter: '',
-            battleye: false
-        }
+        settings: new ApplicationSettings(),
+        launchOptions: new GameLaunchSettings()
     }),
     getters: {
         getSettings: (state) => {
@@ -40,40 +17,17 @@ export const useSettingsStore = defineStore('settings', {
     },
     actions: {
         resetSettings () {
-            this.settings = {
-                language: 'en',
-                theme: 'dark',
-                gamePath: '',
-                downloadDirectoryPath: '',
-                maxDownloadSpeed: -1
-            };
+            System.resetSettings();
         },
         resetLaunchOptions () {
-            this.launchOptions = {
-                noPause: false,
-                window: false,
-                showScriptErrors: false,
-                noSplash: false,
-                name: null,
-                checkSignatures: false,
-                filePatching: false,
-                maxMem: null,
-                cpuCount: null,
-                malloc: null,
-                exThreads: null,
-                enableHT: false,
-                hugepages: false,
-                emptyWorld: false,
-                noLogs: false,
-                customParameter: '',
-                battleye: false
-            };
+            // TODO
         },
-        loadData () {
-            // TODO call tauri command to fill settings and launch options
+        async loadData () {
+            const config = await System.getConfig();
+            this.settings = config;
         },
         synchData () {
-            // TODO call tauri command to save settings and launch options in settings file
+            System.updateConfig(this.settings);
         }
     }
 });

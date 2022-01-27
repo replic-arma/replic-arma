@@ -49,7 +49,7 @@
       "active": false
     },
     "allowlist": {
-      "all": false,
+      "all": true,
       "shell": {
         "execute": true,
         "open": true
@@ -70,7 +70,7 @@
         "width": 1280,
         "height": 720,
         "minHeight": 850,
-        "minWidth": 960,
+        "minWidth": 1080,
         "resizable": true,
         "fullscreen": false
       }

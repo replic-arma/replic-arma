@@ -27,6 +27,7 @@
     </div>
 </template>
 <script lang="ts">
+import { System } from '@/util/system';
 import { Options, Vue } from 'vue-class-component';
 
 import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
@@ -36,7 +37,6 @@ import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
     }
 })
 export default class GeneralVue extends Vue {
-
 }
 </script>
 <style lang="scss" scoped>

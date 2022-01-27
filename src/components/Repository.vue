@@ -40,7 +40,7 @@ export default class RepoVue extends Vue {
     }
 
     private get modsets () {
-        return Array.from(this.repository?.modsets?.values() ?? []);
+        return this.repository?.modsets ? Array.from(this.repository?.modsets?.values()) : [];
     }
 }
 </script>

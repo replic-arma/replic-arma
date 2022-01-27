@@ -1,27 +1,27 @@
-export interface ApplicationSettings {
-    language: string;
-    theme: string;
-    gamePath: string;
-    downloadDirectoryPath: string;
-    maxDownloadSpeed: number;
+export class ApplicationSettings {
+    public language = 'en';
+    public theme = 'light';
+    public gamePath: string|null = null;
+    public downloadDirectoryPath: string|null = null;
+    public maxDownloadSpeed: number|null = null;
 }
 
-export interface GameLaunchSettings {
-    noPause: boolean;
-    window: boolean;
-    showScriptErrors: boolean;
-    noSplash: boolean;
-    name: string|null;
-    checkSignatures:boolean;
-    filePatching: boolean;
-    maxMem: number|null;
-    cpuCount: number|null;
-    malloc: string|null;
-    exThreads: number|null;
-    enableHT: boolean;
-    hugepages: boolean;
-    emptyWorld: boolean;
-    noLogs: boolean;
-    customParameter: string;
-    battleye: boolean;
+export class GameLaunchSettings {
+    public noPause = false;
+    public window = false;
+    public showScriptErrors = false;
+    public noSplash = false;
+    public name: string|null = null;
+    public checkSignatures = false;
+    public filePatching = false;
+    public maxMem: number|null = null;
+    public cpuCount: number|null = null;
+    public malloc: string|null = null;
+    public exThreads: number|null = null;
+    public enableHT = false;
+    public hugepages = false;
+    public emptyWorld = false;
+    public noLogs = false;
+    public customParameter: string|null = null;
+    public battleye = false;
 }

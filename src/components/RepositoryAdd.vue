@@ -8,7 +8,7 @@
             <div class="txt">
                 <label for="repoName">{{$t('repository.autoconfig')}}</label>
                 <div class="txt__input-wrapper">
-                    <input class="txt__input" type="text" name="repoName" />
+                    <input class="txt__input" type="text" name="repoName" v-model="autoConfigModel" />
                 </div>
             </div>
             <div class="txt">
@@ -28,6 +28,8 @@ import { useDialogStore } from '@/store/dialog';
 import { useRepoStore } from '@/store/repo';
 import { v4 as uuidv4 } from 'uuid';
 import Toast from './util/Toast';
+import { Collection, JSONMap, Modset, ReplicArmaRepository } from '@/models/Repository';
+import { System } from '@/util/system';
 @Options({
     components: {
         ReplicDialog: ReplicDialogVue
@@ -36,22 +38,17 @@ import Toast from './util/Toast';
 export default class RepositoryAddVue extends Vue {
     private dialogStore = useDialogStore();
     private toggleDialog = () => { this.dialogStore.toggleDialog('repoAdd'); };
+    private autoConfigModel = '';
     private addRepo () {
         const repoStore = useRepoStore();
         const uuid = uuidv4();
-        repoStore.addRepo(
-            {
-                id: uuidv4(),
-                build_date: '12.11',
-                name: 'Saturday Skirmish',
-                open_repository_schema: 1,
-                type: 'local',
-                modsets: new Map().set(uuid, { id: uuid, name: 'All Mods', description: 'All Mods from the Repository' }),
-                collections: new Map()
-            }
-        );
-        this.toggleDialog();
-        Toast('Added Repository');
+        const repo = System.getRepo(this.autoConfigModel).then((repo: ReplicArmaRepository) => {
+            repoStore.addRepo(
+                repo
+            );
+            this.toggleDialog();
+            Toast('Added Repository');
+        });
     }
 }
 </script>

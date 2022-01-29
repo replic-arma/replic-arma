@@ -10,7 +10,6 @@ use crate::util::types::RepoType;
 pub struct Repository {
     pub id: Uuid,
     pub config_url: String,
-    pub connection_info: String,
     #[serde(rename = "type")]
     pub repo_typ: RepoType,
     pub open_repository_schema: u32,

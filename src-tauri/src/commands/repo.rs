@@ -1,21 +1,21 @@
 use std::{
-    fs::File,
-    io::{self, Write},
-    path::{Path, PathBuf},
+    fs::{self, File},
+    io::{self},
+    path::PathBuf,
+    str::FromStr,
 };
 
 use crate::{
     repository::Repository,
     state::ReplicArmaState,
     util::{
+        download::{Downloader, HttpDownloader, HttpsDownloader},
         methods::save_t,
         types::{JSResult, RepoType},
     },
 };
 use anyhow::anyhow;
 use anyhow::Result;
-use hyper::{body::HttpBody, Client, Uri};
-use hyper_tls::HttpsConnector;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 use sha1::{Digest, Sha1};
 use tauri::Window;
@@ -100,132 +100,64 @@ pub async fn get_repo(url: String) -> JSResult<Repository> {
 }
 
 #[tauri::command]
-pub async fn get_connection_info(url: String) -> JSResult<String> {
-    let repo = Repository::repo_from_url(url)?;
-    Ok(repo.download_server.url)
-}
-
-#[tauri::command]
 pub async fn download(
-    typ: RepoType,
-    connection_info: String,
+    repo: Repository,
     target_path: String,
     file_array: Vec<String>,
 ) -> JSResult<()> {
-    download_files(typ, connection_info, target_path, file_array).await?;
+    Ok(download_wrapper(repo, target_path, file_array).await?)
+}
+
+pub async fn download_wrapper(
+    repo: Repository,
+    target_path: String,
+    file_array: Vec<String>,
+) -> Result<()> {
+    let target_dir = PathBuf::from_str(&target_path)?;
+    download_files(repo, target_dir, file_array).await?;
     Ok(())
 }
 
 async fn download_files(
-    typ: RepoType,
-    connection_info: String,
-    target_path: String,
+    repo: Repository,
+    target_dir: PathBuf,
     file_array: Vec<String>,
 ) -> Result<()> {
-    let target_path = PathBuf::from(target_path);
-    let connection_info = Url::parse(&connection_info)?;
-
-    match typ {
-        RepoType::A3S => download_a3s(connection_info, target_path, file_array).await?,
+    match repo.repo_typ {
+        RepoType::A3S => download_a3s(repo, target_dir, file_array).await?,
         RepoType::Swifty => todo!(),
     };
 
     Ok(())
 }
 
-async fn download_a3s(
-    connection_info: Url,
-    target_path: PathBuf,
-    files: Vec<String>,
-) -> Result<()> {
-    //let base_url = connection_info.clone();
-    match connection_info.scheme() {
-        "http" => {
-            for file in files {
-                download_file_http(connection_info.join(&file)?, &target_path).await?;
-            }
-        }
-        "https" => {
-            for file in files {
-                download_file_https(connection_info.join(&file)?, &target_path).await?;
-            }
-        }
-        "ftp" => {
-            download_files_ftp().await?;
-        }
-        _ => return Err(anyhow!("scheme?")),
+async fn download_a3s(repo: Repository, target_dir: PathBuf, files: Vec<String>) -> Result<()> {
+    let connection_info = Url::parse(&repo.download_server.url)?;
+    //println!("{:?}", files);
+    println!("{}", connection_info);
+
+    // Send/Sync required by tauri::command
+    let downloader: Box<dyn Downloader + Send + Sync> = match connection_info.scheme() {
+        "http" => Box::new(HttpDownloader::new()),
+        "https" => Box::new(HttpsDownloader::new()),
+        "ftp" => todo!(),
+        up => return Err(anyhow!("Unknown protocol/scheme: {}", up)),
     };
 
-    Ok(())
-}
+    // NOT THREADSAFE (I think :P)
+    //files.into_iter().for_each(|file| {
+    for file in files {
+        let url = connection_info.join(&file)?;
+        let target_file = target_dir.join(file);
+        let mut target_path = target_file.clone();
+        target_path.pop();
 
-async fn download_file_http(url: Url, target_path: &Path) -> Result<()> {
-    let client = hyper::Client::new();
+        println!("Downloading: {} to {}", url, target_file.display());
 
-    let mut res = client.get(url.as_str().parse::<Uri>()?).await?;
-    let mut out = File::create(target_path)?;
-    // let mut hash = Sha1::new();
-    let mut _write_size: usize = 0;
-
-    while let Some(next) = res.data().await {
-        let chunk = next?;
-        _write_size += out.write(&chunk)?;
-        // hash.update(&chunk);
+        fs::create_dir_all(target_path)?;
+        downloader.download_file(url, &target_file).await?;
+        //});
     }
 
-    // let sha1 = hash.finalize();
     Ok(())
 }
-
-async fn download_file_https(url: Url, target_path: &Path) -> Result<()> {
-    let https = HttpsConnector::new();
-    let client = Client::builder().build::<_, hyper::Body>(https);
-
-    let mut res = client.get(url.as_str().parse::<Uri>()?).await?;
-    let mut out = File::create(target_path)?;
-    // let mut hash = Sha1::new();
-    let mut _write_size: usize = 0;
-
-    while let Some(next) = res.data().await {
-        let chunk = next?;
-        _write_size += out.write(&chunk)?;
-        // hash.update(&chunk);
-    }
-
-    // let sha1 = hash.finalize();
-    Ok(())
-}
-
-async fn download_files_ftp() -> Result<()> {
-    todo!()
-}
-
-// async fn download_file(url: hyper::Uri, out_path: PathBuf) -> anyhow::Result<()> {
-//     let client = hyper::Client::new();
-
-//     println!("Uri: {}", url);
-
-//     let mut res = client.get(url).await?;
-
-//     println!("Response: {}", res.status());
-//     println!("Headers: {:#?}\n", res.headers());
-
-//     let mut out = File::create(out_path)?;
-//     let mut hash = Sha1::new();
-
-//     let mut _write_size: usize = 0;
-
-//     // Stream the body, writing each chunk to stdout as we get it
-//     // (instead of buffering and printing at the end).
-//     while let Some(next) = res.data().await {
-//         let chunk = next?;
-//         _write_size += out.write(&chunk)?;
-//         hash.update(&chunk);
-//         //io::stdout().write_all(&chunk).await?;
-//     }
-
-//     let sha1 = hash.finalize();
-//     println!("\n\nDone! SHA1: {:02X?}", sha1);
-
-//     Ok(())
-// }

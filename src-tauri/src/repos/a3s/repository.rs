@@ -102,8 +102,36 @@ impl A3SRepository {
             });
         }
 
+        let mut login;
+
+        if !self.auto_config.protocol.login.is_empty()
+            && !self.auto_config.protocol.password.is_empty()
+        {
+            login = format!(
+                "{}:{}",
+                self.auto_config.protocol.login, self.auto_config.protocol.password
+            );
+        } else {
+            login = self.auto_config.protocol.login.clone();
+        }
+
+        if !login.is_empty() {
+            login.push('@');
+        }
+
+        let mut url = format!(
+            "{}://{}{}",
+            self.auto_config.protocol.protocol_type.get_scheme(),
+            login,
+            self.auto_config.protocol.url
+        );
+
+        if !url.ends_with('/') {
+            url.push('/');
+        }
+
         let download_server = DownloadServer {
-            url: self.auto_config.protocol.url.clone(),
+            url,
             options: DownloadServerOptions {
                 max_connections: self.server_info.number_of_connections,
             },
@@ -120,7 +148,6 @@ impl A3SRepository {
             modsets,
             game_servers,
             download_server,
-            connection_info: self.url.clone(),
         }
     }
 }

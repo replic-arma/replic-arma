@@ -32,6 +32,22 @@ pub struct ProtocolTypeJava {
     protocol_type: ProtocolType,
 }
 
+impl ProtocolTypeJava {
+    pub fn get_scheme(&self) -> &str {
+        match self.protocol_type {
+            ProtocolType::FTP => "ftp",
+            ProtocolType::HTTP => "http",
+            ProtocolType::HTTPS => "https",
+            ProtocolType::A3S => todo!(),
+            ProtocolType::SOCKS4 => todo!(),
+            ProtocolType::SOCKS5 => todo!(),
+            ProtocolType::HTTPWEBDAV => todo!(),
+            ProtocolType::HTTPSWEBDAV => todo!(),
+            ProtocolType::UNKNOWN => todo!(),
+        }
+    }
+}
+
 impl FromJava for ProtocolTypeJava {
     fn from_value(value: &jaded::Value) -> ConversionResult<Self> {
         Ok(value.enum_data().1.into())

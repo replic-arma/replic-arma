@@ -29,9 +29,13 @@ impl From<Box<dyn std::error::Error>> for ErrorJson {
 
 impl From<anyhow::Error> for ErrorJson {
     fn from(err: anyhow::Error) -> Self {
+        let mut source = String::new();
+        if let Some(src) = err.source() {
+            source = src.to_string();
+        }
         ErrorJson {
             description: err.to_string(),
-            source: err.source().unwrap().to_string(),
+            source,
         }
     }
 }

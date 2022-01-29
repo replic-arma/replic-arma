@@ -15,7 +15,6 @@ mod util;
 use std::collections::HashMap;
 
 use crate::commands::repo::download;
-use crate::commands::repo::get_connection_info;
 use crate::commands::repo::get_repo;
 use crate::commands::repo::hash_check;
 use crate::commands::util::dir_exists;
@@ -25,9 +24,6 @@ use tauri::async_runtime::Mutex;
 use util::methods::load_t;
 
 use state::ReplicArmaState;
-use tauri::api::dialog::ask;
-use tauri::Event;
-use tauri::Manager;
 
 fn init_state() -> anyhow::Result<ReplicArmaState> {
     let proj_dirs = Box::new(
@@ -64,12 +60,11 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     // Init State
 
-    let app = tauri::Builder::default()
+    tauri::Builder::default()
         .manage(init_state())
         .invoke_handler(tauri::generate_handler![
             hash_check,
             get_repo,
-            get_connection_info,
             download,
             file_exists,
             dir_exists
@@ -111,10 +106,12 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
 
+    use std::fs::File;
+
     use crate::{
         a3s::A3SRepository,
         commands::{
-            repo::{get_connection_info, get_repo},
+            repo::{download, get_repo},
             util::{dir_exists, file_exists},
         },
         swifty::SwiftyRepository,
@@ -172,16 +169,6 @@ mod tests {
         println!("{}", a3s.download_server.url);
     }
 
-    #[tokio::test]
-    async fn test_get_a3s_conn_info() {
-        let a3s_url =
-            get_connection_info("http://a3s.gruppe-adler.de/mods/.a3s/autoconfig".to_string())
-                .await
-                .unwrap();
-
-        println!("{}", a3s_url);
-    }
-
     #[test]
     fn dir_exists_test() {
         assert!(dir_exists("./src".to_string()).unwrap());
@@ -200,5 +187,25 @@ mod tests {
     #[test]
     fn file_not_exists_test() {
         assert!(!file_exists("./src/main".to_string()).unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_download_a3s() {
+        let a3s = get_repo("http://a3s.gruppe-adler.de/mods/.a3s/autoconfig".to_string())
+            .await
+            .unwrap();
+
+        download(
+            a3s.clone(),
+            ".\\test_out\\".to_string(),
+            a3s.files[0..5]
+                .into_iter()
+                .map(|f| f.path.clone())
+                .collect(),
+        )
+        .await
+        .unwrap();
+
+        //println!("{}", a3s.download_server.url);
     }
 }

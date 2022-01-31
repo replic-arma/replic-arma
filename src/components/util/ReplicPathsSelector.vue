@@ -1,8 +1,8 @@
 <template>
     <div class="replic-path-selector">
-        <label :for="pathSelector.name">{{pathSelector.label}}<mdicon name="information" size="20" /></label>
+        <label :for="pathSelector.name">{{pathSelector.label}}<mdicon name="information" size="15" /></label>
         <div class="replic-path-selector__input-wrapper">
-            <input type="text" :name="pathSelector.name" class="replic-path-selector__input" />
+            <input type="text" :id="pathSelector.name" class="replic-path-selector__input" v-model="model" />
             <div class="replic-path-selector__button" @click="openDialog">
                 <mdicon name="folder"></mdicon>
                 <span>{{$t('select')}}</span>
@@ -13,19 +13,29 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
-import { open } from '@tauri-apps/api/dialog';
+import { open, OpenDialogOptions } from '@tauri-apps/api/dialog';
+import { useSettingsStore } from '@/store/settings';
 export interface PathSelectorModel {
     label: string;
     name: string;
 }
 @Options({
+    emits: ['update:modelValue'],
     components: { }
 })
 export default class ReplicPathSelectorVue extends Vue {
     @Prop({ type: Object }) private pathSelector!: PathSelectorModel;
-    public openDialog () {
-        open().then((filepath) => {
-            console.log('Selected path: ', filepath);
+    @Prop({ type: Object }) private pathSelectorOptions: OpenDialogOptions = {};
+
+    @Prop({ type: [String, null], required: true }) private modelValue!: string|null;
+
+    private get model () { return this.modelValue; }
+    private set model (val) { this.$emit('update:modelValue', val); }
+
+    private settingsStore = useSettingsStore();
+    public openDialog (): void {
+        open(this.pathSelectorOptions).then((filepath) => {
+            this.model = filepath as string;
         });
     }
 }

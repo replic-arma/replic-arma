@@ -7,7 +7,7 @@
         <span class="server__port">{{server.port}}</span>
         <span class="server__password"><mdicon name="lock-outline" />{{server.password !== undefine ? server.password : '-'}}</span>
         <span class="server__modset">{{server.modset !== undefine ? server.modset : '-'}}</span>
-        <div class="server__play">
+        <div class="server__play" @click="launchGame()">
             <span>Play</span>
             <mdicon name="play" size="35"/>
         </div>
@@ -15,6 +15,8 @@
 </template>
 <script lang="ts">
 import { GameServer } from '@/models/Repository';
+import { useRepoStore } from '@/store/repo';
+import { System } from '@/util/system';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 
@@ -23,6 +25,12 @@ import { Prop } from 'vue-property-decorator';
 })
 export default class ServerVue extends Vue {
     @Prop({ type: Object }) private server!: GameServer;
+    private async launchGame () {
+        const repoStore = useRepoStore();
+        if (this.server.modset === undefined) throw Error('Server Modset undefined');
+        if (repoStore.currentRepoId === null) throw Error('Current repo null');
+        await System.launchGame(repoStore.currentRepoId, this.server.modset, this.server);
+    }
 }
 </script>
 <style lang="scss" scoped>
@@ -32,7 +40,7 @@ export default class ServerVue extends Vue {
     width: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr .5fr 1fr 1fr 1fr;
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);

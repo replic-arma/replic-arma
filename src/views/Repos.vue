@@ -43,7 +43,11 @@ import { mapState } from 'pinia';
 })
 export default class ReposView extends Vue {
   private dialogStore = useDialogStore();
-  private reloadRepos = () => { Toast('Reloading Repositories'); };
+  private repoStore = useRepoStore();
+  private reloadRepos = () => {
+      this.repoStore.loadRepositories();
+      Toast('Reloading Repositories');
+  };
 }
 </script>
 

@@ -40,6 +40,7 @@
     "download_max_speed": "Max Download Speed",
     "cache_clear": "Clear Cache",
     "settings": {
+        "theme": "Theme",
         "title": "Settings",
         "developer": "Developer",
         "reset": "Reset Settings",
@@ -55,8 +56,12 @@
         "noSplash": "No Splash Screen",
         "filePatching": "File Patching",
         "showScriptErrors": "Show Script Errors",
-        "custom_parameter": "Custom Parameters"
+        "custom_parameter": "Custom Parameters",
+        "theme_option": {
+            "light": "Light",
+            "dark": "Dark"
+        }
     },
     "remove": "Remove",
-    "save": "Save"
+    "save": "Save",
 }

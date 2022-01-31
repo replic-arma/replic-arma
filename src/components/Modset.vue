@@ -5,7 +5,7 @@
             <small class="modset__description">{{modset.description}}</small>
         </div>
         <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
-        <div class="modset__play">
+        <div class="button modset__play">
             <span>Play</span>
             <mdicon name="play" size="35"/>
         </div>

@@ -4,11 +4,11 @@
         <span class="repo__name">{{repository.name}}</span>
         <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
         <div class="repo__modset">
-            <select>
-                <option v-for="(modset, i) of modsets" :key="i">{{modset.name}}</option>
+            <select v-model="currentModsetId">
+                <option v-for="(modset, i) of modsets" :key="i" :value="modset.id">{{modset.name}}</option>
             </select>
         </div>
-        <div class="repo__play">
+        <div class="repo__play" @click="launchGame()">
             <span>Play</span>
             <mdicon name="play" size="35"/>
         </div>
@@ -22,12 +22,14 @@ import { ReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
+import { System } from '@/util/system';
 @Options({
     components: { }
 })
 export default class RepoVue extends Vue {
     @Prop({ type: Object }) private repository!: ReplicArmaRepository;
     private downloadStore = useDownloadStore();
+    private currentModsetId = this.modsets[0].id;
     private get status () {
         if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.repository?.id)) {
             return 'outdated';
@@ -41,6 +43,10 @@ export default class RepoVue extends Vue {
 
     private get modsets () {
         return this.repository?.modsets ? Array.from(this.repository?.modsets?.values()) : [];
+    }
+
+    private async launchGame () {
+        await System.launchGame(this.repository.id, this.currentModsetId);
     }
 }
 </script>

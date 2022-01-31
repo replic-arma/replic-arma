@@ -2,9 +2,10 @@
   <div class="repo-view">
     <div class="repo-view__heading">
       <router-link class="button" to="/"><mdicon name="chevron-left" size="55"/></router-link>
-      <h1>{{repository.name}}</h1>
+      <h1>{{repository?.name}}</h1>
       <div class="icon-group">
-        <router-link class="button" :to="'/reposettings/'+ repository.id"><mdicon  name="cog" size="55"/></router-link>
+        <button @click="checkRepo()">Check</button>
+        <router-link class="button" :to="'/reposettings/'+ repository?.id"><mdicon  name="cog" size="55"/></router-link>
       </div>
     </div>
     <subnavi :subnaviItems="subnaviItems"></subnavi>
@@ -14,17 +15,23 @@
 
 <script lang="ts">
 import SubnaviVue, { SubnaviItem } from '@/components/util/Subnavi.vue';
-import { ReplicArmaRepository } from '@/models/Repository';
 import { Options, Vue } from 'vue-class-component';
 import { useRepoStore } from '../store/repo';
 import { useDialogStore } from '../store/dialog';
+import { mapState } from 'pinia';
+import { System } from '@/util/system';
+import { useSettingsStore } from '@/store/settings';
 @Options({
     components: {
         Subnavi: SubnaviVue
+    },
+    computed: {
+        ...mapState(useRepoStore, {
+            repository: store => store.getRepo(store.currentRepoId)
+        })
     }
 })
 export default class RepoView extends Vue {
-  private repository!: ReplicArmaRepository|undefined;
   private subnaviItems: SubnaviItem[] = [];
   private repoStore = useRepoStore();
   private dialogStore = useDialogStore();
@@ -36,7 +43,14 @@ export default class RepoView extends Vue {
           { label: this.$t('collections'), link: '/repo/' + this.repoStore.currentRepoId + '/collections' },
           { label: this.$t('server.title'), link: '/repo/' + this.repoStore.currentRepoId + '/servers' }
       ];
-      this.repository = this.repoStore.getRepo(this.repoStore.currentRepoId);
+  }
+
+  public checkRepo () {
+      const settingsStore = useSettingsStore();
+      const files = this.repoStore.getRepo(this.repoStore.currentRepoId)?.files?.map(file => { return settingsStore.settings.downloadDirectoryPath + '\\' + file.path; });
+      if (files === undefined) throw Error('No Files');
+      console.log(files);
+      // System.hashCheck(files).catch(error => console.log(error));
   }
 }
 </script>

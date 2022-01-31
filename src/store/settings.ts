@@ -18,6 +18,7 @@ export const useSettingsStore = defineStore('settings', {
     actions: {
         resetSettings () {
             System.resetSettings();
+            this.loadData();
         },
         resetLaunchOptions () {
             // TODO

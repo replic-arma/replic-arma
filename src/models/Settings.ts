@@ -3,7 +3,7 @@ export class ApplicationSettings {
     public theme = 'light';
     public gamePath: string|null = null;
     public downloadDirectoryPath: string|null = null;
-    public maxDownloadSpeed: number|null = null;
+    public maxDownloadSpeed = 0;
 }
 
 export class GameLaunchSettings {

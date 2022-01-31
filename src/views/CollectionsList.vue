@@ -11,7 +11,6 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import { useRepoStore } from '../store/repo';
-import { Collection } from '@/models/Repository';
 import { useDialogStore } from '@/store/dialog';
 import CollectionItemVue from '@/components/CollectionItem.vue';
 import { mapState } from 'pinia';
@@ -24,7 +23,7 @@ import CollectionAddVue from '@/components/CollectionAdd.vue';
     },
     computed: {
         ...mapState(useRepoStore, {
-            collections: store => store.getCollections(useRepoStore().currentRepoId)
+            collections: store => store.getCollections(store.currentRepoId)
         })
     }
 })

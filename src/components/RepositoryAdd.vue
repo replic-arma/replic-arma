@@ -26,9 +26,8 @@ import { Options, Vue } from 'vue-class-component';
 import ReplicDialogVue from './util/ReplicDialog.vue';
 import { useDialogStore } from '@/store/dialog';
 import { useRepoStore } from '@/store/repo';
-import { v4 as uuidv4 } from 'uuid';
 import Toast from './util/Toast';
-import { Collection, JSONMap, Modset, ReplicArmaRepository } from '@/models/Repository';
+import { ReplicArmaRepository } from '@/models/Repository';
 import { System } from '@/util/system';
 @Options({
     components: {
@@ -41,14 +40,13 @@ export default class RepositoryAddVue extends Vue {
     private autoConfigModel = '';
     private addRepo () {
         const repoStore = useRepoStore();
-        const uuid = uuidv4();
-        const repo = System.getRepo(this.autoConfigModel).then((repo: ReplicArmaRepository) => {
+        System.getRepo(this.autoConfigModel).then((repo: ReplicArmaRepository) => {
             repoStore.addRepo(
                 repo
             );
             this.toggleDialog();
             Toast('Added Repository');
-        });
+        }).catch(error => console.error(error));
     }
 }
 </script>

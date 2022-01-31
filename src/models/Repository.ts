@@ -66,7 +66,7 @@ export interface Repository {
     build_date: string,
     files?: Array<File>,
     modsets?: JSONMap<string, Modset>,
-    game_servers?: Map<string, GameServer>,
+    game_servers?: JSONMap<string, GameServer>,
     download_server?: DownloadServer,
     collections?: Map<string, Collection>
 }

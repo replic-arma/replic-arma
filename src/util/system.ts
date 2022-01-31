@@ -2,14 +2,15 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { documentDir, sep } from '@tauri-apps/api/path';
 import { createDir, BaseDirectory, writeFile, readTextFile } from '@tauri-apps/api/fs';
 import { ApplicationSettings } from '@/models/Settings';
-import { ReplicArmaRepository } from '@/models/Repository';
+import { GameServer, ReplicArmaRepository } from '@/models/Repository';
 import { useSettingsStore } from '@/store/settings';
 import { useRepoStore } from '@/store/repo';
+import { Command } from '@tauri-apps/api/shell';
 export class System {
     private static APPDIR = 'Replic-Arma';
     private static DOCUMENTDIRECTORY = documentDir();
 
-    public static setup (): void {
+    public static init (): void {
         // init application settings store
         const settingsStore = useSettingsStore();
         settingsStore.loadData();
@@ -63,6 +64,38 @@ export class System {
         // TODO
     }
 
+    public static async launchGame (repoId: string, modsetId: string, gameServer: GameServer|null = null): Promise<void> {
+        const settingsStore = useSettingsStore();
+        if (settingsStore.settings.gamePath === null) throw Error('Game Executable not set, cannot launch the game');
+        if (settingsStore.settings.downloadDirectoryPath === null) throw Error('Mod Directoy not set, cannot launch the game');
+        const launchOptions = System.getModString(repoId, modsetId) + System.getConnectionString(gameServer);
+        console.log(launchOptions);
+        const command = new Command(settingsStore.settings.gamePath, launchOptions);
+        command.on('close', data => {
+            console.log(`command finished with code ${data.code} and signal ${data.signal}`);
+        });
+        command.on('error', error => console.error(`command error: "${error}"`));
+        command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
+        command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
+
+        const child = await command.spawn();
+        console.log('pid:', child.pid);
+    }
+
+    private static getModString (repoId: string, modsetId: string) {
+        const settingsStore = useSettingsStore();
+        const repoStore = useRepoStore();
+        const modsets = repoStore.getModsets(repoId);
+        const modset = modsets.find(modset => modset.name === modsetId);
+        if (modset === undefined) throw Error(`Modset with name ${modsetId} not found`);
+        return '-mod=' + modset?.mods?.map(mod => { return settingsStore.settings.downloadDirectoryPath + sep + mod.name; }).join(';') + ';';
+    }
+
+    private static getConnectionString (gameServer: GameServer|null = null) {
+        if (gameServer === null) return '';
+        return '-ip=' + gameServer.host + ';' + '-port=' + gameServer.port + ';' + '-password=' + gameServer.password + ';';
+    }
+
     public static resetSettings (): void {
         System.updateConfig(new ApplicationSettings());
     }
@@ -77,5 +110,9 @@ export class System {
 
     public static async dirExists (path: string): Promise<boolean> {
         return await invoke('dir_exists', { path: path });
+    }
+
+    public static async hashCheck (files: string[]) {
+        return await invoke('hash_check', { files: files }).then;
     }
 }

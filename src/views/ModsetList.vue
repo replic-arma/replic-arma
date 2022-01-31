@@ -21,7 +21,7 @@ import { Options, Vue } from 'vue-class-component';
     },
     computed: {
         ...mapState(useRepoStore, {
-            modsets: store => store.getModsets(useRepoStore().currentRepoId)
+            modsets: store => store.getModsets(store.currentRepoId)
         })
     }
 })

@@ -23,9 +23,9 @@ use url::Url;
 
 #[tauri::command]
 pub async fn hash_check(
+    window: Window,
     files: Vec<String>,
     state: tauri::State<'_, ReplicArmaState>,
-    window: Window,
 ) -> JSResult<(Vec<(String, String, u128)>, Vec<String>)> {
     let mut old_hashes = state.known_hashes.lock().await;
 

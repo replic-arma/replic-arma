@@ -59,10 +59,8 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // let swifty = SwiftyRepository::from_repo_json(String::from("https://swifty.projectawesome.net/event/repo.json"));
     //repo.generate_file_map();
 
-    // Init State
-
     tauri::Builder::default()
-        .manage(init_state())
+        .manage(init_state()?)
         .invoke_handler(tauri::generate_handler![
             hash_check,
             get_repo,

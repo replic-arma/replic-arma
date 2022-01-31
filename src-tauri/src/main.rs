@@ -19,6 +19,7 @@ use crate::commands::repo::get_repo;
 use crate::commands::repo::hash_check;
 use crate::commands::util::dir_exists;
 use crate::commands::util::file_exists;
+use crate::commands::util::get_a3_dir;
 use directories::ProjectDirs;
 use tauri::async_runtime::Mutex;
 use util::methods::load_t;
@@ -67,7 +68,8 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             get_repo,
             download,
             file_exists,
-            dir_exists
+            dir_exists,
+            get_a3_dir
         ])
         // .build(tauri::generate_context!())
         // .expect("error while running tauri application")
@@ -106,13 +108,17 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
 
-    use std::fs::File;
+    use std::{
+        fs::File,
+        path::{Path, PathBuf},
+        str::FromStr,
+    };
 
     use crate::{
         a3s::A3SRepository,
         commands::{
             repo::{download, get_repo},
-            util::{dir_exists, file_exists},
+            util::{dir_exists, file_exists, get_a3_dir},
         },
         swifty::SwiftyRepository,
     };
@@ -207,5 +213,14 @@ mod tests {
         .unwrap();
 
         //println!("{}", a3s.download_server.url);
+    }
+
+    #[test]
+    fn get_a3_dir_test() {
+        let a3_dir = get_a3_dir().unwrap();
+        let path = PathBuf::from_str(&a3_dir).unwrap();
+        println!("Arma 3 dir: {}", path.display());
+
+        assert!(path.is_dir());
     }
 }

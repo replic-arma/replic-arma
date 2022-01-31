@@ -49,8 +49,7 @@ export default class RepoView extends Vue {
       const settingsStore = useSettingsStore();
       const files = this.repoStore.getRepo(this.repoStore.currentRepoId)?.files?.map(file => { return settingsStore.settings.downloadDirectoryPath + '\\' + file.path; });
       if (files === undefined) throw Error('No Files');
-      console.log(files);
-      // System.hashCheck(files).catch(error => console.log(error));
+      System.hashCheck(files).catch(error => console.log(error));
   }
 }
 </script>

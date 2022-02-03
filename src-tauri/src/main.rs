@@ -34,7 +34,7 @@ fn init_state() -> anyhow::Result<ReplicArmaState> {
             .to_owned(),
     );
 
-    let hashes: HashMap<String, (String, u128)> = load_t(proj_dirs.join("hashes.json"))?;
+    let hashes: HashMap<String, (String, i64)> = load_t(proj_dirs.join("hashes.json"))?;
 
     let state = ReplicArmaState {
         data_dir: proj_dirs,

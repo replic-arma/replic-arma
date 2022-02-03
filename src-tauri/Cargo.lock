@@ -49,6 +49,7 @@ dependencies = [
  "chrono",
  "curl",
  "directories",
+ "filetime",
  "flate2",
  "futures",
  "glob",

@@ -16,6 +16,7 @@ use crate::{
 };
 use anyhow::anyhow;
 use anyhow::Result;
+use filetime::FileTime;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 use sha1::{Digest, Sha1};
 use tauri::Window;
@@ -26,7 +27,7 @@ pub async fn hash_check(
     window: Window,
     files: Vec<String>,
     state: tauri::State<'_, ReplicArmaState>,
-) -> JSResult<(Vec<(String, String, u128)>, Vec<String>)> {
+) -> JSResult<(Vec<(String, String, i64)>, Vec<String>)> {
     let mut old_hashes = state.known_hashes.lock().await;
 
     //let mut hashes: HashMap<String, (String, u128)> = read_t(state.data_dir.join("hashes.json"))?;
@@ -50,7 +51,7 @@ pub async fn hash_check(
         .partition(|x| x.is_ok());
 
     // partition into hashes and errors
-    let new_hashes: Vec<(String, String, u128, u64)> =
+    let new_hashes: Vec<(String, String, i64, u64)> =
         new_hashes_res.into_iter().map(Result::unwrap).collect();
     let errors: Vec<String> = errors_res
         .into_iter()
@@ -72,11 +73,11 @@ pub async fn hash_check(
     Ok((result, errors))
 }
 
-fn check_update(known_hash: (String, (String, u128))) -> Result<(String, String, u128, u64)> {
+fn check_update(known_hash: (String, (String, i64))) -> Result<(String, String, i64, u64)> {
     let path = PathBuf::from(&known_hash.0);
 
     let meta = path.metadata()?;
-    let time_modified = meta.modified()?.elapsed()?.as_nanos();
+    let time_modified = FileTime::from_last_modification_time(&meta).unix_seconds();
     let size = meta.len();
 
     if known_hash.1 .1 < time_modified {

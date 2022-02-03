@@ -1,5 +1,5 @@
 use std::{
-    fs::{File, OpenOptions},
+    fs::{self, File, OpenOptions},
     path::PathBuf,
 };
 
@@ -9,13 +9,14 @@ use serde::{de::DeserializeOwned, Serialize};
 
 pub fn load_t<T>(path: PathBuf) -> Result<T>
 where
-    T: DeserializeOwned + Default,
+    T: Serialize + DeserializeOwned + Default,
 {
     if path.exists() {
         let file = OpenOptions::new().read(true).open(path)?;
 
         Ok(serde_json::from_reader::<File, T>(file)?)
     } else {
+        save_t(path, T::default())?;
         Ok(T::default())
     }
 }
@@ -24,6 +25,12 @@ pub fn save_t<T>(path: PathBuf, data: T) -> Result<()>
 where
     T: Serialize,
 {
+    if let Some(path_par) = path.parent() {
+        if !path_par.exists() {
+            fs::create_dir_all(path_par)?;
+        }
+    }
+
     let file = OpenOptions::new()
         .write(true)
         .create(true)

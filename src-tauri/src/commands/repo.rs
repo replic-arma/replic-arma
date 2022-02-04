@@ -45,7 +45,11 @@ pub async fn hash_check(
         .map(|hash| {
             let file = hash.0.clone();
             let res = check_update(hash);
-            //window.emit("hash_calculated", file).unwrap();
+            if let Ok(hash_tuple) = &res {
+                window.emit("hash_calculated", hash_tuple).unwrap();
+            } else {
+                window.emit("hash_failed", file).unwrap();
+            }
             res
         })
         .partition(|x| x.is_ok());

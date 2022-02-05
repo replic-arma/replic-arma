@@ -66,17 +66,23 @@ export class System {
     }
 
     public static calcModsetStatus (repoId: string|null, modsetId: string|null): void {
+        console.log('Checking Repo', repoId);
+        console.log('start', Date.now());
         const repoStore = useRepoStore();
         const files = System.getFilesForModset(repoId, modsetId);
         const filePaths = System.getFilePathsForModset(repoId, modsetId);
         System.registerListener();
         repoStore.filesToCheck = filePaths;
         System.hashCheck(filePaths).then((hashes: Array<Array<Array<string>>>) => {
-            // console.log(hashes);
+            // console.log(files.length);
+            // console.log(filePaths.length);
+            // console.log(hashes[0].length);
+            // console.log(hashes[1].length);
             // console.log(repoStore.filesChecked);
             console.log('Files needed', filePaths.length);
-            console.log('Files missing', repoStore.filesFailed.length);
+            console.log('Files missing', hashes[1].length);
             console.log('Files Outdated', System.getFileChanges(files, hashes[0]).length);
+            console.log('done', Date.now());
         });
     }
 
@@ -128,11 +134,9 @@ export class System {
         const modset = repoStore.getModset(repoId, modsetId);
         if (modset === undefined) throw Error(`Modset with id ${modsetId} not found`);
         const mods = modset.mods?.map(mod => { return mod.name; });
-        return [...new Set(repo.files?.map(x => {
+        return [...new Set(repo.files?.filter(x => {
             if (mods?.find(modName => modName === x.path.split('\\')[0])) {
                 return x;
-            } else {
-                throw Error('Mod not found');
             }
         }
         ))];

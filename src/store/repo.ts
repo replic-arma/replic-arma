@@ -46,10 +46,10 @@ export const useRepoStore = defineStore('repo', {
                 repo.collections = new JSONMap<string, Collection>();
             }
             const uuid = uuidv4();
+            const modsets = Array.from(repo.modsets as unknown as Modset[]).map((modset: Modset) => { return { id: uuidv4(), name: modset.name, mods: modset.mods, description: modset.description }; });
             replicRepo.modsets = new JSONMap<string, Modset>();
             replicRepo.modsets?.set(uuid, { id: uuid, name: 'All Mods', description: 'All Mods from the Repository', mods: [...new Set(repo.files?.map(x => { return x.path.split('\\')[0]; }))].map(modName => { return { mod_type: 'mod', name: modName }; }) });
-            const modsets = Array.from(repo.modsets as unknown as Modset[]).map((modset: Modset) => { return { id: uuidv4(), name: modset.name, mods: modset.mods, description: modset.description }; });
-            modsets.map(modset => replicRepo.modsets?.set(modset.id, modset));
+            modsets.map(modset => repo.modsets?.set(modset.id, modset));
             this.repos.set(replicRepo.id, replicRepo);
             this.saveRepoState();
         },

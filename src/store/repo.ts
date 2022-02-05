@@ -3,12 +3,15 @@ import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 export const useRepoStore = defineStore('repo', {
-    state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null} => ({
+    state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null, filesToCheck: string[], filesChecked: string[], filesFailed: string[]} => ({
         repos: new JSONMap<string, ReplicArmaRepository>(),
         currentRepoId: null,
         currentModsetId: null,
         currentCollectionId: null,
-        currentModId: null
+        currentModId: null,
+        filesToCheck: [],
+        filesChecked: [],
+        filesFailed: []
     }),
     getters: {
         getRepos: (state) => {
@@ -24,7 +27,6 @@ export const useRepoStore = defineStore('repo', {
             return (repoId: string|null, modsetId: string|null) => repoId !== null && modsetId !== null ? state.repos.get(repoId)?.modsets?.get(modsetId) : undefined;
         },
         getCollections: (state) => {
-            console.log(state);
             return (repoId: string|null) => repoId !== null ? Array.from(state.repos.get(repoId)?.collections?.values() ?? []) : [];
         },
         getCollection: (state) => {
@@ -44,10 +46,10 @@ export const useRepoStore = defineStore('repo', {
                 repo.collections = new JSONMap<string, Collection>();
             }
             const uuid = uuidv4();
+            replicRepo.modsets = new JSONMap<string, Modset>();
             replicRepo.modsets?.set(uuid, { id: uuid, name: 'All Mods', description: 'All Mods from the Repository', mods: [...new Set(repo.files?.map(x => { return x.path.split('\\')[0]; }))].map(modName => { return { mod_type: 'mod', name: modName }; }) });
             const modsets = Array.from(repo.modsets as unknown as Modset[]).map((modset: Modset) => { return { id: uuidv4(), name: modset.name, mods: modset.mods, description: modset.description }; });
-            repo.modsets = new JSONMap<string, Modset>();
-            modsets.map(modset => repo.modsets?.set(modset.id, modset));
+            modsets.map(modset => replicRepo.modsets?.set(modset.id, modset));
             this.repos.set(replicRepo.id, replicRepo);
             this.saveRepoState();
         },

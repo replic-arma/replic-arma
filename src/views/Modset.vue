@@ -10,6 +10,7 @@
           <mdicon v-else name="play" />
           {{ $t('download-status.' + status) }}
         </button>
+        <button @click="checkModset()">Check</button>
         <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
       </div>
     </div>
@@ -22,9 +23,9 @@
 </template>
 
 <script lang="ts">
-import { Modset } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useRepoStore } from '@/store/repo';
+import { System } from '@/util/system';
 import { mapState } from 'pinia';
 import { Options, Vue } from 'vue-class-component';
 
@@ -39,27 +40,12 @@ import { Options, Vue } from 'vue-class-component';
 export default class ModsetView extends Vue {
   private repoStore = useRepoStore();
   private downloadStore = useDownloadStore();
-  // private startDownload () {
-  //     if (this.modset !== undefined) {
-  //         this.downloadStore.addToQueue({
-  //             status: 'queued',
-  //             item: this.modset,
-  //             size: 0,
-  //             done: 0,
-  //             total: 0
-  //         });
-  //     }
-  // }
-
   private get status () {
-      // if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
-      //     return 'outdated';
-      // } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
-      //     return 'downloading';
-      // } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
-      //     return 'queued';
-      // }
       return 'play';
+  }
+
+  public checkModset () {
+      System.calcModsetStatus(this.repoStore.currentRepoId, this.repoStore.currentModsetId);
   }
 }
 </script>

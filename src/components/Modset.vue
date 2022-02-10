@@ -4,12 +4,20 @@
             <span class="modset__name">{{modset.name}}</span>
             <small class="modset__description">{{modset.description}}</small>
         </div>
-        <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
+        <span class="repo__status" :class="`status--${status}`">
+            <template v-if="status === 'checking'">
+                <mdicon name="loading" spin />
+            </template>
+            {{$t('download-status.' + status)}}
+            <template v-if="status === 'checking' && progress !== 0">
+                <span>...{{progress}}%</span>
+            </template>
+        </span>
         <div class="button modset__play">
             <span>Play</span>
             <mdicon name="play" size="35"/>
         </div>
-        <router-link :to="'./modset/' + modsetIndex" class="modset__open button">
+        <router-link :to="'./modset/' + modset.id" class="modset__open button">
             <mdicon name="folder-open"></mdicon>
         </router-link>
     </li>
@@ -17,6 +25,8 @@
 <script lang="ts">
 import { Modset } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
+import { useHashStore } from '@/store/hash';
+import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 
@@ -25,17 +35,29 @@ import { Prop } from 'vue-property-decorator';
 })
 export default class ModsetVue extends Vue {
     @Prop({ type: Object }) private modset!: Modset;
-    @Prop({ type: Number }) private modsetIndex!: number;
     private downloadStore = useDownloadStore();
+    private repoStore = useRepoStore();
     private get status () {
-        if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
-            return 'outdated';
-        } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
-            return 'downloading';
-        } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.modset?.id)) {
-            return 'queued';
-        }
-        return 'finished';
+        const repoStore = useRepoStore();
+        const modset = repoStore.getModset(this.repoStore.currentRepoId, this.modset.id);
+        if (modset === undefined) return 'error';
+        return modset.status ?? 'checking';
+    }
+
+    public created () {
+        this.checkCurrentModset();
+    }
+
+    private checkCurrentModset () {
+        const hashStore = useHashStore();
+        hashStore.startHash(this.repoStore.currentRepoId, this.modset.id);
+    }
+
+    private get progress () {
+        const hashStore = useHashStore();
+        if (hashStore.current === null) return 0;
+        if (hashStore.current.modsetId !== this.modset.id) return 0;
+        return Math.floor(hashStore.current.checkedFiles / hashStore.current.filesToCheck * 100);
     }
 }
 </script>

@@ -6,10 +6,12 @@ import mdiVue from 'mdi-vue/v3';
 import * as mdijs from '@mdi/js';
 import { createPinia } from 'pinia';
 import TransitionVue from './components/util/Transition.vue';
+import LoaderVue from './components/util/Loader.vue';
 import { System } from './util/system';
 
 const app = createApp(App);
 app.component('rtransition', TransitionVue);
+app.component('loader', LoaderVue);
 app.use(router);
 app.use(createPinia());
 app.use(mdiVue, {

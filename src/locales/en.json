@@ -23,8 +23,9 @@
         "queued": "Update Pending",
         "paused": "Paused",
         "downloading": "Downloading",
-        "finished": "Ready to play",
-        "play": "Play"
+        "ready": "Ready to play",
+        "play": "Play",
+        "checking": "Checking"
     },
     "server": {
         "title": "Server",
@@ -63,5 +64,5 @@
         }
     },
     "remove": "Remove",
-    "save": "Save",
+    "save": "Save"
 }

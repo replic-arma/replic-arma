@@ -2,9 +2,17 @@
     <li class="repo">
         <img class="repo__img" :src="repository.image">
         <span class="repo__name">{{repository.name}}</span>
-        <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
+        <span class="repo__status" :class="`status--${status}`">
+            <template v-if="status === 'checking'">
+                <mdicon name="loading" spin />
+            </template>
+            {{$t('download-status.' + status)}}
+            <template v-if="status === 'checking' && progress !== 0">
+                <span>...{{progress}}%</span>
+            </template>
+        </span>
         <div class="repo__modset">
-            <select v-model="currentModsetId">
+            <select v-model="currentModsetId" @change="checkCurrentModset">
                 <option v-for="(modset, i) of modsets" :key="i" :value="modset.id">{{modset.name}}</option>
             </select>
         </div>
@@ -23,6 +31,8 @@ import { useDownloadStore } from '@/store/download';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 import { System } from '@/util/system';
+import { useHashStore } from '@/store/hash';
+import { useRepoStore } from '@/store/repo';
 @Options({
     components: { }
 })
@@ -31,14 +41,26 @@ export default class RepoVue extends Vue {
     private downloadStore = useDownloadStore();
     private currentModsetId = this.modsets[0].id;
     private get status () {
-        if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.repository?.id)) {
-            return 'outdated';
-        } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.repository?.id)) {
-            return 'downloading';
-        } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.repository?.id)) {
-            return 'queued';
-        }
-        return 'finished';
+        const repoStore = useRepoStore();
+        const modset = repoStore.getModset(this.repository.id, this.currentModsetId);
+        if (modset === undefined) return 'error';
+        return modset.status ?? 'checking';
+    }
+
+    public created () {
+        this.checkCurrentModset();
+    }
+
+    private get progress () {
+        const hashStore = useHashStore();
+        if (hashStore.current === null) return 0;
+        if (hashStore.current.modsetId !== this.currentModsetId) return 0;
+        return Math.floor(hashStore.current.checkedFiles / hashStore.current.filesToCheck * 100);
+    }
+
+    private checkCurrentModset () {
+        const hashStore = useHashStore();
+        hashStore.startHash(this.repository.id, this.currentModsetId);
     }
 
     private get modsets () {
@@ -68,6 +90,10 @@ export default class RepoVue extends Vue {
         box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }
 
+    &:hover > &__play, &:hover > &__modset {
+        visibility: visible;
+    }
+
     &__img {
         block-size: var(--space-xl);
     }
@@ -75,6 +101,10 @@ export default class RepoVue extends Vue {
     &__name {
         font-weight: bold;
         font-size: 15pt;
+    }
+
+    &__status {
+        text-align: center;
     }
 
     &__open {
@@ -111,6 +141,7 @@ export default class RepoVue extends Vue {
     }
 
     &__play {
+        visibility: hidden;
         display: flex;
         align-items: center;
         justify-content:center;
@@ -126,8 +157,10 @@ export default class RepoVue extends Vue {
         }
     }
     &__modset {
+        visibility: hidden;
         position: relative;
         select {
+            background: #F2F2F2;
             cursor: pointer;
             appearance: none;
             border: none;

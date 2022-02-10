@@ -1,12 +1,11 @@
 <template>
     <div class="replic-path-selector">
-        <label :for="pathSelector.name">{{pathSelector.label}}<mdicon name="information" size="15" /></label>
+        <label :for="pathSelector.name">{{pathSelector.label}}</label>
         <div class="replic-path-selector__input-wrapper">
             <input type="text" :id="pathSelector.name" class="replic-path-selector__input" v-model="model" />
-            <div class="replic-path-selector__button" @click="openDialog">
-                <mdicon name="folder"></mdicon>
+            <button class="replic-path-selector__button" @click="openDialog">
                 <span>{{$t('select')}}</span>
-            </div>
+            </button>
         </div>
     </div>
 </template>
@@ -35,6 +34,7 @@ export default class ReplicPathSelectorVue extends Vue {
     private settingsStore = useSettingsStore();
     public openDialog (): void {
         open(this.pathSelectorOptions).then((filepath) => {
+            if (filepath === null) return;
             this.model = filepath as string;
         });
     }
@@ -47,13 +47,14 @@ export default class ReplicPathSelectorVue extends Vue {
         grid-template-columns: 1fr;
         grid-template-rows: auto 3rem;
         &__input-wrapper {
-            block-size: 2.5rem;
-            padding-inline: 1rem;
             position: relative;
             background: #fff;
             border-radius: .5rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
         }
         &__input {
+            padding-inline: 1rem;
             inline-size: 100%;
             block-size: 100%;
             outline: 0;
@@ -61,14 +62,11 @@ export default class ReplicPathSelectorVue extends Vue {
             background: none;
         }
         &__button {
-            display: grid;
-            grid-template-columns: 2rem 4rem;
-            position: absolute;
-            right: 0;
-            top: 0;
             block-size: 100%;
+            inline-size: 5rem;
             padding-inline-start: var(--space-xs);
             align-content: center;
+            justify-content: center;
             background: lightgrey;
             cursor: pointer;
             border-top-right-radius: .5rem;

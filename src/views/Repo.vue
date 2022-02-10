@@ -4,7 +4,7 @@
       <router-link class="button" to="/"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>{{repository?.name}}</h1>
       <div class="icon-group">
-        <button @click="checkRepo()">Check</button>
+        <mdicon name="refresh" size="45" @click="reloadRepo"/>
         <router-link class="button" :to="'/reposettings/'+ repository?.id"><mdicon  name="cog" size="55"/></router-link>
       </div>
     </div>
@@ -21,6 +21,7 @@ import { useDialogStore } from '../store/dialog';
 import { mapState } from 'pinia';
 import { System } from '@/util/system';
 import { useSettingsStore } from '@/store/settings';
+import Toast from '@/components/util/Toast';
 @Options({
     components: {
         Subnavi: SubnaviVue
@@ -48,9 +49,14 @@ export default class RepoView extends Vue {
   public checkRepo () {
       const settingsStore = useSettingsStore();
       const files = this.repoStore.getRepo(this.repoStore.currentRepoId)?.files?.map(file => { return settingsStore.settings.downloadDirectoryPath + '\\' + file.path; });
-      if (files === undefined) throw Error('No Files');
+      if (files === undefined) throw new Error('No Files');
       System.hashCheck(files).catch(error => console.log(error));
   }
+
+  private reloadRepos = () => {
+      this.repoStore.loadRepositories();
+      Toast('Reloading Repositories');
+  };
 }
 </script>
 

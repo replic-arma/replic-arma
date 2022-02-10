@@ -5,8 +5,8 @@
             <small class="server__name">{{server.name}}</small>
         </div>
         <span class="server__port">{{server.port}}</span>
-        <span class="server__password"><mdicon name="lock-outline" />{{server.password !== undefine ? server.password : '-'}}</span>
-        <span class="server__modset">{{server.modset !== undefine ? server.modset : '-'}}</span>
+        <span class="server__password"><mdicon name="lock-outline" />{{server.password === undefined || server.password === "" ? '-' : server.password}}</span>
+        <span class="server__modset">{{server.modset !== undefined ? server.modset : '-'}}</span>
         <div class="server__play" @click="launchGame()">
             <span>Play</span>
             <mdicon name="play" size="35"/>
@@ -27,8 +27,8 @@ export default class ServerVue extends Vue {
     @Prop({ type: Object }) private server!: GameServer;
     private async launchGame () {
         const repoStore = useRepoStore();
-        if (this.server.modset === undefined) throw Error('Server Modset undefined');
-        if (repoStore.currentRepoId === null) throw Error('Current repo null');
+        if (this.server.modset === undefined) throw new Error('Server Modset undefined');
+        if (repoStore.currentRepoId === null) throw new Error('Current repo null');
         await System.launchGame(repoStore.currentRepoId, this.server.modset, this.server);
     }
 }

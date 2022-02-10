@@ -137,6 +137,8 @@ impl A3SRepository {
             },
         };
 
+        let revision = self.server_info.revision;
+
         Repository {
             id: Uuid::new_v4(),
             config_url: self.url.clone(),
@@ -148,6 +150,7 @@ impl A3SRepository {
             modsets,
             game_servers,
             download_server,
+            revision
         }
     }
 }

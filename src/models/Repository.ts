@@ -18,7 +18,7 @@ export interface Modset {
     id: string;
     name: string,
     description?: string,
-    // status: string,
+    status?: 'ready'|'outdated'|'checking'
     mods?: Array<ModsetMod>,
 }
 
@@ -64,6 +64,7 @@ export interface Repository {
     open_repository_schema: number,
     name: string,
     build_date: string,
+    revision: number,
     files?: Array<File>,
     modsets?: JSONMap<string, Modset>,
     game_servers?: JSONMap<string, GameServer>,
@@ -78,9 +79,10 @@ export interface ReplicArmaRepositoryError {
 export interface ReplicArmaRepository extends Repository {
     id: string;
     image?: string;
-    // status: 'ready'|'error'|'updating'|'queued'|'outdated';
+    status: 'ready'|'outdated';
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
     type: 'local'|'a3s'|'swifty';
     autoconfig?: string;
+    revisionChanged: boolean;
 }

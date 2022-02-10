@@ -21,6 +21,7 @@ pub struct Repository {
     pub modsets: Vec<Modset>,
     pub game_servers: Vec<GameServer>,
     pub download_server: DownloadServer,
+    pub revision: i32,
 }
 
 impl std::fmt::Display for Repository {

@@ -1,6 +1,4 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto|Source+Sans+Pro|Source+Code+Pro&display=swap');
-$btnColor: #2F80ED;
-$btnColorDanger: #EB5757;
 :root {
     --c-text-1: #333333;
     --c-text-2: #595959;
@@ -80,6 +78,9 @@ button.button {
 }
 
 button.button {
+  $btnColor: #2F80ED;
+  $btnColorSecondary: #fff;
+  $btnColorDanger: #EB5757;
   background-color: $btnColor;
   color: #fff;
   border-radius: 8px;
@@ -111,19 +112,25 @@ button.button {
     inline-size: 100%;
   }
 
-  &--outline {
-    background: transparent;
-    &:hover {
-      background: transparent;
-    }
-  }
-
   &--center {
     align-self: center;
   }
 
   &--danger {
-    color: $btnColorDanger;
+    background-color: $btnColorDanger;
+    border: 1px solid scale-color($btnColorDanger, $lightness: -20%);
+    &:focus {
+      outline-style: solid;
+      outline-color: transparent;
+      box-shadow: 0 0 0 4px scale-color($btnColorDanger, $lightness: -40%);
+    }
+    &:hover {
+      color: white;
+      background-color: scale-color($btnColorDanger, $lightness: -15%);
+    }
+  }
+  &--secondary {
+    background-color: $btnColorSecondary;
     border: 1px solid scale-color($btnColorDanger, $lightness: -20%);
     &:focus {
       outline-style: solid;
@@ -223,7 +230,9 @@ input[type="checkbox"][role="switch"] {
   height: 30px;
   animation: spinner-spin 1.2s linear infinite;
 }
-
+.status--outdated {
+  color: red;
+}
 .status--finished {
     color: #27AE60;
 }

@@ -1,7 +1,14 @@
 <template>
-  <rtransition>
-    <router-view/>
-  </rtransition>
+  <Suspense>
+    <template #default>
+      <rtransition>
+        <router-view/>
+      </rtransition>
+    </template>
+    <template #fallback>
+      <loader />
+    </template>
+  </Suspense>
 </template>
 
 <style lang="scss">

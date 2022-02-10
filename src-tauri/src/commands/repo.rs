@@ -34,14 +34,15 @@ pub async fn hash_check(
     let mut hashes = old_hashes.clone();
 
     // insert new files
-    for file in files {
-        hashes.entry(file).or_insert((String::new(), 0));
+    for file in files.iter() {
+        hashes.entry(file.to_string()).or_insert((String::new(), 0));
     }
 
     // calc Hash
     let (new_hashes_res, errors_res): (Vec<_>, Vec<_>) = hashes
         .into_iter()
         .par_bridge()
+        .filter(|(file_name, _)| files.contains(file_name))
         .map(|hash| {
             let file = hash.0.clone();
             let res = check_update(hash);

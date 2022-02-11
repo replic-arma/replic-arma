@@ -1,7 +1,7 @@
 use std::{
     fs::{self, File},
     io::{self},
-    path::PathBuf,
+    path::{Path, PathBuf},
     str::FromStr,
 };
 
@@ -38,8 +38,15 @@ pub async fn hash_check(
         hashes.entry(file.to_string()).or_insert((String::new(), 0));
     }
 
+    let mut not_existing_files = Vec::with_capacity(files.capacity());
+    for file in files.iter() {
+        if !Path::new(&file).is_file() {
+            not_existing_files.push(file.clone());
+        }
+    }
+
     // calc Hash
-    let (new_hashes_res, errors_res): (Vec<_>, Vec<_>) = hashes
+    let (new_hashes_res, _): (Vec<_>, Vec<_>) = hashes
         .into_iter()
         .par_bridge()
         .filter(|(file_name, _)| files.contains(file_name))
@@ -58,10 +65,10 @@ pub async fn hash_check(
     // partition into hashes and errors
     let new_hashes: Vec<(String, String, i64, u64)> =
         new_hashes_res.into_iter().map(Result::unwrap).collect();
-    let errors: Vec<String> = errors_res
-        .into_iter()
-        .map(|e| e.unwrap_err().to_string())
-        .collect();
+    // let errors: Vec<String> = errors_res
+    //     .into_iter()
+    //     .map(|e| e.unwrap_err().to_string())
+    //     .collect();
 
     // update HashMap
     for hash in &new_hashes {
@@ -75,7 +82,7 @@ pub async fn hash_check(
         .map(|kvp| (kvp.0, kvp.1, kvp.2))
         .collect();
 
-    Ok((result, errors))
+    Ok((result, not_existing_files))
 }
 
 fn check_update(known_hash: (String, (String, i64))) -> Result<(String, String, i64, u64)> {

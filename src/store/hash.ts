@@ -21,7 +21,10 @@ export const useHashStore = defineStore('hash', {
             const modset = repoStore.getModset(repoId, modsetId);
             if (modset === undefined) throw new Error(`Modset with id ${modsetId} not found`);
             modset.status = 'checking';
-            repoStore.repos.get(repoId)?.modsets?.set(modsetId, modset);
+            const repo = repoStore.repos.get(repoId);
+            if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
+            repo?.modsets?.set(modsetId, modset);
+            repoStore.repos.set(repoId, repo);
             this.queue.push({ repoId: repoId, modsetId: modsetId, filesToCheck: 1, checkedFiles: 1 });
         },
         async next () {

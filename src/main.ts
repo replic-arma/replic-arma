@@ -7,11 +7,13 @@ import * as mdijs from '@mdi/js';
 import { createPinia } from 'pinia';
 import TransitionVue from './components/util/Transition.vue';
 import LoaderVue from './components/util/Loader.vue';
+import TooltipVue from './components/util/Tooltip.vue';
 import { System } from './util/system';
 
 const app = createApp(App);
 app.component('rtransition', TransitionVue);
 app.component('loader', LoaderVue);
+app.component('Tooltip', TooltipVue);
 app.use(router);
 app.use(createPinia());
 app.use(mdiVue, {

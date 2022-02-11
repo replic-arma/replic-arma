@@ -77,6 +77,7 @@ export interface ReplicArmaRepositoryError {
 }
 
 export interface ReplicArmaRepository extends Repository {
+    config_url: string | undefined;
     id: string;
     image?: string;
     status: 'ready'|'outdated';

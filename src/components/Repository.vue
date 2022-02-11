@@ -60,7 +60,7 @@ export default class RepoVue extends Vue {
 
     private checkCurrentModset () {
         const hashStore = useHashStore();
-        hashStore.startHash(this.repository.id, this.currentModsetId);
+        // hashStore.startHash(this.repository.id, this.currentModsetId);
     }
 
     private get modsets () {

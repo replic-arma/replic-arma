@@ -15,9 +15,14 @@
       </div>
     </div>
     <ul class="modset__mods">
-      <li class="modset__mod" v-for="(mod, i) of modset?.mods" :key="i">
-        {{ mod.name }}
-      </li>
+        <li v-for="(mod, i) of modset?.mods" :key="i">
+          <Tooltip :text="mod.size" style="grid-column: 1">
+            <div class="modset__mod">
+                {{ mod.name }} {{mod}}
+
+            </div>
+          </Tooltip>
+        </li>
     </ul>
   </div>
 </template>

@@ -44,15 +44,6 @@ export default class ModsetVue extends Vue {
         return modset.status ?? 'checking';
     }
 
-    public created () {
-        this.checkCurrentModset();
-    }
-
-    private checkCurrentModset () {
-        const hashStore = useHashStore();
-        hashStore.startHash(this.repoStore.currentRepoId, this.modset.id);
-    }
-
     private get progress () {
         const hashStore = useHashStore();
         if (hashStore.current === null) return 0;

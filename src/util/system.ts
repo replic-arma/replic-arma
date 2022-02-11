@@ -16,19 +16,12 @@ export class System {
     private static hashCheckeeee = () => {};
 
     public static init (): void {
-        // init application settings store
         const settingsStore = useSettingsStore();
-        settingsStore.loadData();
-
-        // init repository store
         const repoStore = useRepoStore();
-        repoStore.loadRepositories();
-
-        // Revision Check
-        // System.revisionCheck().then();
-
         const hashStore = useHashStore();
+        Promise.all([settingsStore.loadData(), repoStore.loadRepositories()]).then(() => System.revisionCheck());
         System.registerListener();
+
         System.hashCheckeeee = hashStore.$subscribe((mutation, state) => {
             if (state.current === null) {
                 hashStore.next();
@@ -154,12 +147,12 @@ export class System {
         const repoStore = useRepoStore();
         const modset = repoStore.getModset(repoId, modsetId);
         if (modset === undefined) throw new Error(`Modset with name ${modsetId} not found`);
-        return '-mod=' + modset?.mods?.map(mod => { return settingsStore.settings.downloadDirectoryPath + sep + mod.name; }).join(';') + ';';
+        return `-mod=${modset?.mods?.map(mod => { return settingsStore.settings.downloadDirectoryPath + sep + mod.name; }).join(';')};`;
     }
 
     private static getConnectionString (gameServer: GameServer|null = null) {
         if (gameServer === null) return '';
-        return '-ip=' + gameServer.host + ';' + '-port=' + gameServer.port + ';' + '-password=' + gameServer.password + ';';
+        return `-ip=${gameServer.host};-port=${gameServer.port};-password=${gameServer.password};`;
     }
 
     public static getFilesForModset (repoId: string|null, modsetId: string|null): File[] {
@@ -224,11 +217,13 @@ export class System {
 
     private static async revisionCheck () {
         const repoStore = useRepoStore();
-        repoStore.getRepos.map(async repo => {
-            const externalRepo = await System.getRepo(repo.autoconfig);
+        const hashStore = useHashStore();
+        repoStore.getRepos.forEach(async repo => {
+            const externalRepo = await System.getRepo(`${repo.config_url}autoconfig`);
             if (externalRepo.revision !== repo.revision) {
                 repo.revisionChanged = true;
                 repoStore.repos.set(repo.id, repo);
+                repo.modsets?.forEach(modset => hashStore.startHash(repo.id, modset.id));
             }
         });
     }

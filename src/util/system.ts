@@ -8,6 +8,7 @@ import { useRepoStore } from '@/store/repo';
 import { Command } from '@tauri-apps/api/shell';
 import { listen } from '@tauri-apps/api/event';
 import { useHashStore } from '@/store/hash';
+import { getFileChanges, getFilePathsForModset, splitFiles } from './worker';
 export class System {
     private static APPDIR = 'Replic-Arma';
     private static DOCUMENTDIRECTORY = documentDir();
@@ -80,21 +81,17 @@ export class System {
 
     public static async calcModsetStatus (repoId: string|null, modsetId: string|null): Promise<void> {
         const hashStore = useHashStore();
+        const repoStore = useRepoStore();
+        const settingsStore = useSettingsStore();
         if (repoId === undefined || repoId === null) throw new Error(`Repository with id ${repoId} not found`);
         if (modsetId === undefined || modsetId === null) throw new Error(`Modset with id ${modsetId} not found`);
         if (hashStore.current === null) throw new Error('Current hash object empty');
-        console.time(modsetId);
-        const repoStore = useRepoStore();
-        const files = System.getFilesForModset(repoId, modsetId);
-        const filePaths = System.getFilePathsForModset(repoId, modsetId);
+        const files = await System.getFilesForModset(repoId, modsetId);
+        const filePaths = await getFilePathsForModset(files, settingsStore.settings.downloadDirectoryPath ?? '', sep);
         hashStore.current.filesToCheck = files.length;
         repoStore.filesToCheck = filePaths;
         System.hashCheck(filePaths).then(async (hashes: Array<Array<Array<string>>>) => {
-            const outDatedFiles = System.getFileChanges(files, hashes[0]);
-            console.timeEnd(modsetId);
-            console.log('Files needed', filePaths.length);
-            console.log('Files missing', hashes[1].length);
-            console.log('Files Outdated', outDatedFiles.length);
+            const outDatedFiles = await getFileChanges(files, hashes[0], settingsStore.settings.downloadDirectoryPath ?? '', sep);
             const modset = repoStore.getModset(repoId, modsetId);
             if (modset === undefined) throw new Error(`Modset with id ${modsetId} not found`);
             if (hashes[1].length > 0 || outDatedFiles.length > 0) {
@@ -102,27 +99,14 @@ export class System {
             } else {
                 modset.status = 'ready';
             }
-            repoStore.repos.get(repoId)?.modsets?.set(modsetId, modset);
+            const repo = repoStore.repos.get(repoId);
+            if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
+            repo.outdatedFiles = outDatedFiles;
+            repo.missingFiles = hashes[1] as unknown as string[];
+            repo?.modsets?.set(modsetId, modset);
+            repoStore.repos.set(repoId, repo);
             await hashStore.next();
         });
-    }
-
-    private static getFileChanges (wantedFiles: File[], checkedFiles: Array<Array<string>>) {
-        const notMatchingHash: string[] = [];
-        const settingsStore = useSettingsStore();
-        const downloadDir = settingsStore.settings.downloadDirectoryPath ?? '';
-        wantedFiles.map(wantedFile => {
-            const checkedFile = checkedFiles.find((file: any, index: number) => {
-                if (file[0] === System.prependDirectoryToPath(downloadDir, wantedFile.path)) {
-                    checkedFiles.splice(index, 1);
-                    return file;
-                }
-            });
-            if (checkedFile && checkedFile[1] !== wantedFile.sha1) {
-                notMatchingHash.push(checkedFile[0]);
-            }
-        });
-        return notMatchingHash;
     }
 
     public static async launchGame (repoId: string, modsetId: string, gameServer: GameServer|null = null): Promise<void> {
@@ -155,31 +139,16 @@ export class System {
         return `-ip=${gameServer.host};-port=${gameServer.port};-password=${gameServer.password};`;
     }
 
-    public static getFilesForModset (repoId: string|null, modsetId: string|null): File[] {
+    public static async getFilesForModset (repoId: string|null, modsetId: string|null): Promise<File[]> {
         const repoStore = useRepoStore();
         const repo = repoStore.getRepo(repoId);
         if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
+        if (repo.files === undefined) throw new Error(`Repository with id ${repoId} has no files`);
         const modset = repoStore.getModset(repoId, modsetId);
         if (modset === undefined) throw new Error(`Modset with id ${modsetId} not found`);
         const mods = modset.mods?.map(mod => { return mod.name; });
-        return [...new Set(repo.files?.filter(x => {
-            if (mods?.find(modName => modName === x.path.split('\\')[0])) {
-                return x;
-            }
-        }
-        ))];
-    }
-
-    public static getFilePathsForModset (repoId: string|null, modsetId: string|null): string[] {
-        const files = System.getFilesForModset(repoId, modsetId);
-        const settingsStore = useSettingsStore();
-        const downloadDir = settingsStore.settings.downloadDirectoryPath ?? '';
-
-        return files.map(file => System.prependDirectoryToPath(downloadDir, file.path));
-    }
-
-    private static prependDirectoryToPath (dir: string, path: string) {
-        return dir + sep + path;
+        if (mods === undefined) throw new Error(`Modset with id ${modsetId} has no files`);
+        return await splitFiles(repo.files, mods);
     }
 
     public static resetSettings (): void {

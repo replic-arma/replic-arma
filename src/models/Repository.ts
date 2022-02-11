@@ -86,4 +86,6 @@ export interface ReplicArmaRepository extends Repository {
     type: 'local'|'a3s'|'swifty';
     autoconfig?: string;
     revisionChanged: boolean;
+    missingFiles?: Array<string>;
+    outdatedFiles?: Array<string>;
 }

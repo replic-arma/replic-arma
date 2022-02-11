@@ -17,6 +17,15 @@ module.exports = {
                     test: /\.mjs$/,
                     include: /node_modules/,
                     type: 'javascript/auto'
+                },
+                {
+                    test: /\.worker\.(js|ts)$/i,
+                    use: [{
+                        loader: 'comlink-loader',
+                        options: {
+                            singleton: true
+                        }
+                    }]
                 }
             ]
         }

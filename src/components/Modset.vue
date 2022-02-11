@@ -37,18 +37,17 @@ export default class ModsetVue extends Vue {
     @Prop({ type: Object }) private modset!: Modset;
     private downloadStore = useDownloadStore();
     private repoStore = useRepoStore();
+    private hashStore = useHashStore();
     private get status () {
-        const repoStore = useRepoStore();
-        const modset = repoStore.getModset(this.repoStore.currentRepoId, this.modset.id);
+        const modset = this.repoStore.getModset(this.repoStore.currentRepoId, this.modset.id);
         if (modset === undefined) return 'error';
         return modset.status ?? 'checking';
     }
 
     private get progress () {
-        const hashStore = useHashStore();
-        if (hashStore.current === null) return 0;
-        if (hashStore.current.modsetId !== this.modset.id) return 0;
-        return Math.floor(hashStore.current.checkedFiles / hashStore.current.filesToCheck * 100);
+        if (this.hashStore.current === null) return 0;
+        if (this.hashStore.current.modsetId !== this.modset.id) return 0;
+        return Math.floor(this.hashStore.current.checkedFiles / this.hashStore.current.filesToCheck * 100);
     }
 }
 </script>

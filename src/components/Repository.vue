@@ -40,27 +40,15 @@ export default class RepoVue extends Vue {
     @Prop({ type: Object }) private repository!: ReplicArmaRepository;
     private downloadStore = useDownloadStore();
     private currentModsetId = this.modsets[0].id;
+    private hashStore = useHashStore();
+    private repoStore = useRepoStore();
     private get status () {
-        const repoStore = useRepoStore();
-        const modset = repoStore.getModset(this.repository.id, this.currentModsetId);
-        if (modset === undefined) return 'error';
-        return modset.status ?? 'checking';
-    }
-
-    public created () {
-        this.checkCurrentModset();
+        return this.repoStore.getModset(this.repository.id, this.currentModsetId)?.status ?? 'checking';
     }
 
     private get progress () {
-        const hashStore = useHashStore();
-        if (hashStore.current === null) return 0;
-        if (hashStore.current.modsetId !== this.currentModsetId) return 0;
-        return Math.floor(hashStore.current.checkedFiles / hashStore.current.filesToCheck * 100);
-    }
-
-    private checkCurrentModset () {
-        const hashStore = useHashStore();
-        // hashStore.startHash(this.repository.id, this.currentModsetId);
+        if (this.hashStore.current === null || this.hashStore.current.repoId !== this.repository.id) return 0;
+        return Math.floor(this.hashStore.current.checkedFiles / this.hashStore.current.filesToCheck * 100);
     }
 
     private get modsets () {

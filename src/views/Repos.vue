@@ -27,6 +27,7 @@ import DownloadsVue from '@/components/download/Downloads.vue';
 import RepositoryAddVue from '@/components/RepositoryAdd.vue';
 import Toast from '@/components/util/Toast';
 import { mapState } from 'pinia';
+import { System } from '@/util/system';
 
 @Options({
     components: {
@@ -45,7 +46,8 @@ export default class ReposView extends Vue {
   private dialogStore = useDialogStore();
   private repoStore = useRepoStore();
   private reloadRepos = () => {
-      this.repoStore.loadRepositories();
+      // this.repoStore.loadRepositories();
+      System.revisionCheck();
       Toast('Reloading Repositories');
   };
 }

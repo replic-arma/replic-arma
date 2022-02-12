@@ -55,7 +55,7 @@ export interface Collection {
 }
 
 export class JSONMap<K extends string|number, V> extends Map<K, V> {
-    public toJSON () {
+    public toJSON (): [K, V][] {
         return Array.from(this.entries());
     }
 }
@@ -80,7 +80,7 @@ export interface ReplicArmaRepository extends Repository {
     config_url: string | undefined;
     id: string;
     image?: string;
-    status: 'ready'|'outdated';
+    status: 'ready'|'outdated'|'checking';
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
     type: 'local'|'a3s'|'swifty';

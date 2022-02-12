@@ -18,8 +18,13 @@
         <li v-for="(mod, i) of modset?.mods" :key="i">
           <Tooltip :text="mod.size" style="grid-column: 1">
             <div class="modset__mod">
-                {{ mod.name }} {{mod}}
-
+                {{ mod.name }}
+              <template v-if="outdated(mod)">
+                <mdicon name="close" />
+              </template>
+              <template v-else>
+                <mdicon name="check" />
+              </template>
             </div>
           </Tooltip>
         </li>
@@ -28,9 +33,10 @@
 </template>
 
 <script lang="ts">
+import { ModsetMod } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
+import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
-import { System } from '@/util/system';
 import { mapState } from 'pinia';
 import { Options, Vue } from 'vue-class-component';
 
@@ -44,13 +50,15 @@ import { Options, Vue } from 'vue-class-component';
 })
 export default class ModsetView extends Vue {
   private repoStore = useRepoStore();
+  private hashStore = useHashStore();
   private downloadStore = useDownloadStore();
   private get status () {
       return 'play';
   }
 
-  public checkModset () {
-      System.calcModsetStatus(this.repoStore.currentRepoId, this.repoStore.currentModsetId);
+  private outdated (mod: ModsetMod) {
+      const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
+      return cache?.missingFiles.map(file => file.split('\\').includes(mod.name)) || cache?.outdatedFiles.map(file => file.split('\\').includes(mod.name));
   }
 }
 </script>

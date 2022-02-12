@@ -10,10 +10,11 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
+import { Component } from 'vue-demi';
 import { Prop, Watch } from 'vue-property-decorator';
 export interface TabsItem {
     label: string;
-    component: any;
+    component: Component;
 }
 
 @Options({

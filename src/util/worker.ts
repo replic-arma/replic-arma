@@ -1,35 +1,34 @@
-import { File } from '@/models/Repository';
+/**
+ * Promisify our workers, which are only built to process one request at a time.
+ * @param worker Worker to promisify
+ * @param message Message to send to worker
+ * @param transfer Array of Transferable objects for the postMessage call
+ * @returns Promise which resolves in the data received by the worker
+ */
+export function promisifyWorker<T, R> (worker: Worker, message: T, transfer?: Transferable[]): Promise<R> {
+    let messageHandler: (e: MessageEvent<{ type: 'data', data: R }|{ type: 'error', data: Error }>) => void;
+    let errorHandler: (e: ErrorEvent) => void;
 
-async function getFilePathsForModset (files: File[], downloadDir: string, seperator: string): Promise<string[]> {
-    return files.map((file) => prependDirectoryToPath(downloadDir, file.path, seperator));
-}
-
-async function getFileChanges (wantedFiles: File[], checkedFiles: Array<Array<string>>, downloadDir: string, seperator: string): Promise<string[]> {
-    const notMatchingHash: string[] = [];
-    wantedFiles.map(wantedFile => {
-        const checkedFile = checkedFiles.find((file: any, index: number) => {
-            if (file[0] === prependDirectoryToPath(downloadDir, wantedFile.path, seperator)) {
-                checkedFiles.splice(index, 1);
-                return file;
+    const promise = new Promise<R>((resolve, reject) => {
+        messageHandler = e => {
+            if (e.data.type === 'data') {
+                resolve(e.data.data);
+            } else {
+                reject(e.data.data);
             }
-        });
-        if (checkedFile && checkedFile[1] !== wantedFile.sha1) {
-            notMatchingHash.push(checkedFile[0]);
-        }
+        };
+        errorHandler = e => reject(e);
+
+        worker.addEventListener('message', messageHandler);
+        worker.addEventListener('error', errorHandler);
+
+        worker.postMessage(message, transfer ?? []);
     });
-    return notMatchingHash;
-}
 
-async function splitFiles (files: File[], mods: string[]): Promise<File[]> {
-    return [...new Set(files?.filter(x => {
-        if (mods?.find(modName => modName === x.path.split('\\')[0])) {
-            return x;
-        }
-    }
-    ))];
-}
-function prependDirectoryToPath (dir: string, path: string, seperator: string): string {
-    return `${dir}${seperator}${path}`;
-}
+    promise.finally(() => {
+        worker.removeEventListener('message', messageHandler);
+        worker.removeEventListener('error', errorHandler);
+    });
 
-export { getFilePathsForModset, getFileChanges, splitFiles };
+    return promise;
+}

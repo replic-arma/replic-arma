@@ -24,7 +24,6 @@
 <script lang="ts">
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
-import { Watch } from 'vue-property-decorator';
 import ReplicCheckboxVue from './util/ReplicCheckbox.vue';
 import ReplicDialogVue from './util/ReplicDialog.vue';
 @Options({

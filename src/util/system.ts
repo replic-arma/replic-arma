@@ -2,34 +2,28 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { cacheDir, documentDir, sep } from '@tauri-apps/api/path';
 import { createDir, BaseDirectory, writeFile, readTextFile, removeFile } from '@tauri-apps/api/fs';
 import { ApplicationSettings } from '@/models/Settings';
-import { File, GameServer, JSONMap, ReplicArmaRepository } from '@/models/Repository';
+import { File, GameServer, JSONMap, Modset, ReplicArmaRepository } from '@/models/Repository';
 import { useSettingsStore } from '@/store/settings';
 import { useRepoStore } from '@/store/repo';
 import { Command } from '@tauri-apps/api/shell';
 import { listen } from '@tauri-apps/api/event';
 import { useHashStore } from '@/store/hash';
-import { getFileChanges, getFilePathsForModset, splitFiles } from './worker';
+/* eslint-disable import/no-webpack-loader-syntax, import/default */
+import fileWorkerUrl from 'worker-plugin/loader!@/worker/file.worker';
+import { promisifyWorker } from './worker';
+/* eslint-enable import/no-webpack-loader-syntax, import/default */
 export class System {
     private static APPDIR = 'Replic-Arma';
     private static DOCUMENTDIRECTORY = documentDir();
     private static CACHEDIRECTORY = cacheDir();
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private static hashCheckeeee = () => {};
+    public static SEPERATOR = sep;
 
-    public static init (): void {
+    public static async init (): Promise<void> {
         const settingsStore = useSettingsStore();
         const repoStore = useRepoStore();
         const hashStore = useHashStore();
-        Promise.all([settingsStore.loadData(), repoStore.loadRepositories()]).then(() => System.revisionCheck());
+        Promise.all([settingsStore.loadData(), repoStore.loadRepositories(), hashStore.loadData()]).then(async () => System.revisionCheck());
         System.registerListener();
-
-        System.hashCheckeeee = hashStore.$subscribe((mutation, state) => {
-            if (state.current === null) {
-                hashStore.next();
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                System.hashCheckeeee = () => {};
-            }
-        });
     }
 
     public static async getConfig (): Promise<ApplicationSettings> {
@@ -69,44 +63,38 @@ export class System {
 
             return createDir(System.APPDIR, { dir: BaseDirectory.Document });
         });
-        return writeFile({ contents: JSON.stringify(content, null, '\t'), path: documentDirectory + sep + System.APPDIR + sep + 'repos.json' });
+        return writeFile({ contents: JSON.stringify(content, null, '\t'), path: documentDirectory + System.SEPERATOR + System.APPDIR + System.SEPERATOR + 'repos.json' });
+    }
+
+    public static async getCache (): Promise<JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>> {
+        const documentDirectory = await System.DOCUMENTDIRECTORY;
+        const exists = await System.fileExists(documentDirectory + sep + System.APPDIR + sep + 'cache.json');
+
+        if (!exists) return new JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>();
+
+        return JSON.parse(await readTextFile(documentDirectory + sep + System.APPDIR + sep + 'cache.json'));
+    }
+
+    public static async updateCache (content: JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>): Promise<void> {
+        const documentDirectory = await System.DOCUMENTDIRECTORY;
+
+        await System.dirExists(documentDirectory + System.APPDIR).then(exists => {
+            if (exists) return;
+
+            return createDir(System.APPDIR, { dir: BaseDirectory.Document });
+        });
+        return writeFile({ contents: JSON.stringify(content), path: documentDirectory + sep + System.APPDIR + sep + 'cache.json' });
     }
 
     public static async clearCache (): Promise<void> {
         const cacheDirectory = await System.CACHEDIRECTORY;
-        const exists = await System.fileExists(cacheDirectory + System.APPDIR + sep + 'data' + sep + 'hashes.json');
+        let exists = await System.fileExists(cacheDirectory + System.APPDIR + sep + 'data' + sep + 'hashes.json');
         if (!exists) return;
         await removeFile(cacheDirectory + System.APPDIR + sep + 'data' + sep + 'hashes.json');
-    }
-
-    public static async calcModsetStatus (repoId: string|null, modsetId: string|null): Promise<void> {
-        const hashStore = useHashStore();
-        const repoStore = useRepoStore();
-        const settingsStore = useSettingsStore();
-        if (repoId === undefined || repoId === null) throw new Error(`Repository with id ${repoId} not found`);
-        if (modsetId === undefined || modsetId === null) throw new Error(`Modset with id ${modsetId} not found`);
-        if (hashStore.current === null) throw new Error('Current hash object empty');
-        const files = await System.getFilesForModset(repoId, modsetId);
-        const filePaths = await getFilePathsForModset(files, settingsStore.settings.downloadDirectoryPath ?? '', sep);
-        hashStore.current.filesToCheck = files.length;
-        repoStore.filesToCheck = filePaths;
-        System.hashCheck(filePaths).then(async (hashes: Array<Array<Array<string>>>) => {
-            const outDatedFiles = await getFileChanges(files, hashes[0], settingsStore.settings.downloadDirectoryPath ?? '', sep);
-            const modset = repoStore.getModset(repoId, modsetId);
-            if (modset === undefined) throw new Error(`Modset with id ${modsetId} not found`);
-            if (hashes[1].length > 0 || outDatedFiles.length > 0) {
-                modset.status = 'outdated';
-            } else {
-                modset.status = 'ready';
-            }
-            const repo = repoStore.repos.get(repoId);
-            if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
-            repo.outdatedFiles = outDatedFiles;
-            repo.missingFiles = hashes[1] as unknown as string[];
-            repo?.modsets?.set(modsetId, modset);
-            repoStore.repos.set(repoId, repo);
-            await hashStore.next();
-        });
+        const documentDirectory = await System.DOCUMENTDIRECTORY;
+        exists = await System.fileExists(documentDirectory + sep + System.APPDIR + sep + 'cache.json');
+        if (!exists) return;
+        await removeFile(documentDirectory + sep + System.APPDIR + sep + 'cache.json');
     }
 
     public static async launchGame (repoId: string, modsetId: string, gameServer: GameServer|null = null): Promise<void> {
@@ -146,9 +134,8 @@ export class System {
         if (repo.files === undefined) throw new Error(`Repository with id ${repoId} has no files`);
         const modset = repoStore.getModset(repoId, modsetId);
         if (modset === undefined) throw new Error(`Modset with id ${modsetId} not found`);
-        const mods = modset.mods?.map(mod => { return mod.name; });
-        if (mods === undefined) throw new Error(`Modset with id ${modsetId} has no files`);
-        return await splitFiles(repo.files, mods);
+        const fileWorker = new Worker(fileWorkerUrl);
+        return await promisifyWorker<{files: File[], modset: Modset}, File[]>(fileWorker, { files: repo.files, modset: modset });
     }
 
     public static resetSettings (): void {
@@ -172,27 +159,39 @@ export class System {
     }
 
     public static async registerListener (): Promise<void> {
-        const repoStore = useRepoStore();
         const hashStore = useHashStore();
-        await listen('hash_calculated', (event: any) => {
-            repoStore.filesChecked.push(event.payload);
+        await listen('hash_calculated', () => {
             if (hashStore.current === null) throw new Error('Current hash object empty');
             hashStore.current.checkedFiles += 1;
         });
-        await listen('hash_failed', (event: any) => {
-            repoStore.filesFailed.push(event.payload);
-        });
+        // await listen('hash_failed', (event: any) => {
+        //     repoStore.filesFailed.push(event.payload);
+        // });
     }
 
-    private static async revisionCheck () {
+    public static async revisionCheck (): Promise<void> {
         const repoStore = useRepoStore();
         const hashStore = useHashStore();
         repoStore.getRepos.forEach(async repo => {
-            const externalRepo = await System.getRepo(`${repo.config_url}autoconfig`);
-            if (externalRepo.revision !== repo.revision) {
-                repo.revisionChanged = true;
+            repo.status = 'checking';
+            repoStore.repos.set(repo.id, repo);
+            if (hashStore.cache.get(repo.id) === undefined) {
+                repo.status = 'outdated';
                 repoStore.repos.set(repo.id, repo);
-                repo.modsets?.forEach(modset => hashStore.startHash(repo.id, modset.id));
+                await hashStore.startHash(repo);
+            } else {
+                const externalRepo = await System.getRepo(`${repo.config_url}autoconfig`);
+                if (externalRepo.revision !== repo.revision) {
+                    repo.revisionChanged = true;
+                    repo.revision = externalRepo.revision;
+                    repo.status = 'outdated';
+                    repoStore.repos.set(repo.id, repo);
+                    await hashStore.startHash(repo);
+                } else {
+                    repo.revisionChanged = false;
+                    repo.status = 'ready';
+                    repoStore.repos.set(repo.id, repo);
+                }
             }
         });
     }

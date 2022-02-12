@@ -27,13 +27,13 @@ const addToast = (toast: HTMLOutputElement) => {
         : Toaster.appendChild(toast);
 };
 
-const Toast = (text: any) => {
+const Toast = (text: string): Promise<void>|undefined => {
     if (Toaster === undefined) return;
     const toast = createToast(text);
     addToast(toast);
 
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise<void>(async (resolve, reject) => {
+    return new Promise<void>(async (resolve) => {
         await Promise.allSettled(
             toast.getAnimations().map(animation =>
                 animation.finished
@@ -45,7 +45,7 @@ const Toast = (text: any) => {
 };
 
 // https://aerotwist.com/blog/flip-your-animations/
-const flipToast = (toast: any) => {
+const flipToast = (toast: HTMLOutputElement) => {
     if (Toaster === undefined) return;
     // FIRST
     const first = Toaster.offsetHeight;

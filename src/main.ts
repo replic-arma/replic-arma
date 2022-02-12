@@ -21,5 +21,5 @@ app.use(mdiVue, {
 });
 app.mount('#app');
 app.use(i18n);
-System.init();
 i18n.global.locale = 'de';
+System.init();

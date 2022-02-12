@@ -10,7 +10,6 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import { useDownloadStore } from '@/store/download';
 import { Prop, Watch } from 'vue-property-decorator';
 @Options({
     components: { }

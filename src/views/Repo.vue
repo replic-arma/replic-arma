@@ -2,10 +2,10 @@
   <div class="repo-view">
     <div class="repo-view__heading">
       <router-link class="button" to="/"><mdicon name="chevron-left" size="55"/></router-link>
-      <h1>{{repository?.name}}</h1>
+      <h1>{{repository.name}}</h1>
       <div class="icon-group">
         <mdicon name="refresh" size="45"/>
-        <router-link class="button" :to="'/reposettings/'+ repository?.id"><mdicon  name="cog" size="55"/></router-link>
+        <router-link class="button" :to="'/reposettings/'+ repository.id"><mdicon  name="cog" size="55"/></router-link>
       </div>
     </div>
     <subnavi :subnaviItems="subnaviItems"></subnavi>

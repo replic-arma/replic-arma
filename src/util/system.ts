@@ -8,17 +8,14 @@ import { useRepoStore } from '@/store/repo';
 import { Command } from '@tauri-apps/api/shell';
 import { listen } from '@tauri-apps/api/event';
 import { useHashStore } from '@/store/hash';
-/* eslint-disable import/no-webpack-loader-syntax, import/default */
-import fileWorkerUrl from 'worker-plugin/loader!@/worker/file.worker';
-import { promisifyWorker } from './worker';
-/* eslint-enable import/no-webpack-loader-syntax, import/default */
+import { toRaw } from 'vue';
 export class System {
     private static APPDIR = 'Replic-Arma';
     private static DOCUMENTDIRECTORY = documentDir();
     private static CACHEDIRECTORY = cacheDir();
     public static SEPERATOR = sep;
 
-    public static async init (): Promise<void> {
+    public static init (): void {
         const settingsStore = useSettingsStore();
         const repoStore = useRepoStore();
         const hashStore = useHashStore();
@@ -129,13 +126,14 @@ export class System {
 
     public static async getFilesForModset (repoId: string|null, modsetId: string|null): Promise<File[]> {
         const repoStore = useRepoStore();
-        const repo = repoStore.getRepo(repoId);
+        const hashStore = useHashStore();
+        const repo = toRaw(repoStore.getRepo(repoId));
         if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
         if (repo.files === undefined) throw new Error(`Repository with id ${repoId} has no files`);
-        const modset = repoStore.getModset(repoId, modsetId);
+        const modset = toRaw(repoStore.getModset(repoId, modsetId));
         if (modset === undefined) throw new Error(`Modset with id ${modsetId} not found`);
-        const fileWorker = new Worker(fileWorkerUrl);
-        return await promisifyWorker<{files: File[], modset: Modset}, File[]>(fileWorker, { files: repo.files, modset: modset });
+        const modsetFiles = await (await hashStore.getWorker).splitFiles(repo.files, modset);
+        return modsetFiles;
     }
 
     public static resetSettings (): void {

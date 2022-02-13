@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const WorkerPlugin = require('worker-plugin');
+const ThreadsPlugin = require('threads-plugin');
 module.exports = {
     pluginOptions: {
         i18n: {
@@ -23,7 +23,7 @@ module.exports = {
             ]
         },
         plugins: [
-            new WorkerPlugin()
+            new ThreadsPlugin({ module: 'esnext' })
         ]
     }
 };

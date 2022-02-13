@@ -54,7 +54,7 @@ export default class RepositoryAddVue extends Vue {
 .replic-dialog {
   height: fit-content;
   width: 75%;
-  &::v-deep &__heading {
+  &:deep(&__heading) {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -64,7 +64,7 @@ export default class RepositoryAddVue extends Vue {
         cursor: pointer;
     }
   }
-  &::v-deep &__content {
+  &:deep(&__content) {
       display: grid;
       row-gap: 1rem;
   }

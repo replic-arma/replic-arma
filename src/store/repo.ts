@@ -3,10 +3,7 @@ import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 import { useHashStore } from './hash';
-/* eslint-disable import/no-webpack-loader-syntax, import/default */
-import fileChangesWorkerUrl from 'worker-plugin/loader!@/worker/fileChanges.worker';
-import { promisifyWorker } from '@/util/worker';
-/* eslint-enable import/no-webpack-loader-syntax, import/default */
+import { toRaw } from 'vue';
 export const useRepoStore = defineStore('repo', {
     state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null, filesToCheck: string[], filesChecked: string[], filesFailed: string[]} => ({
         repos: new JSONMap<string, ReplicArmaRepository>(),
@@ -42,20 +39,19 @@ export const useRepoStore = defineStore('repo', {
                 const hashStore = useHashStore();
                 if (repoId === null) throw new Error('Repository id is null');
                 if (modsetId === null) throw new Error('Modset id is null');
-                const repo = state.repos.get(repoId);
+                const repo = toRaw(state.repos.get(repoId));
                 if (repo === undefined) throw new Error(`Repository with id ${repoId} does not exist`);
                 const modset = repo.modsets?.get(modsetId);
                 if (modset === undefined) throw new Error(`Modset with id ${modsetId} does not exist`);
                 modset.status = 'checking';
                 repo.modsets?.set(modset.id, modset);
                 state.repos.set(repo.id, repo);
-                let cached = hashStore.cache.get(modsetId);
+                let cached = toRaw(hashStore.cache.get(modsetId));
                 if (cached === undefined) {
-                    cached = hashStore.cache.get(repoId);
-                    const modsetFiles = await System.getFilesForModset(repoId, modsetId);
+                    cached = toRaw(hashStore.cache.get(repoId));
+                    const modsetFiles = await toRaw(System.getFilesForModset(repoId, modsetId));
                     if (cached?.checkedFiles === undefined) throw new Error('cache empty!');
-                    const fileChangesWorker = new Worker(fileChangesWorkerUrl);
-                    const outDatedFiles = await promisifyWorker<{wantedFiles: File[], checkedFiles: Array<Array<string>>}, string[]>(fileChangesWorker, { wantedFiles: modsetFiles, checkedFiles: cached?.checkedFiles });
+                    const outDatedFiles = await (await hashStore.getWorker).getFileChanges(modsetFiles, cached?.checkedFiles);
                     hashStore.cache.set(modsetId, { checkedFiles: cached?.checkedFiles, missingFiles: cached.missingFiles, outdatedFiles: outDatedFiles });
                 }
                 cached = hashStore.cache.get(modsetId);

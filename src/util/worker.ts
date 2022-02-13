@@ -1,34 +1,25 @@
-/**
- * Promisify our workers, which are only built to process one request at a time.
- * @param worker Worker to promisify
- * @param message Message to send to worker
- * @param transfer Array of Transferable objects for the postMessage call
- * @returns Promise which resolves in the data received by the worker
- */
-export function promisifyWorker<T, R> (worker: Worker, message: T, transfer?: Transferable[]): Promise<R> {
-    let messageHandler: (e: MessageEvent<{ type: 'data', data: R }|{ type: 'error', data: Error }>) => void;
-    let errorHandler: (e: ErrorEvent) => void;
-
-    const promise = new Promise<R>((resolve, reject) => {
-        messageHandler = e => {
-            if (e.data.type === 'data') {
-                resolve(e.data.data);
-            } else {
-                reject(e.data.data);
+import { File, Modset } from '@/models/Repository';
+import { expose } from 'threads';
+const replicWorker = {
+    splitFiles (files: File[], modset: Modset): File[] {
+        if (modset.mods === undefined) throw new Error('Modset has no mods');
+        const mods = modset.mods.map(mod => { return mod.name; });
+        if (mods === undefined) throw new Error('Modset has no files');
+        return [...new Set(files.filter(x => {
+            if (mods.find(modName => modName === x.path.split('\\')[0])) {
+                return x;
             }
-        };
-        errorHandler = e => reject(e);
+        }
+        ))];
+    },
+    getFileChanges (wantedFiles: File[], checkedFiles: Array<Array<string>>): string[] {
+        const flat = checkedFiles.flat();
+        return wantedFiles.filter((wantedFile) => !flat.includes(wantedFile.sha1)).map(file => file.path);
+    },
+    prependFilePath (files: File[], downloadDir: string, seperator: string): string[] {
+        return files.map((file) => `${downloadDir}${seperator}${file.path}`);
+    }
+};
 
-        worker.addEventListener('message', messageHandler);
-        worker.addEventListener('error', errorHandler);
-
-        worker.postMessage(message, transfer ?? []);
-    });
-
-    promise.finally(() => {
-        worker.removeEventListener('message', messageHandler);
-        worker.removeEventListener('error', errorHandler);
-    });
-
-    return promise;
-}
+export type ReplicWorker = typeof replicWorker;
+expose(replicWorker);

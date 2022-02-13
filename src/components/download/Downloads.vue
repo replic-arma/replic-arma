@@ -101,7 +101,7 @@ export default class DownloadsVue extends Vue {
     border-bottom-left-radius: 2rem;
     border-bottom-right-radius: 2rem;
   }
-  &::v-deep &__heading {
+  &:deep(&__heading) {
     display: grid;
     grid-template-columns: 4rem 18rem auto;
     border-bottom: 1px solid black;

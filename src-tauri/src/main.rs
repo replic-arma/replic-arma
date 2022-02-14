@@ -200,7 +200,8 @@ mod tests {
             .unwrap();
 
         download(
-            a3s.clone(),
+            a3s.repo_typ,
+            a3s.download_server.url.clone(),
             ".\\test_out\\".to_string(),
             a3s.files[0..5]
                 .into_iter()

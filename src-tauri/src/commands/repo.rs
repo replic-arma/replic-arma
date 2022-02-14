@@ -114,38 +114,41 @@ pub async fn get_repo(url: String) -> JSResult<Repository> {
 
 #[tauri::command]
 pub async fn download(
-    repo: Repository,
+    repo_type: RepoType,
+    url: String,
     target_path: String,
     file_array: Vec<String>,
 ) -> JSResult<()> {
-    Ok(download_wrapper(repo, target_path, file_array).await?)
+    Ok(download_wrapper(repo_type, url, target_path, file_array).await?)
 }
 
 pub async fn download_wrapper(
-    repo: Repository,
+    repo_type: RepoType,
+    url: String,
     target_path: String,
     file_array: Vec<String>,
 ) -> Result<()> {
     let target_dir = PathBuf::from_str(&target_path)?;
-    download_files(repo, target_dir, file_array).await?;
+    download_files(repo_type, url, target_dir, file_array).await?;
     Ok(())
 }
 
 async fn download_files(
-    repo: Repository,
+    repo_type: RepoType,
+    url: String,
     target_dir: PathBuf,
     file_array: Vec<String>,
 ) -> Result<()> {
-    match repo.repo_typ {
-        RepoType::A3S => download_a3s(repo, target_dir, file_array).await?,
+    match repo_type {
+        RepoType::A3S => download_a3s(url, target_dir, file_array).await?,
         RepoType::Swifty => todo!(),
     };
 
     Ok(())
 }
 
-async fn download_a3s(repo: Repository, target_dir: PathBuf, files: Vec<String>) -> Result<()> {
-    let connection_info = Url::parse(&repo.download_server.url)?;
+async fn download_a3s(url: String, target_dir: PathBuf, files: Vec<String>) -> Result<()> {
+    let connection_info = Url::parse(&url)?;
     //println!("{:?}", files);
     println!("{}", connection_info);
 

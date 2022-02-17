@@ -2,7 +2,7 @@
 name = "app"
 version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["RednecksRevenge", "Willard"]
 license = ""
 repository = ""
 default-run = "app"
@@ -12,13 +12,13 @@ build = "src/build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.0.0-beta.4" }
+tauri-build = { version = "1.0.0-rc.2", features = [] }
 
 [dependencies]
 directories = "4.0.1"
 serde_json = "1.0.72"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.0.0-beta.8", features =["api-all"]}
+tauri = { version = "1.0.0-rc.2", features = ["api-all"] }
 jaded = { version = "0.3.0", features = ["derive", "renaming" ] }
 flate2 = { version = "1.0.17", features = ["zlib"], default-features = false }
 byteorder = "1.3.1"
@@ -52,4 +52,4 @@ panic = "abort"
 codegen-units = 1
 lto = true
 incremental = false
-opt-level = "z"
+opt-level = "s"

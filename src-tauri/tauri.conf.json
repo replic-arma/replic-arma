@@ -49,20 +49,7 @@
       "active": false
     },
     "allowlist": {
-      "all": true,
-      "shell": {
-        "execute": true,
-        "open": true
-      },
-      "fs": {
-        "all": true
-      },
-      "notification": {
-        "all": true
-      },
-      "dialog": {
-        "all": true
-      }
+      "all": true
     },
     "windows": [
       {

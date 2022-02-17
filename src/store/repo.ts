@@ -1,23 +1,21 @@
-import { Collection, File, GameServer, JSONMap, Modset, ReplicArmaRepository } from '@/models/Repository';
+import { Collection, GameServer, JSONMap, Modset, ReplicArmaRepository } from '@/models/Repository';
 import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 import { useHashStore } from './hash';
 import { toRaw } from 'vue';
+import { spawn, Thread } from 'threads';
 export const useRepoStore = defineStore('repo', {
-    state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null, filesToCheck: string[], filesChecked: string[], filesFailed: string[]} => ({
+    state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null} => ({
         repos: new JSONMap<string, ReplicArmaRepository>(),
         currentRepoId: null,
         currentModsetId: null,
         currentCollectionId: null,
-        currentModId: null,
-        filesToCheck: [],
-        filesChecked: [],
-        filesFailed: []
+        currentModId: null
     }),
     getters: {
         getRepos: (state) => {
-            return Array.from(state.repos.values());
+            return toRaw(Array.from(state.repos.values()));
         },
         getRepo: (state) => {
             return (repoId: string|null) => repoId !== null ? state.repos.get(repoId) : undefined;
@@ -51,7 +49,9 @@ export const useRepoStore = defineStore('repo', {
                     cached = toRaw(hashStore.cache.get(repoId));
                     const modsetFiles = await toRaw(System.getFilesForModset(repoId, modsetId));
                     if (cached?.checkedFiles === undefined) throw new Error('cache empty!');
-                    const outDatedFiles = await (await hashStore.getWorker).getFileChanges(modsetFiles, cached?.checkedFiles);
+                    const fileChangesWorker = await hashStore.getWorker;
+                    const outDatedFiles = await fileChangesWorker.getFileChanges(modsetFiles, cached?.checkedFiles);
+                    // await Thread.terminate(fileChangesWorker);
                     hashStore.cache.set(modsetId, { checkedFiles: cached?.checkedFiles, missingFiles: cached.missingFiles, outdatedFiles: outDatedFiles });
                 }
                 cached = hashStore.cache.get(modsetId);
@@ -62,28 +62,15 @@ export const useRepoStore = defineStore('repo', {
                     modset.status = 'ready';
                 }
                 repo.modsets?.set(modset.id, modset);
-                state.repos.set(repo.id, repo);
+                repo.save();
             };
         }
     },
     actions: {
-        addRepo (repo: ReplicArmaRepository) {
-            const replicRepo = repo;
-            if (replicRepo.image === undefined) replicRepo.image = 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32';
-            replicRepo.id = uuidv4();
-            if (repo.collections !== undefined) {
-                const collections = Array.from(repo.collections as unknown as Collection[]).map((collection: Collection) => { return { id: uuidv4(), name: collection.name, modsets: collection.modsets, description: collection.description }; });
-                repo.collections = new JSONMap<string, Collection>();
-                collections.map(collection => repo.collections?.set(collection.id, collection));
-            } else {
-                repo.collections = new JSONMap<string, Collection>();
-            }
-            const uuid = uuidv4();
-            const modsets = Array.from(repo.modsets as unknown as Modset[]).map((modset: Modset) => { return { id: uuidv4(), name: modset.name, mods: modset.mods, description: modset.description }; });
-            replicRepo.modsets = new JSONMap<string, Modset>();
-            replicRepo.modsets?.set(uuid, { id: uuid, name: 'All Mods', description: 'All Mods from the Repository', mods: [...new Set(repo.files?.map(x => { return x.path.split('\\')[0]; }))].map(modName => { return { mod_type: 'mod', name: modName }; }) });
-            modsets.map(modset => repo.modsets?.set(modset.id, modset));
-            this.repos.set(replicRepo.id, replicRepo);
+        async addRepo (repo: ReplicArmaRepository) {
+            const replicRepo = new ReplicArmaRepository();
+            await replicRepo.init(repo);
+            replicRepo.calcHash();
             this.saveRepoState();
         },
         removeRepo (id: string|null) {
@@ -111,6 +98,9 @@ export const useRepoStore = defineStore('repo', {
             const repositoriy = this.repos.get(id);
             if (repositoriy === undefined) throw new Error(`Repository with id ${id} does not exist`);
             collection.id = uuidv4();
+            if (repositoriy.collections === undefined) {
+                repositoriy.collections = new JSONMap<string, Collection>();
+            }
             repositoriy.collections?.set(collection.id, collection);
             this.repos.set(id, repositoriy);
         },
@@ -119,15 +109,11 @@ export const useRepoStore = defineStore('repo', {
             if (repoJson !== null) {
                 const repoMap = new JSONMap<string, ReplicArmaRepository>(repoJson);
                 repoMap.forEach(repo => {
-                    if (repo.modsets === undefined) return;
-                    const modsetMap = new JSONMap<string, Modset>(repo.modsets);
-                    repo.modsets = modsetMap;
-                    repoMap.set(repo.id, repo);
+                    new ReplicArmaRepository().loadFromJson(repo);
                 });
-                this.repos = repoMap;
             }
         },
-        saveRepoState () {
+        async saveRepoState () {
             System.updateRepoJson(this.repos);
         }
     }

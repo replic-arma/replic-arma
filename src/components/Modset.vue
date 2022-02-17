@@ -5,11 +5,11 @@
             <small class="modset__description">{{modset.description}}</small>
         </div>
         <span class="repo__status" :class="`status--${status}`">
-            <template v-if="status === 'checking'">
+            <template v-if="status === 'checking' || status === 'updating'">
                 <mdicon name="loading" spin />
             </template>
             {{$t('download-status.' + status)}}
-            <template v-if="status === 'checking' && progress !== 0">
+            <template v-if="status === 'checking' || status === 'updating' && progress !== 0">
                 <span>...{{progress}}%</span>
             </template>
         </span>

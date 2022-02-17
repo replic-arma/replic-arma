@@ -29,10 +29,10 @@ import Toast from './util/Toast';
 })
 export default class CollectionAddVue extends Vue {
     private dialogStore = useDialogStore();
-    private collectionName: string|undefined;
+    private collectionName: string|null = null;
     private addCollection () {
         const repoStore = useRepoStore();
-        if (this.collectionName === undefined) return;
+        if (this.collectionName === null) return;
         repoStore.addCollectionToRepo(repoStore.currentRepoId,
             {
                 id: uuidv4(),

@@ -4,13 +4,22 @@
       <mdicon name="chevron-left" size="55" @click="$router.back()" />
       <h1>{{ modset?.name }}</h1>
       <div class="icon-group">
+        <span class="repo__status" :class="`status--${status}`">
+            <template v-if="status === 'checking' || status === 'updating'">
+                <mdicon name="loading" spin />
+            </template>
+            {{$t('download-status.' + status)}}
+            <template v-if="status === 'checking' || status === 'updating' && progress !== 0">
+                <span>...{{progress}}%</span>
+            </template>
+        </span>
         <button class="button">
           <span v-if="status === 'downloading'" class="spinner spinner-spin" />
           <mdicon v-else-if="status === 'outdated'" name="download" />
           <mdicon v-else name="play" />
           {{ $t('download-status.' + status) }}
         </button>
-        <button @click="checkModset()">Check</button>
+        <button @click="download()">Check</button>
         <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
       </div>
     </div>
@@ -37,6 +46,8 @@ import { ModsetMod } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
+import { useSettingsStore } from '@/store/settings';
+import { System } from '@/util/system';
 import { mapState } from 'pinia';
 import { Options, Vue } from 'vue-class-component';
 
@@ -53,12 +64,22 @@ export default class ModsetView extends Vue {
   private hashStore = useHashStore();
   private downloadStore = useDownloadStore();
   private get status () {
-      return 'play';
+      return this.repoStore.getModset(this.repoStore.currentRepoId, this.repoStore.currentModsetId)?.status ?? 'checking';
+  }
+
+  private get progress () {
+      const hashStore = useHashStore();
+      if (hashStore.current === null || hashStore.current.repoId !== this.repoStore.currentRepoId) return 0;
+      return Math.floor(hashStore.current.checkedFiles / hashStore.current.filesToCheck * 100);
   }
 
   private outdated (mod: ModsetMod) {
       const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
-      return cache?.missingFiles.map(file => file.split('\\').includes(mod.name)) || cache?.outdatedFiles.map(file => file.split('\\').includes(mod.name));
+      return cache?.missingFiles.map(file => file.split('\\').includes(mod.name)).includes(true) || cache?.outdatedFiles.map(file => file.split('\\').includes(mod.name)).includes(true);
+  }
+
+  private download () {
+      System.downloadFiles(this.repoStore.currentRepoId, this.repoStore.currentModsetId, this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.outdatedFiles ?? [], this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.missingFiles ?? []).then(bla => console.log(bla));
   }
 }
 </script>

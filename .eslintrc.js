@@ -6,10 +6,7 @@ module.exports = {
     extends: [
         'plugin:vue/vue3-essential',
         '@vue/standard',
-        '@vue/typescript/recommended',
-        'plugin:import/errors',
-        'plugin:import/warnings',
-        'plugin:import/typescript'
+        '@vue/typescript/recommended'
     ],
     rules: {
         indent: ['error', 4],

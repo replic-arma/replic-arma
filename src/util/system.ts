@@ -16,10 +16,16 @@ export class System {
     public static SEPERATOR = sep;
 
     public static init (): void {
+        console.info('Starting Init');
         const settingsStore = useSettingsStore();
         const repoStore = useRepoStore();
         const hashStore = useHashStore();
-        Promise.all([settingsStore.loadData(), repoStore.loadRepositories(), hashStore.loadData()]).then(async () => System.revisionCheck());
+        Promise.all([settingsStore.loadData(), repoStore.loadRepositories(), hashStore.loadData()]).then(
+            async () => {
+                console.info('Init finished');
+                System.revisionCheck();
+            }
+        );
         System.registerListener();
     }
 
@@ -60,7 +66,7 @@ export class System {
 
             return createDir(System.APPDIR, { dir: BaseDirectory.Document });
         });
-        return writeFile({ contents: JSON.stringify(content, null, '\t'), path: documentDirectory + System.SEPERATOR + System.APPDIR + System.SEPERATOR + 'repos.json' });
+        return writeFile({ contents: JSON.stringify(content, null), path: documentDirectory + System.SEPERATOR + System.APPDIR + System.SEPERATOR + 'repos.json' });
     }
 
     public static async getCache (): Promise<JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>> {
@@ -73,6 +79,7 @@ export class System {
     }
 
     public static async updateCache (content: JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>): Promise<void> {
+        console.info('Updating cache');
         const documentDirectory = await System.DOCUMENTDIRECTORY;
 
         await System.dirExists(documentDirectory + System.APPDIR).then(exists => {
@@ -167,30 +174,46 @@ export class System {
         // });
     }
 
-    public static async revisionCheck (): Promise<void> {
+    public static async revisionCheck (force = false): Promise<void> {
+        console.info('Starting Revision check');
         const repoStore = useRepoStore();
         const hashStore = useHashStore();
         repoStore.getRepos.forEach(async repo => {
             repo.status = 'checking';
-            repoStore.repos.set(repo.id, repo);
+            repo.save();
+            if (force) {
+                repo.calcHash();
+                return;
+            }
             if (hashStore.cache.get(repo.id) === undefined) {
+                console.info(`Repository ${repo.name} is not cached yet`);
                 repo.status = 'outdated';
-                repoStore.repos.set(repo.id, repo);
-                await hashStore.startHash(repo);
+                repo.save();
+                repo.calcHash();
             } else {
                 const externalRepo = await System.getRepo(`${repo.config_url}autoconfig`);
                 if (externalRepo.revision !== repo.revision) {
+                    console.info(`Detected new Revision for Repository ${repo.name}`);
                     repo.revisionChanged = true;
                     repo.revision = externalRepo.revision;
                     repo.status = 'outdated';
-                    repoStore.repos.set(repo.id, repo);
-                    await hashStore.startHash(repo);
+                    repo.save();
+                    repo.calcHash();
                 } else {
+                    console.info(`Repository ${repo.name} ready`);
                     repo.revisionChanged = false;
                     repo.status = 'ready';
-                    repoStore.repos.set(repo.id, repo);
+                    repo.save();
                 }
             }
         });
+    }
+
+    public static async downloadFiles (repoId: string|null, modsetId: string|null, outdatedFiles: string[], missingFiles: string[]): Promise<void> {
+        const repoStore = useRepoStore();
+        const settingsStore = useSettingsStore();
+        const repo = repoStore.getRepo(repoId);
+        if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
+        return await invoke('download', { repoType: repo.type?.toUpperCase(), url: repo.download_server?.url, targetPath: settingsStore.settings.downloadDirectoryPath, fileArray: [...missingFiles.map(path => path.replace(`${settingsStore.settings.downloadDirectoryPath}${System.SEPERATOR}` ?? '', '')), ...outdatedFiles] });
     }
 }

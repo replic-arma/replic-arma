@@ -1,10 +1,10 @@
 <template>
   <div class="repo-view">
-    <div class="repo-view__heading">
+    <div class="repo-view__heading" v-if="repository">
       <router-link class="button" to="/"><mdicon name="chevron-left" size="55"/></router-link>
       <h1>{{repository.name}}</h1>
       <div class="icon-group">
-        <mdicon name="refresh" size="45"/>
+        <mdicon name="refresh" size="45" @click="checkRepo"/>
         <router-link class="button" :to="'/reposettings/'+ repository.id"><mdicon  name="cog" size="55"/></router-link>
       </div>
     </div>
@@ -19,7 +19,6 @@ import { Options, Vue } from 'vue-class-component';
 import { useRepoStore } from '../store/repo';
 import { useDialogStore } from '../store/dialog';
 import { mapState } from 'pinia';
-import { System } from '@/util/system';
 import { useSettingsStore } from '@/store/settings';
 @Options({
     components: {
@@ -46,10 +45,8 @@ export default class RepoView extends Vue {
   }
 
   public checkRepo (): void {
-      const settingsStore = useSettingsStore();
-      const files = this.repoStore.getRepo(this.repoStore.currentRepoId)?.files?.map(file => { return settingsStore.settings.downloadDirectoryPath + '\\' + file.path; });
-      if (files === undefined) throw new Error('No Files');
-      System.hashCheck(files).catch(error => console.log(error));
+      const bla = this.repoStore.getRepo(this.repoStore.currentRepoId);
+      if (bla !== undefined) bla.calcHash();
   }
 }
 </script>
@@ -70,7 +67,7 @@ export default class RepoView extends Vue {
     }
     .icon-group {
       display: grid;
-      grid-template-columns: 3rem;
+      grid-template-columns: 3rem 3rem;
       align-items: center;
       justify-content: center;
       color: var(--c-text-3);

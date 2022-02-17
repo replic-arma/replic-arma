@@ -47,7 +47,7 @@ export default class ReposView extends Vue {
   private repoStore = useRepoStore();
   private reloadRepos = () => {
       // this.repoStore.loadRepositories();
-      System.revisionCheck();
+      System.revisionCheck(true);
       Toast('Reloading Repositories');
   };
 }

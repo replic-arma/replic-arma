@@ -41,11 +41,10 @@ export default class RepositoryAddVue extends Vue {
     private addRepo () {
         const repoStore = useRepoStore();
         System.getRepo(this.autoConfigModel).then((repo: ReplicArmaRepository) => {
-            repoStore.addRepo(
-                repo
-            );
-            this.toggleDialog();
-            Toast('Added Repository');
+            repoStore.addRepo(repo).then(() => {
+                this.toggleDialog();
+                Toast('Added Repository');
+            });
         }).catch(error => console.error(error));
     }
 }

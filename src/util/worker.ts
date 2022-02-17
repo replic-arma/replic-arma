@@ -1,22 +1,56 @@
 import { File, Modset } from '@/models/Repository';
 import { expose } from 'threads';
+export class ModsetMod {
+    public mod_type!: string;
+    public name!: string;
+    public allow_compat?: boolean;
+    public files?: File[];
+    public outdatedFiles?: [];
+    public missingFiles?: [];
+
+    constructor (name: string, mod_type: string, files: File[] = [], allow_compat = false) {
+        this.name = name;
+        this.mod_type = mod_type;
+        this.files = files;
+        this.allow_compat = allow_compat;
+    }
+}
+
 const replicWorker = {
-    splitFiles (files: File[], modset: Modset): File[] {
-        if (modset.mods === undefined) throw new Error('Modset has no mods');
-        const mods = modset.mods.map(mod => { return mod.name; });
-        if (mods === undefined) throw new Error('Modset has no files');
-        return [...new Set(files.filter(x => {
-            if (mods.find(modName => modName === x.path.split('\\')[0])) {
-                return x;
+    async splitFiles (files: File[], mod: ModsetMod): Promise<File[]> {
+        return [...new Set(files.filter(file => {
+            if (mod.name === file.path.split('\\')[0]) {
+                return file;
             }
         }
         ))];
     },
-    getFileChanges (wantedFiles: File[], checkedFiles: Array<Array<string>>): string[] {
+    async mapFilesToMods (files: File[], modsets: Modset[]): Promise<Modset[]> {
+        modsets.map(modset => {
+            const modMap = new Map<string, File[]>();
+            files.forEach(file => {
+                const modName = file.path.split('\\')[0];
+                const foundMod = modMap.get(modName);
+                if (foundMod !== undefined) {
+                    foundMod.push(file);
+                    modMap.set(modName, foundMod);
+                } else {
+                    modMap.set(modName, [file]);
+                }
+            });
+            const mods: ModsetMod[] = [];
+            modset.mods?.forEach(mod => {
+                mods.push({name: mod.name, mod_type: 'mod', files: modMap.get(mod.name) ?? []});
+            })
+            modset.mods = mods;
+        })
+        return modsets;
+    },
+    async getFileChanges (wantedFiles: File[], checkedFiles: Array<Array<string>>): Promise<string[]> {
         const flat = checkedFiles.flat();
         return wantedFiles.filter((wantedFile) => !flat.includes(wantedFile.sha1)).map(file => file.path);
     },
-    prependFilePath (files: File[], downloadDir: string, seperator: string): string[] {
+    async prependFilePath (files: File[], downloadDir: string, seperator: string): Promise<string[]> {
         return files.map((file) => `${downloadDir}${seperator}${file.path}`);
     }
 };

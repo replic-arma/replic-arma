@@ -33,7 +33,7 @@ export default class ModsetAddVue extends Vue {
     private toggleDialog = () => { this.dialogStore.toggleDialog('modsetAdd'); };
     private addRepo () {
         const repoStore = useRepoStore();
-        repoStore.addModsetToRepo(this.repoStore.currentRepoId, { id: uuidv4(), name: 'Test' });
+        // repoStore.addModsetToRepo(this.repoStore.currentRepoId, { id: uuidv4(), name: 'Test' });
         this.toggleDialog();
         Toast('Added Modset');
     }

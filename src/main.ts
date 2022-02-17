@@ -9,7 +9,6 @@ import TransitionVue from './components/util/Transition.vue';
 import LoaderVue from './components/util/Loader.vue';
 import TooltipVue from './components/util/Tooltip.vue';
 import { System } from './util/system';
-import { spawn, Worker } from 'threads';
 
 const app = createApp(App);
 app.component('rtransition', TransitionVue);

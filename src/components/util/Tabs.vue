@@ -1,11 +1,13 @@
 <template>
     <div>
         <ul class="tabs">
-            <li class="tabs__item"  v-for="(item, i) of tabItems" :key="i" @click="activeIndex = i">
+            <li class="tabs__item"  v-for="(item, i) of tabItems" :key="i" @click="activeIndex = i" v-once>
                 <span :class="{'active-tab': activeIndex === i}">{{item.label}}</span>
             </li>
         </ul>
-        <component :is="tabItems[activeIndex].component" />
+        <keep-alive>
+            <component :is="tabItems[activeIndex].component" />
+        </keep-alive>
     </div>
 </template>
 <script lang="ts">

@@ -31,11 +31,10 @@ export class System {
 
     public static async getConfig (): Promise<ApplicationSettings> {
         const documentDirectory = await System.DOCUMENTDIRECTORY;
-        const exists = await System.fileExists(documentDirectory + sep + System.APPDIR + sep + 'config.json');
+        const exists = await System.fileExists(documentDirectory + System.APPDIR + sep + 'config.json');
 
         if (!exists) return new ApplicationSettings();
-
-        return JSON.parse(await readTextFile(documentDirectory + sep + System.APPDIR + sep + 'config.json'));
+        return JSON.parse(await readTextFile(System.APPDIR + sep + 'config.json', { dir: BaseDirectory.Document }));
     }
 
     public static async updateConfig (content: ApplicationSettings): Promise<void> {
@@ -46,16 +45,16 @@ export class System {
 
             return createDir(System.APPDIR, { dir: BaseDirectory.Document });
         });
-        return writeFile({ contents: JSON.stringify(content, null, '\t'), path: documentDirectory + sep + System.APPDIR + sep + 'config.json' });
+        return writeFile({ contents: JSON.stringify(content, null, '\t'), path: documentDirectory + System.APPDIR + sep + 'config.json' }, { dir: BaseDirectory.Document });
     }
 
     public static async getRepoJson (): Promise<Map<string, ReplicArmaRepository>|null> {
         const documentDirectory = await System.DOCUMENTDIRECTORY;
-        const exists = await System.fileExists(documentDirectory + sep + System.APPDIR + sep + 'repos.json');
+        const exists = await System.fileExists(documentDirectory + System.APPDIR + sep + 'repos.json');
 
         if (!exists) return null;
 
-        return JSON.parse(await readTextFile(documentDirectory + sep + System.APPDIR + sep + 'repos.json'));
+        return JSON.parse(await readTextFile(System.APPDIR + sep + 'repos.json', { dir: BaseDirectory.Document }));
     }
 
     public static async updateRepoJson (content: JSONMap<string, ReplicArmaRepository> | Record<string, never>): Promise<void> {
@@ -66,16 +65,17 @@ export class System {
 
             return createDir(System.APPDIR, { dir: BaseDirectory.Document });
         });
-        return writeFile({ contents: JSON.stringify(content, null), path: documentDirectory + System.SEPERATOR + System.APPDIR + System.SEPERATOR + 'repos.json' });
+
+        return writeFile({ contents: JSON.stringify(content, null), path: System.SEPERATOR + System.APPDIR + System.SEPERATOR + 'repos.json' }, { dir: BaseDirectory.Document });
     }
 
     public static async getCache (): Promise<JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>> {
         const documentDirectory = await System.DOCUMENTDIRECTORY;
-        const exists = await System.fileExists(documentDirectory + sep + System.APPDIR + sep + 'cache.json');
+        const exists = await System.fileExists(documentDirectory + System.APPDIR + sep + 'cache.json');
 
         if (!exists) return new JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>();
 
-        return JSON.parse(await readTextFile(documentDirectory + sep + System.APPDIR + sep + 'cache.json'));
+        return JSON.parse(await readTextFile(System.APPDIR + sep + 'cache.json', { dir: BaseDirectory.Document }));
     }
 
     public static async updateCache (content: JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>): Promise<void> {
@@ -87,7 +87,7 @@ export class System {
 
             return createDir(System.APPDIR, { dir: BaseDirectory.Document });
         });
-        return writeFile({ contents: JSON.stringify(content), path: documentDirectory + sep + System.APPDIR + sep + 'cache.json' });
+        return writeFile({ contents: JSON.stringify(content), path: System.APPDIR + sep + 'cache.json' });
     }
 
     public static async clearCache (): Promise<void> {
@@ -96,9 +96,9 @@ export class System {
         if (!exists) return;
         await removeFile(cacheDirectory + System.APPDIR + sep + 'data' + sep + 'hashes.json');
         const documentDirectory = await System.DOCUMENTDIRECTORY;
-        exists = await System.fileExists(documentDirectory + sep + System.APPDIR + sep + 'cache.json');
+        exists = await System.fileExists(System.APPDIR + sep + 'cache.json');
         if (!exists) return;
-        await removeFile(documentDirectory + sep + System.APPDIR + sep + 'cache.json');
+        await removeFile(System.APPDIR + sep + 'cache.json');
     }
 
     public static async launchGame (repoId: string, modsetId: string, gameServer: GameServer|null = null): Promise<void> {

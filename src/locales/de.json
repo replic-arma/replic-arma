@@ -25,7 +25,8 @@
         "downloading": "Downloading",
         "ready": "Ready to play",
         "play": "Play",
-        "checking": "Checking"
+        "checking": "Checking",
+        "unknown": "Unknown"
     },
     "server": {
         "title": "Server",

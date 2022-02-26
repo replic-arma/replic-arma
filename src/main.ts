@@ -20,6 +20,6 @@ app.use(mdiVue, {
     icons: mdijs
 });
 app.mount('#app');
+System.init();
 app.use(i18n);
 i18n.global.locale = 'de';
-System.init();

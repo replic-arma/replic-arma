@@ -46,8 +46,7 @@ export default class ReposView extends Vue {
   private dialogStore = useDialogStore();
   private repoStore = useRepoStore();
   private reloadRepos = () => {
-      // this.repoStore.loadRepositories();
-      System.revisionCheck(true);
+      this.repoStore.loadRepositories();
       Toast('Reloading Repositories');
   };
 }

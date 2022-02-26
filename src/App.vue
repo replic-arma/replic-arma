@@ -1,9 +1,7 @@
 <template>
   <Suspense>
     <template #default>
-      <rtransition>
-        <router-view/>
-      </rtransition>
+      <rtransition />
     </template>
     <template #fallback>
       <loader />

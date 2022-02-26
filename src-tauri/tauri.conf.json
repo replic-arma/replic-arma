@@ -51,7 +51,7 @@
     "allowlist": {
       "all": true,
       "fs": {
-        "scope": ["$DOCUMENT/Replic-Arma/*"]
+        "scope": ["$DOCUMENT/Replic-Arma/*", "$DOCUMENT\\Replic-Arma\\*"]
       }
     },
     "windows": [

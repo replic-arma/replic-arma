@@ -16,10 +16,9 @@
         <button class="button">
           <span v-if="status === 'downloading'" class="spinner spinner-spin" />
           <mdicon v-else-if="status === 'outdated'" name="download" />
-          <mdicon v-else name="play" />
-          {{ $t('download-status.' + status) }}
+          <mdicon v-else name="play" @click="download()"/>
+          Download
         </button>
-        <button @click="download()">Check</button>
         <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
       </div>
     </div>
@@ -74,12 +73,17 @@ export default class ModsetView extends Vue {
   }
 
   private outdated (mod: ModsetMod) {
-      const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
-      return cache?.missingFiles.map(file => file.split('\\').includes(mod.name)).includes(true) || cache?.outdatedFiles.map(file => file.split('\\').includes(mod.name)).includes(true);
+      // const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
+      // return cache?.missingFiles.map(file => file.split('\\').includes(mod.name)).includes(true) || cache?.outdatedFiles.map(file => file.split('\\').includes(mod.name)).includes(true);
   }
 
   private download () {
-      System.downloadFiles(this.repoStore.currentRepoId, this.repoStore.currentModsetId, this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.outdatedFiles ?? [], this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.missingFiles ?? []).then(bla => console.log(bla));
+      // System.downloadFiles(this.repoStore.currentRepoId, this.repoStore.currentModsetId, this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.outdatedFiles ?? [], this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.missingFiles ?? []).then(
+      //     () => {
+      //         const currentRepo = this.repoStore.getRepo(this.repoStore.currentRepoId);
+      //         if (currentRepo === undefined) return;
+      //         this.hashStore.startHash(currentRepo);
+      //     });
   }
 }
 </script>

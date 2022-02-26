@@ -4,6 +4,7 @@ import { useRepoStore } from '@/store/repo';
 import { GameLaunchSettings } from './Settings';
 import { useHashStore } from '@/store/hash';
 import { Thread } from 'threads';
+import { System } from '@/util/system';
 export interface File {
     path: string;
     size: number;
@@ -19,28 +20,12 @@ export interface ModsetMod {
     missingFiles?: [];
 }
 
-export class Modset {
-    public id!: string;
-    public name!: string;
-    public description?: string;
-    public status?: 'ready'|'outdated'|'checking'|'unknown';
-    public mods?: Array<ModsetMod>;
-
-    public async init (modset: any): Promise<void> {
-        this.id = uuidv4();
-        this.name = modset.name;
-        this.description = modset.description;
-        this.status = modset.status ?? 'unknown';
-        this.mods = modset.mods;
-    }
-
-    public async loadFromJson (modset: any): Promise<void> {
-        this.id = modset.id;
-        this.name = modset.name;
-        this.description = modset.description;
-        this.status = modset.status ?? 'unknown';
-        this.mods = modset.mods !== undefined ? modset.mods : [];
-    }
+export interface Modset {
+    id: string;
+    name: string;
+    description?: string;
+    status?: 'ready'|'outdated'|'checking'|'unknown';
+    mods?: Array<ModsetMod>;
 }
 
 export interface GameServer {
@@ -61,10 +46,10 @@ export interface DownloadServer {
     options: DownloadServerOptions;
 }
 
-export class FileMap {
-    public foreign_hash!: string;
-    public local_hash!: string;
-    public file_found!: boolean;
+export interface FileMap {
+    foreign_hash: string;
+    local_hash: string;
+    file_found: boolean;
 }
 export class Collection {
     public id!: string;
@@ -134,7 +119,7 @@ export class ReplicArmaRepository extends Repository {
         this.save();
     }
 
-    public async loadFromJson (repo: any) {
+    public async loadFromJson (repo: any): Promise<void> {
         this.id = repo.id;
         this.name = repo.name;
         this.image = repo.image;
@@ -148,31 +133,25 @@ export class ReplicArmaRepository extends Repository {
         this.revision = repo.revision;
         this.build_date = repo.build_date;
         this.config_url = repo.config_url;
-        this.save();
+        await this.save();
     }
 
     private async initModsets (repo: ReplicArmaRepository): Promise<JSONMap<string, Modset>> {
         const modsets = new JSONMap<string, Modset>();
         const modWorker = await useHashStore().getWorker;
-        repo.modsets = await modWorker.mapFilesToMods(repo.files, repo.modsets);
+        const modsetData = await modWorker.mapFilesToMods(repo.files, repo.modsets);
+        System.updateModsetCache(repo.id, modsetData);
         Array.from(repo.modsets as unknown as Modset[]).map(async (repoModset: Modset) => {
-            const modset = new Modset();
-            await modset.init(repoModset);
-            modsets.set(modset.id, modset);
+            repoModset.id = uuidv4();
+            modsets.set(repoModset.id, repoModset);
         });
         await Thread.terminate(modWorker);
         return modsets;
     }
 
     private async loadModsets (repo: {modsets: [string, Modset][]} | undefined): Promise<JSONMap<string, Modset>> {
-        const modsets = new JSONMap<string, Modset>();
         if (repo === undefined) throw new Error('Repo undefined');
-        for (const [id, repoModset] of repo.modsets) {
-            const modset = new Modset();
-            await modset.loadFromJson(repoModset);
-            modsets.set(modset.id, modset);
-        }
-        return modsets;
+        return new JSONMap<string, Modset>(repo.modsets);
     }
 
     private async loadCollections (repo: any | undefined): Promise<JSONMap<string, Collection>> {
@@ -186,15 +165,42 @@ export class ReplicArmaRepository extends Repository {
         return repo.collections;
     }
 
-    public calcHash (): void {
+    public async calcHash (): Promise<void> {
         const hashStore = useHashStore();
         this.status = 'checking';
         this.save();
         hashStore.startHash(this);
     }
 
-    public save (): void {
+    public async save (): Promise<void> {
         const repoStore = useRepoStore();
         repoStore.repos.set(this.id, this);
+    }
+
+    public async connectToAutoConfig (): Promise<Repository> {
+        return await System.getRepo(`${this.config_url}autoconfig`);
+    }
+
+    public async revisionCheck (force = false): Promise<void> {
+        this.status = 'checking';
+        this.save();
+        if (force) {
+            this.calcHash();
+            return;
+        }
+        const externalRepo = await this.connectToAutoConfig();
+        if (externalRepo.revision !== this.revision) {
+            console.info(`Detected new Revision for Repository ${this.name}`);
+            this.revisionChanged = true;
+            this.revision = externalRepo.revision;
+            this.status = 'outdated';
+            this.save();
+            this.calcHash();
+        } else {
+            console.info(`Repository ${this.name} ready`);
+            this.revisionChanged = false;
+            this.status = 'ready';
+            this.save();
+        }
     }
 }

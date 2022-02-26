@@ -11,7 +11,7 @@
                     <input class="txt__input" type="text" name="modsetName" />
                 </div>
             </div>
-            <button class="button" @click="addRepo">{{$t('submit')}}</button>
+            <button class="button">{{$t('submit')}}</button>
         </template>
     </replic-dialog>
 </template>
@@ -31,12 +31,6 @@ export default class ModsetAddVue extends Vue {
     private repoStore = useRepoStore();
     private dialogStore = useDialogStore();
     private toggleDialog = () => { this.dialogStore.toggleDialog('modsetAdd'); };
-    private addRepo () {
-        const repoStore = useRepoStore();
-        // repoStore.addModsetToRepo(this.repoStore.currentRepoId, { id: uuidv4(), name: 'Test' });
-        this.toggleDialog();
-        Toast('Added Modset');
-    }
 }
 </script>
 <style lang="scss" scoped>

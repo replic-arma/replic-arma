@@ -106,11 +106,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
 
-    use std::{
-        fs::File,
-        path::{Path, PathBuf},
-        str::FromStr,
-    };
+    use std::{path::PathBuf, str::FromStr};
 
     use crate::{
         a3s::A3SRepository,
@@ -173,24 +169,24 @@ mod tests {
         println!("{}", a3s.download_server.url);
     }
 
-    #[test]
-    fn dir_exists_test() {
-        assert!(dir_exists("./src".to_string()).unwrap());
+    #[tokio::test]
+    async fn dir_exists_test() {
+        assert!(dir_exists("./src".to_string()).await.unwrap());
     }
 
-    #[test]
-    fn dir_not_exists_test() {
-        assert!(!dir_exists("./src/1337".to_string()).unwrap());
+    #[tokio::test]
+    async fn dir_not_exists_test() {
+        assert!(!dir_exists("./src/1337".to_string()).await.unwrap());
     }
 
-    #[test]
-    fn file_exists_test() {
-        assert!(file_exists("./src/main.rs".to_string()).unwrap());
+    #[tokio::test]
+    async fn file_exists_test() {
+        assert!(file_exists("./src/main.rs".to_string()).await.unwrap());
     }
 
-    #[test]
-    fn file_not_exists_test() {
-        assert!(!file_exists("./src/main".to_string()).unwrap());
+    #[tokio::test]
+    async fn file_not_exists_test() {
+        assert!(!file_exists("./src/main".to_string()).await.unwrap());
     }
 
     #[tokio::test]
@@ -214,9 +210,9 @@ mod tests {
         //println!("{}", a3s.download_server.url);
     }
 
-    #[test]
-    fn get_a3_dir_test() {
-        let a3_dir = get_a3_dir().unwrap();
+    #[tokio::test]
+    async fn get_a3_dir_test() {
+        let a3_dir = get_a3_dir().await.unwrap();
         let path = PathBuf::from_str(&a3_dir).unwrap();
         println!("Arma 3 dir: {}", path.display());
 

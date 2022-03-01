@@ -25,6 +25,7 @@ use url::Url;
 #[tauri::command]
 pub async fn hash_check(
     window: Window,
+    path_prefix: String,
     files: Vec<String>,
     state: tauri::State<'_, ReplicArmaState>,
 ) -> JSResult<(Vec<(String, String, i64)>, Vec<String>)> {
@@ -32,6 +33,11 @@ pub async fn hash_check(
 
     //let mut hashes: HashMap<String, (String, u128)> = read_t(state.data_dir.join("hashes.json"))?;
     let mut hashes = old_hashes.clone();
+
+    let files: Vec<String> = files
+        .iter()
+        .map(|f| format!("{}{}", path_prefix, f))
+        .collect();
 
     // insert new files
     for file in files.iter() {
@@ -79,7 +85,7 @@ pub async fn hash_check(
 
     let result: Vec<_> = new_hashes
         .into_iter()
-        .map(|kvp| (kvp.0, kvp.1, kvp.2))
+        .map(|kvp| (kvp.0.replacen(&path_prefix, "", 1), kvp.1, kvp.2))
         .collect();
 
     Ok((result, not_existing_files))

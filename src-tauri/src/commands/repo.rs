@@ -47,7 +47,7 @@ pub async fn hash_check(
     let mut not_existing_files = Vec::with_capacity(files.capacity());
     for file in files.iter() {
         if !Path::new(&file).is_file() {
-            not_existing_files.push(file.clone());
+            not_existing_files.push(file.replacen(&path_prefix, "", 1));
         }
     }
 

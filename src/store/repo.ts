@@ -4,13 +4,15 @@ import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 import { useHashStore } from './hash';
 import { toRaw } from 'vue';
+import { Thread } from 'threads';
 export const useRepoStore = defineStore('repo', {
-    state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null} => ({
+    state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null, modsetCache: JSONMap<string, Modset>} => ({
         repos: new JSONMap<string, ReplicArmaRepository>(),
         currentRepoId: null,
         currentModsetId: null,
         currentCollectionId: null,
-        currentModId: null
+        currentModId: null,
+        modsetCache: new JSONMap<string, Modset>()
     }),
     getters: {
         getRepos: (state) => {
@@ -33,35 +35,26 @@ export const useRepoStore = defineStore('repo', {
         },
         getModsetStatus: (state) => {
             return async (repoId: string|null, modsetId: string|null) => {
-                // const hashStore = useHashStore();
-                // if (repoId === null) throw new Error('Repository id is null');
-                // if (modsetId === null) throw new Error('Modset id is null');
-                // const repo = toRaw(state.repos.get(repoId));
-                // if (repo === undefined) throw new Error(`Repository with id ${repoId} does not exist`);
-                // const modset = repo.modsets?.get(modsetId);
-                // if (modset === undefined) throw new Error(`Modset with id ${modsetId} does not exist`);
-                // modset.status = 'checking';
-                // repo.modsets?.set(modset.id, modset);
-                // state.repos.set(repo.id, repo);
-                // // let cached = toRaw(hashStore.cache.get(modsetId));
-                // if (cached === undefined) {
-                //     // cached = toRaw(hashStore.cache.get(repoId));
-                //     const modsetFiles = await toRaw(System.getFilesForModset(repoId, modsetId));
-                //     if (cached?.checkedFiles === undefined) throw new Error('cache empty!');
-                //     const fileChangesWorker = await hashStore.getWorker;
-                //     const outDatedFiles = await fileChangesWorker.getFileChanges(modsetFiles, cached?.checkedFiles);
-                //     // await Thread.terminate(fileChangesWorker);
-                //     // hashStore.cache.set(modsetId, { checkedFiles: cached?.checkedFiles, missingFiles: cached.missingFiles, outdatedFiles: outDatedFiles });
-                // }
-                // cached = hashStore.cache.get(modsetId);
-                // if (cached === undefined) throw new Error('Cache empty');
-                // if (cached?.outdatedFiles.length > 0 || cached.missingFiles.length > 0) {
-                //     modset.status = 'outdated';
-                // } else {
-                //     modset.status = 'ready';
-                // }
-                // repo.modsets?.set(modset.id, modset);
-                // repo.save();
+                const hashStore = useHashStore();
+                if (repoId === null) throw new Error('Repository id is null');
+                if (modsetId === null) throw new Error('Modset id is null');
+                const repo = toRaw(state.repos.get(repoId));
+                if (repo === undefined) throw new Error(`Repository with id ${repoId} does not exist`);
+                const modset = repo.modsets?.get(modsetId);
+                if (modset === undefined) throw new Error(`Modset with id ${modsetId} does not exist`);
+                repo.modsets?.set(modset.id, modset);
+                state.repos.set(repo.id, repo);
+                const cached = toRaw(hashStore.cache.get(repoId));
+                if (cached?.checkedFiles === undefined) throw new Error('cache empty!');
+                const fileChangesWorker = await hashStore.getWorker;
+                const modsetFiles = await fileChangesWorker.getFilesForModset(toRaw(state.modsetCache.get(modset.id)));
+                const outDatedFiles = await fileChangesWorker.isFileIn(modsetFiles, cached?.outdatedFiles);
+                const missingFiles = await fileChangesWorker.isFileIn(modsetFiles, cached?.missingFiles);
+                // console.log(state.modsetCache.get(modset.id));
+                // console.log(cached);
+                // console.log(outDatedFiles);
+                // console.log(missingFiles);
+                hashStore.cache.set(modsetId, { checkedFiles: cached?.checkedFiles, outdatedFiles: outDatedFiles, missingFiles: missingFiles });
             };
         }
     },
@@ -106,7 +99,6 @@ export const useRepoStore = defineStore('repo', {
         },
         async loadRepositories () {
             const repoJson = await System.getRepoJson();
-
             if (repoJson !== null) {
                 const repoMap = new JSONMap<string, ReplicArmaRepository>(repoJson);
                 repoMap.forEach(repo => {

@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { useRepoStore } from '@/store/repo';
 import { GameLaunchSettings } from './Settings';
 import { useHashStore } from '@/store/hash';
-import { Thread } from 'threads';
 import { System } from '@/util/system';
 export interface File {
     path: string;
@@ -24,8 +23,7 @@ export interface Modset {
     id: string;
     name: string;
     description?: string;
-    status?: 'ready'|'outdated'|'checking'|'unknown';
-    mods?: Array<ModsetMod>;
+    mods: Array<ModsetMod>;
 }
 
 export interface GameServer {
@@ -84,7 +82,7 @@ export class Repository {
     public modsets?: JSONMap<string, Modset>;
     public game_servers?: JSONMap<string, GameServer>;
     public download_server?: DownloadServer;
-    public collections?: Map<string, Collection>;
+    public collections?: JSONMap<string, Collection>;
 }
 
 export interface ReplicArmaRepositoryError {
@@ -95,7 +93,6 @@ export class ReplicArmaRepository extends Repository {
     public config_url: string | undefined;
     public id!: string;
     public image?: string;
-    public status?: 'ready'|'outdated'|'checking';
     public error?: ReplicArmaRepositoryError;
     public settings?: GameLaunchSettings;
     public type?: 'local'|'a3s'|'swifty';
@@ -133,19 +130,26 @@ export class ReplicArmaRepository extends Repository {
         this.revision = repo.revision;
         this.build_date = repo.build_date;
         this.config_url = repo.config_url;
-        await this.save();
+        this.save();
+        this.calcHash();
     }
 
     private async initModsets (repo: ReplicArmaRepository): Promise<JSONMap<string, Modset>> {
         const modsets = new JSONMap<string, Modset>();
+        const modsetDataMap = new JSONMap<string, Modset>();
         const modWorker = await useHashStore().getWorker;
-        const modsetData = await modWorker.mapFilesToMods(repo.files, repo.modsets);
-        System.updateModsetCache(repo.id, modsetData);
         Array.from(repo.modsets as unknown as Modset[]).map(async (repoModset: Modset) => {
             repoModset.id = uuidv4();
             modsets.set(repoModset.id, repoModset);
         });
-        await Thread.terminate(modWorker);
+        const modsetData: Modset[] = await modWorker.mapFilesToMods(repo.files, Array.from(modsets.values()));
+        for (const modset of modsetData) {
+            modsetDataMap.set(modset.id, modset);
+        }
+        const mods = [...new Map(modsetData.map(modset => modset.mods).flat().map((mod) => [mod.name, mod])).values()] ?? [];
+        const id = uuidv4();
+        modsets.set(id, { id: id, name: 'All Mods', description: 'Contains all Mods from the Repository', mods: mods });
+        System.updateModsetCache(this.id, modsetDataMap);
         return modsets;
     }
 
@@ -154,7 +158,8 @@ export class ReplicArmaRepository extends Repository {
         return new JSONMap<string, Modset>(repo.modsets);
     }
 
-    private async loadCollections (repo: any | undefined): Promise<JSONMap<string, Collection>> {
+    private async loadCollections (repo: ReplicArmaRepository | undefined): Promise<JSONMap<string, Collection>> {
+        if (repo === undefined) throw new Error('Repo undefined');
         if (repo.collections !== undefined) {
             const collections = Array.from(repo.collections as unknown as Collection[]).map((collection: Collection) => { return new Collection(collection); });
             repo.collections = new JSONMap<string, Collection>();
@@ -167,8 +172,10 @@ export class ReplicArmaRepository extends Repository {
 
     public async calcHash (): Promise<void> {
         const hashStore = useHashStore();
-        this.status = 'checking';
+        const repoStore = useRepoStore();
         this.save();
+        const cacheData = await System.getModsetCache(this.id);
+        repoStore.modsetCache = new JSONMap<string, Modset>(cacheData);
         hashStore.startHash(this);
     }
 
@@ -182,7 +189,6 @@ export class ReplicArmaRepository extends Repository {
     }
 
     public async revisionCheck (force = false): Promise<void> {
-        this.status = 'checking';
         this.save();
         if (force) {
             this.calcHash();
@@ -193,13 +199,11 @@ export class ReplicArmaRepository extends Repository {
             console.info(`Detected new Revision for Repository ${this.name}`);
             this.revisionChanged = true;
             this.revision = externalRepo.revision;
-            this.status = 'outdated';
             this.save();
             this.calcHash();
         } else {
             console.info(`Repository ${this.name} ready`);
             this.revisionChanged = false;
-            this.status = 'ready';
             this.save();
         }
     }

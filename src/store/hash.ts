@@ -1,19 +1,21 @@
-import { ReplicArmaRepository } from '@/models/Repository';
+import { JSONMap, ReplicArmaRepository } from '@/models/Repository';
 import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
 import { spawn, Thread, Worker } from 'threads';
+import { toRaw } from 'vue';
 export const useHashStore = defineStore('hash', {
-    state: (): {current: null|{ repoId: string; filesToCheck: number; checkedFiles: number; }, queue: { repoId: string; filesToCheck: number; checkedFiles: number; }[]} => ({
+    state: (): {current: null|{ repoId: string; filesToCheck: number; checkedFiles: number; }, queue: { repoId: string; filesToCheck: number; checkedFiles: number; }[], cache: JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>} => ({
         current: null,
-        queue: []
+        queue: [],
+        cache: new JSONMap<string, {checkedFiles: string[][], outdatedFiles: string[], missingFiles: string[]}>()
     }),
     getters: {
         getQueue: state => {
             return state.queue;
         },
-        getWorker: async state => {
+        getWorker: async () => {
             return await spawn(new Worker('@/util/worker'));
         }
     },
@@ -33,33 +35,22 @@ export const useHashStore = defineStore('hash', {
                 const hashStore = useHashStore();
                 const settingsStore = useSettingsStore();
                 const repoStore = useRepoStore();
-                const repo = repoStore.getRepo(this.current.repoId);
+                const repo = toRaw(repoStore.getRepo(this.current.repoId));
                 if (repo === undefined) throw new Error(`Repository with id ${this.current.repoId} not found`);
                 console.info(`Starting hash calc for repo ${repo.name}`);
                 if (repo.files === undefined) throw new Error(`Repository with id ${this.current.repoId} has no files`);
                 this.current.filesToCheck = repo.files.length;
-                const filePathsWorker = await hashStore.getWorker;
-                const filePaths = await filePathsWorker.prependFilePath(repo.files, settingsStore.settings.downloadDirectoryPath ?? '', System.SEPERATOR);
-                const hashes = await System.hashCheck(filePaths);
+                const hashes = await System.hashCheck(`${settingsStore.settings.downloadDirectoryPath ?? ''}${System.SEPERATOR}`, repo.files);
                 const fileChangesWorker = await hashStore.getWorker;
                 const outDatedFiles = await fileChangesWorker.getFileChanges(repo.files, hashes[0]);
                 const modsets = repo?.modsets ? Array.from(repo?.modsets?.values()) : [];
+                this.cache.set(repo.id, { checkedFiles: hashes[0], outdatedFiles: outDatedFiles, missingFiles: hashes[1] as unknown as string[] });
                 for (const modset of modsets) {
                     await repoStore.getModsetStatus(repo.id, modset.id);
                 }
-                this.synchData();
-                repoStore.saveRepoState();
-                await hashStore.next();
-                await Thread.terminate(filePathsWorker);
-                await Thread.terminate(fileChangesWorker);
+                console.info(`Finsihed hash calc for repo ${repo.name}`);
+                Promise.all([repoStore.saveRepoState(), hashStore.next()]);
             }
-        },
-        async loadData () {
-            // const cache = await System.getCache();
-            // this.cache = new JSONMap(cache);
-        },
-        synchData () {
-            // System.updateCache(this.cache);
         }
     }
 });

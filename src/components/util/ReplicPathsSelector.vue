@@ -26,7 +26,7 @@ export default class ReplicPathSelectorVue extends Vue {
     @Prop({ type: Object }) private pathSelector!: PathSelectorModel;
     @Prop({ type: Object }) private pathSelectorOptions: OpenDialogOptions = {};
 
-    @Prop({ type: [String, null], required: true }) private modelValue!: string|null;
+    @Prop({ type: [String], required: true }) private modelValue!: string|null;
 
     private get model () { return this.modelValue; }
     private set model (val) { this.$emit('update:modelValue', val); }

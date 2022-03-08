@@ -1,7 +1,7 @@
 <template>
     <div>
         <ul class="tabs">
-            <li class="tabs__item"  v-for="(item, i) of tabItems" :key="i" @click="activeIndex = i" v-once>
+            <li class="tabs__item"  v-for="(item, i) of tabItems" :key="i" @click="activeIndex = i">
                 <span :class="{'active-tab': activeIndex === i}">{{item.label}}</span>
             </li>
         </ul>

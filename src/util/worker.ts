@@ -1,5 +1,7 @@
 import { File, Modset } from '@/models/Repository';
 import { expose } from 'threads';
+import pako from 'pako';
+import { v4 as uuidv4 } from 'uuid';
 export class ModsetMod {
     public mod_type!: string;
     public name!: string;
@@ -41,17 +43,28 @@ const replicWorker = {
             const mods: ModsetMod[] = [];
             modset.mods?.forEach(mod => {
                 mods.push({name: mod.name, mod_type: 'mod', files: modMap.get(mod.name) ?? []});
-            })
+            });
             modset.mods = mods;
-        })
+        });
+        const mods =  [...new Map(modsets.map(modset => modset.mods).flat().map((mod) => [mod.name, mod])).values()]?? [];
+        modsets.push({id: uuidv4(), name: 'All Mods', description: 'Contains all Mods from the Repository', mods: mods});
         return modsets;
     },
     async getFileChanges (wantedFiles: File[], checkedFiles: Array<Array<string>>): Promise<string[]> {
         const flat = checkedFiles.flat();
-        return wantedFiles.filter((wantedFile) => !flat.includes(wantedFile.sha1)).map(file => file.path);
+        return wantedFiles.filter((wantedFile) => !flat.includes(wantedFile.sha1) && wantedFile.sha1 !== "0").map(file => file.path);
     },
-    async prependFilePath (files: File[], downloadDir: string, seperator: string): Promise<string[]> {
-        return files.map((file) => `${downloadDir}${seperator}${file.path}`);
+    async getFilesForModset (modset: Modset) {
+        return modset?.mods !== undefined ? modset.mods?.map(mod => mod.files).flat() : [];
+    },
+    async isFileIn (wantedFiles: File[], fileList: Array<string>): Promise<string[]> {
+        return wantedFiles.filter((wantedFile) => fileList.includes(wantedFile.path)).map(file => file.path)
+    },
+    async compress (data: any) {
+        return pako.deflate(data);
+    },
+    async uncompress (data: any) {
+        return JSON.parse(pako.inflate(data, { to: 'string' }));
     }
 };
 

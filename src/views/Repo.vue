@@ -19,7 +19,6 @@ import { Options, Vue } from 'vue-class-component';
 import { useRepoStore } from '../store/repo';
 import { useDialogStore } from '../store/dialog';
 import { mapState } from 'pinia';
-import { useSettingsStore } from '@/store/settings';
 @Options({
     components: {
         Subnavi: SubnaviVue
@@ -45,8 +44,8 @@ export default class RepoView extends Vue {
   }
 
   public checkRepo (): void {
-      const bla = this.repoStore.getRepo(this.repoStore.currentRepoId);
-      if (bla !== undefined) bla.calcHash();
+      const repository = this.repoStore.getRepo(this.repoStore.currentRepoId);
+      if (repository !== undefined) repository.calcHash();
   }
 }
 </script>

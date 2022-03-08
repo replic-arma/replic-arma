@@ -146,7 +146,7 @@ export class ReplicArmaRepository extends Repository {
         for (const modset of modsetData) {
             modsetDataMap.set(modset.id, modset);
         }
-        const mods = [...new Map(modsetData.map(modset => modset.mods).flat().map((mod) => [mod.name, mod])).values()] ?? [];
+        const mods = [...new Map(Array.from(modsets.values()).map(modset => modset.mods).flat().map((mod) => [mod.name, mod])).values()] ?? [];
         const id = uuidv4();
         modsets.set(id, { id: id, name: 'All Mods', description: 'Contains all Mods from the Repository', mods: mods });
         System.updateModsetCache(this.id, modsetDataMap);
@@ -175,7 +175,7 @@ export class ReplicArmaRepository extends Repository {
         const repoStore = useRepoStore();
         this.save();
         const cacheData = await System.getModsetCache(this.id);
-        repoStore.modsetCache = new JSONMap<string, Modset>(cacheData);
+        repoStore.addToModsetCache(new JSONMap<string, Modset>(cacheData));
         hashStore.startHash(this);
     }
 
@@ -186,25 +186,5 @@ export class ReplicArmaRepository extends Repository {
 
     public async connectToAutoConfig (): Promise<Repository> {
         return await System.getRepo(`${this.config_url}autoconfig`);
-    }
-
-    public async revisionCheck (force = false): Promise<void> {
-        this.save();
-        if (force) {
-            this.calcHash();
-            return;
-        }
-        const externalRepo = await this.connectToAutoConfig();
-        if (externalRepo.revision !== this.revision) {
-            console.info(`Detected new Revision for Repository ${this.name}`);
-            this.revisionChanged = true;
-            this.revision = externalRepo.revision;
-            this.save();
-            this.calcHash();
-        } else {
-            console.info(`Repository ${this.name} ready`);
-            this.revisionChanged = false;
-            this.save();
-        }
     }
 }

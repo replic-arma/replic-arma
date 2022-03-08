@@ -97,6 +97,9 @@ export const useRepoStore = defineStore('repo', {
             repositoriy.collections?.set(collection.id, collection);
             this.repos.set(id, repositoriy);
         },
+        addToModsetCache (cache: JSONMap<string, Modset>) {
+            this.modsetCache = new JSONMap<string, Modset>([...toRaw(this.modsetCache), ...cache]);
+        },
         async loadRepositories () {
             const repoJson = await System.getRepoJson();
             if (repoJson !== null) {

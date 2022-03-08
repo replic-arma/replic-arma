@@ -15,9 +15,9 @@
         </span>
         <button class="button">
           <span v-if="status === 'downloading'" class="spinner spinner-spin" />
-          <mdicon v-else-if="status === 'outdated'" name="download" />
+          <mdicon v-else-if="status === 'outdated'" name="download" @click="download()" />
           <mdicon v-else name="play" @click="download()"/>
-          Download
+          Play
         </button>
         <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
       </div>
@@ -41,6 +41,7 @@
 </template>
 
 <script lang="ts">
+import TooltipVue from '@/components/util/Tooltip.vue';
 import { ModsetMod } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
@@ -51,7 +52,9 @@ import { mapState } from 'pinia';
 import { Options, Vue } from 'vue-class-component';
 
 @Options({
-    components: {},
+    components: {
+        Tooltip: TooltipVue
+    },
     computed: {
         ...mapState(useRepoStore, {
             modset: store => store.getModset(store.currentRepoId, store.currentModsetId)
@@ -63,7 +66,13 @@ export default class ModsetView extends Vue {
   private hashStore = useHashStore();
   private downloadStore = useDownloadStore();
   private get status () {
-      return this.repoStore.getModset(this.repoStore.currentRepoId, this.repoStore.currentModsetId)?.status ?? 'checking';
+      const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
+      if (cache === undefined) return 'checking';
+      if (cache?.outdatedFiles.length > 0 || cache?.missingFiles.length > 0) {
+          return 'outdated';
+      } else {
+          return 'ready';
+      }
   }
 
   private get progress () {
@@ -73,17 +82,17 @@ export default class ModsetView extends Vue {
   }
 
   private outdated (mod: ModsetMod) {
-      // const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
-      // return cache?.missingFiles.map(file => file.split('\\').includes(mod.name)).includes(true) || cache?.outdatedFiles.map(file => file.split('\\').includes(mod.name)).includes(true);
+      const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
+      return cache?.missingFiles.map(file => file.split('\\').includes(mod.name)).includes(true) || cache?.outdatedFiles.map(file => file.split('\\').includes(mod.name)).includes(true);
   }
 
   private download () {
-      // System.downloadFiles(this.repoStore.currentRepoId, this.repoStore.currentModsetId, this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.outdatedFiles ?? [], this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.missingFiles ?? []).then(
-      //     () => {
-      //         const currentRepo = this.repoStore.getRepo(this.repoStore.currentRepoId);
-      //         if (currentRepo === undefined) return;
-      //         this.hashStore.startHash(currentRepo);
-      //     });
+      System.downloadFiles(this.repoStore.currentRepoId, this.repoStore.currentModsetId, this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.outdatedFiles ?? [], this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.missingFiles ?? []).then(
+          () => {
+              const currentRepo = this.repoStore.getRepo(this.repoStore.currentRepoId);
+              if (currentRepo === undefined) return;
+              this.hashStore.startHash(currentRepo);
+          }).catch(error => console.error(error));
   }
 }
 </script>

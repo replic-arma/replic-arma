@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { cacheDir, documentDir, sep } from '@tauri-apps/api/path';
-import { createDir, BaseDirectory, writeFile, readTextFile, removeFile } from '@tauri-apps/api/fs';
+import { createDir, BaseDirectory, writeFile, readTextFile, removeFile, readBinaryFile, writeBinaryFile } from '@tauri-apps/api/fs';
 import { ApplicationSettings } from '@/models/Settings';
 import { File, GameServer, JSONMap, Modset, ReplicArmaRepository, Repository } from '@/models/Repository';
 import { useSettingsStore } from '@/store/settings';
@@ -11,8 +11,10 @@ import { useHashStore } from '@/store/hash';
 import { toRaw } from 'vue';
 export class System {
     private static APPDIR = 'Replic-Arma';
-    private static DOCUMENTDIRECTORY = documentDir();
-    private static CACHEDIRECTORY = cacheDir();
+    private static DOCUMENTDIRECTORY = (async () => await documentDir())();
+    private static CACHEDIRECTORY = (async () => await cacheDir())();
+    private static CONFIGPATH = `${System.APPDIR}${sep}config.json`;
+    private static REPOPATH = `${System.APPDIR}${sep}repos.json`;
     public static SEPERATOR = sep;
 
     public static init (): void {
@@ -20,7 +22,7 @@ export class System {
         const repoStore = useRepoStore();
         const hashStore = useHashStore();
         Promise.all([settingsStore.loadData(), repoStore.loadRepositories()]);
-        // System.registerListener();
+        System.registerListener();
     }
 
     public static async getConfig (): Promise<ApplicationSettings> {
@@ -28,7 +30,7 @@ export class System {
         const exists = await System.fileExists(documentDirectory + System.APPDIR + sep + 'config.json');
 
         if (!exists) return new ApplicationSettings();
-        return JSON.parse(await readTextFile(System.APPDIR + sep + 'config.json', { dir: BaseDirectory.Document }));
+        return JSON.parse(await readTextFile(System.CONFIGPATH, { dir: BaseDirectory.Document }));
     }
 
     public static async updateConfig (content: ApplicationSettings): Promise<void> {
@@ -39,16 +41,17 @@ export class System {
 
             return createDir(System.APPDIR, { dir: BaseDirectory.Document });
         });
-        return writeFile({ contents: JSON.stringify(content, null, '\t'), path: documentDirectory + System.APPDIR + sep + 'config.json' }, { dir: BaseDirectory.Document });
+        return writeFile({ contents: JSON.stringify(content), path: System.CONFIGPATH }, { dir: BaseDirectory.Document });
     }
 
     public static async getRepoJson (): Promise<Map<string, ReplicArmaRepository>|null> {
         const documentDirectory = await System.DOCUMENTDIRECTORY;
-        const exists = await System.fileExists(`${documentDirectory}${System.APPDIR}${sep}repos.json`);
+        const exists = await System.fileExists(`${documentDirectory}${System.REPOPATH}`);
 
         if (!exists) return null;
-
-        return JSON.parse(await readTextFile(`${System.APPDIR}${sep}repos.json`, { dir: BaseDirectory.Document }));
+        const data = await readBinaryFile(System.REPOPATH, { dir: BaseDirectory.Document });
+        const hashStore = useHashStore();
+        return await (await hashStore.getWorker).uncompress(data);
     }
 
     public static async updateRepoJson (content: JSONMap<string, ReplicArmaRepository> | Record<string, never>): Promise<void> {
@@ -56,11 +59,11 @@ export class System {
 
         await System.dirExists(documentDirectory + System.APPDIR).then(exists => {
             if (exists) return;
-
             return createDir(System.APPDIR, { dir: BaseDirectory.Document });
         });
-
-        return writeFile({ contents: JSON.stringify(content, null, 2), path: System.APPDIR + System.SEPERATOR + 'repos.json' }, { dir: BaseDirectory.Document });
+        const hashStore = useHashStore();
+        const data = await (await hashStore.getWorker).compress(JSON.stringify(content));
+        return writeBinaryFile({ contents: data, path: System.REPOPATH }, { dir: BaseDirectory.Document });
     }
 
     public static async getModsetCache (repositoryId: string): Promise<JSONMap<string, Modset>> {
@@ -68,8 +71,9 @@ export class System {
         const exists = await System.fileExists(`${documentDirectory}${System.APPDIR}${sep}${repositoryId}.json`);
 
         if (!exists) return new JSONMap<string, Modset>();
-
-        return JSON.parse(await readTextFile(`${System.APPDIR}${sep}${repositoryId}.json`, { dir: BaseDirectory.Document }));
+        const data = await readBinaryFile(`${System.APPDIR}${sep}${repositoryId}.json`, { dir: BaseDirectory.Document });
+        const hashStore = useHashStore();
+        return await (await hashStore.getWorker).uncompress(data);
     }
 
     public static async updateModsetCache (repositoryId: string, content: JSONMap<string, Modset>): Promise<void> {
@@ -80,7 +84,9 @@ export class System {
 
             return createDir(System.APPDIR, { dir: BaseDirectory.Document });
         });
-        return writeFile({ contents: JSON.stringify(content), path: `${System.APPDIR}${sep}${repositoryId}.json` }, { dir: BaseDirectory.Document });
+        const hashStore = useHashStore();
+        const data = await (await hashStore.getWorker).compress(JSON.stringify(content));
+        return writeBinaryFile({ contents: data, path: `${System.APPDIR}${sep}${repositoryId}.json` }, { dir: BaseDirectory.Document });
     }
 
     public static async clearCache (): Promise<void> {
@@ -151,8 +157,8 @@ export class System {
         return await invoke('dir_exists', { path: path });
     }
 
-    public static async hashCheck (files: string[]): Promise<Array<Array<Array<string>>>> {
-        return await invoke('hash_check', { files: files });
+    public static async hashCheck (path: string, files: File[]): Promise<Array<Array<Array<string>>>> {
+        return await invoke('hash_check', { pathPrefix: path, files: files.map(file => file.path) });
     }
 
     public static async registerListener (): Promise<void> {
@@ -171,6 +177,6 @@ export class System {
         const settingsStore = useSettingsStore();
         const repo = repoStore.getRepo(repoId);
         if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
-        return await invoke('download', { repoType: repo.type?.toUpperCase(), url: repo.download_server?.url, targetPath: settingsStore.settings.downloadDirectoryPath, fileArray: [...missingFiles.map(path => path.replace(`${settingsStore.settings.downloadDirectoryPath}${System.SEPERATOR}` ?? '', '')), ...outdatedFiles] });
+        return await invoke('download', { repoType: repo.type?.toUpperCase(), url: repo.download_server?.url, targetPath: `${settingsStore.settings.downloadDirectoryPath}${System.SEPERATOR}`, fileArray: [...missingFiles, ...outdatedFiles] });
     }
 }

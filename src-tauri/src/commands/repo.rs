@@ -119,41 +119,57 @@ pub async fn get_repo(url: String) -> JSResult<Repository> {
 }
 
 #[tauri::command]
+pub async fn pause_download(state: tauri::State<'_, ReplicArmaState>) -> JSResult<()> {
+    if let Some(dl) = (*state.downloader.lock().await).as_mut() {
+        dl.pause().await;
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn download(
+    window: Window,
     repo_type: RepoType,
     url: String,
     target_path: String,
     file_array: Vec<String>,
 ) -> JSResult<()> {
-    Ok(download_wrapper(repo_type, url, target_path, file_array).await?)
+    Ok(download_wrapper(window, repo_type, url, target_path, file_array).await?)
 }
 
 pub async fn download_wrapper(
+    window: Window,
     repo_type: RepoType,
     url: String,
     target_path: String,
     file_array: Vec<String>,
 ) -> Result<()> {
     let target_dir = PathBuf::from_str(&target_path)?;
-    download_files(repo_type, url, target_dir, file_array).await?;
+    download_files(window, repo_type, url, target_dir, file_array).await?;
     Ok(())
 }
 
 async fn download_files(
+    window: Window,
     repo_type: RepoType,
     url: String,
     target_dir: PathBuf,
     file_array: Vec<String>,
 ) -> Result<()> {
     match repo_type {
-        RepoType::A3S => download_a3s(url, target_dir, file_array).await?,
+        RepoType::A3S => download_a3s(window, url, target_dir, file_array).await?,
         RepoType::Swifty => todo!(),
     };
 
     Ok(())
 }
 
-async fn download_a3s(url: String, target_dir: PathBuf, files: Vec<String>) -> Result<()> {
+async fn download_a3s(
+    window: Window,
+    url: String,
+    target_dir: PathBuf,
+    files: Vec<String>,
+) -> Result<()> {
     let connection_info = Url::parse(&url)?;
     //println!("{:?}", files);
     println!("{}", connection_info);
@@ -170,14 +186,15 @@ async fn download_a3s(url: String, target_dir: PathBuf, files: Vec<String>) -> R
     //files.into_iter().for_each(|file| {
     for file in files {
         let url = connection_info.join(&file)?;
-        let target_file = target_dir.join(file);
+        let target_file = target_dir.join(file.clone());
         let mut target_path = target_file.clone();
         target_path.pop();
 
         println!("Downloading: {} to {}", url, target_file.display());
 
         fs::create_dir_all(target_path)?;
-        downloader.download_file(url, &target_file).await?;
+        downloader.download_file(&window, url, &target_file).await?;
+        window.emit("download_finished", file).unwrap();
         //});
     }
 

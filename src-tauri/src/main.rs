@@ -17,6 +17,7 @@ use std::collections::HashMap;
 use crate::commands::repo::download;
 use crate::commands::repo::get_repo;
 use crate::commands::repo::hash_check;
+use crate::commands::repo::pause_download;
 use crate::commands::util::dir_exists;
 use crate::commands::util::file_exists;
 use crate::commands::util::get_a3_dir;
@@ -39,6 +40,7 @@ fn init_state() -> anyhow::Result<ReplicArmaState> {
     let state = ReplicArmaState {
         data_dir: proj_dirs,
         known_hashes: Mutex::new(hashes),
+        downloader: Mutex::new(None),
     };
 
     Ok(state)
@@ -65,6 +67,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             hash_check,
             get_repo,
             download,
+            pause_download,
             file_exists,
             dir_exists,
             get_a3_dir
@@ -198,7 +201,7 @@ mod tests {
         download(
             a3s.repo_typ,
             a3s.download_server.url.clone(),
-            ".\\test_out\\".to_string(),
+            "L:\\Repos\\rust\\replic-arma\\src-tauri\\test_out".to_string(),
             a3s.files[0..5]
                 .into_iter()
                 .map(|f| f.path.clone())

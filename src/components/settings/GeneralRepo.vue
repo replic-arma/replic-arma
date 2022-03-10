@@ -2,7 +2,7 @@
     <div class="general-repo-settings">
         <div class="txt">
             <label for="repoName">{{$t('repository.name')}}</label>
-            <div class="txt__input-wrapper">
+            <div class="txt__input-wrapper" v-if="repository">
                 <input class="txt__input" type="text" name="repoName" v-model="repository.name" />
             </div>
         </div>

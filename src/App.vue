@@ -1,15 +1,7 @@
 <template>
-  <Suspense>
-    <template #default>
-      <rtransition />
-    </template>
-    <template #fallback>
-      <loader />
-    </template>
-  </Suspense>
+    <rtransition />
 </template>
 
 <style lang="scss">
-@import 'styles/global.scss';
-
+@import "styles/global.scss";
 </style>

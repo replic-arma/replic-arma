@@ -20,8 +20,7 @@ export class System {
     public static init (): void {
         const settingsStore = useSettingsStore();
         const repoStore = useRepoStore();
-        const hashStore = useHashStore();
-        Promise.all([settingsStore.loadData(), repoStore.loadRepositories()]);
+        Promise.all([settingsStore.loadData(), repoStore.loadRepositories(true)]);
         System.registerListener();
     }
 
@@ -166,6 +165,12 @@ export class System {
         await listen('hash_calculated', () => {
             if (hashStore.current === null) throw new Error('Current hash object empty');
             hashStore.current.checkedFiles += 1;
+        });
+        await listen('download_report', (data) => {
+            console.log(data);
+        });
+        await listen('download_finished', (data) => {
+            console.log(data);
         });
         // await listen('hash_failed', (event: any) => {
         //     repoStore.filesFailed.push(event.payload);

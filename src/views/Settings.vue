@@ -17,6 +17,7 @@ import GeneralVue from '@/components/settings/General.vue';
 import LaunchVue from '@/components/settings/Launch.vue';
 import AboutVue from '@/components/settings/About.vue';
 import { useSettingsStore } from '@/store/settings';
+import { shallowRef } from 'vue';
 @Options({
     components: {
         Tabs: TabsVue
@@ -24,9 +25,9 @@ import { useSettingsStore } from '@/store/settings';
 })
 export default class SettingsView extends Vue {
   private subnaviItems: TabsItem[] = [
-      { label: 'General', component: GeneralVue },
-      { label: 'Launch Options', component: LaunchVue },
-      { label: 'About', component: AboutVue }
+      { label: 'General', component: shallowRef(GeneralVue) },
+      { label: 'Launch Options', component: shallowRef(LaunchVue) },
+      { label: 'About', component: shallowRef(AboutVue) }
   ];
 
   private settingsStore = useSettingsStore();

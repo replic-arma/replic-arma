@@ -43,13 +43,7 @@ export default class RepoVue extends Vue {
     private hashStore = useHashStore();
     private repoStore = useRepoStore();
     private get status () {
-        const cache = this.hashStore.cache.get(this.currentModsetId ?? '');
-        if (cache === undefined) return 'checking';
-        if (cache?.outdatedFiles.length > 0 || cache?.missingFiles.length > 0) {
-            return 'outdated';
-        } else {
-            return 'ready';
-        }
+        return this.repoStore.getModsetStatus(this.currentModsetId);
     }
 
     private get progress () {

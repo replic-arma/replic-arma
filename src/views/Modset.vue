@@ -13,12 +13,20 @@
                 <span>...{{progress}}%</span>
             </template>
         </span>
-        <button class="button">
-          <span v-if="status === 'downloading'" class="spinner spinner-spin" />
-          <mdicon v-else-if="status === 'outdated'" name="download" @click="download()" />
-          <mdicon v-else name="play" @click="download()"/>
-          Play
-        </button>
+        <template v-if="status === 'outdated'">
+          <button class="button" @click="download()">
+            <mdicon name="download" />
+            Download
+          </button>
+        </template>
+        <template v-if="status === 'downloading'">
+          <button class="button">
+            <mdicon name="download" @click="download()" />
+            <mdicon name="play"/>
+            <span v-if="status === 'downloading'" class="spinner spinner-spin" />
+          </button>
+        </template>
+
         <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
       </div>
     </div>
@@ -66,13 +74,7 @@ export default class ModsetView extends Vue {
   private hashStore = useHashStore();
   private downloadStore = useDownloadStore();
   private get status () {
-      const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
-      if (cache === undefined) return 'checking';
-      if (cache?.outdatedFiles.length > 0 || cache?.missingFiles.length > 0) {
-          return 'outdated';
-      } else {
-          return 'ready';
-      }
+      return this.repoStore.getModsetStatus(this.repoStore.currentModsetId);
   }
 
   private get progress () {
@@ -87,12 +89,15 @@ export default class ModsetView extends Vue {
   }
 
   private download () {
-      System.downloadFiles(this.repoStore.currentRepoId, this.repoStore.currentModsetId, this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.outdatedFiles ?? [], this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.missingFiles ?? []).then(
-          () => {
-              const currentRepo = this.repoStore.getRepo(this.repoStore.currentRepoId);
-              if (currentRepo === undefined) return;
-              this.hashStore.startHash(currentRepo);
-          }).catch(error => console.error(error));
+      const modset = this.repoStore.getModset(this.repoStore.currentRepoId, this.repoStore.currentModsetId);
+      if (modset === undefined) return;
+      this.downloadStore.addToDownloadQueue(modset);
+      // System.downloadFiles(this.repoStore.currentRepoId, this.repoStore.currentModsetId, this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.outdatedFiles ?? [], this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.missingFiles ?? []).then(
+      //     () => {
+      //         const currentRepo = this.repoStore.getRepo(this.repoStore.currentRepoId);
+      //         if (currentRepo === undefined) return;
+      //         this.hashStore.startHash(currentRepo);
+      //     }).catch(error => console.error(error));
   }
 }
 </script>

@@ -3,7 +3,7 @@
     <div class="repos__heading">
       <h1>{{$t('repositories')}}</h1>
       <div class="icon-group">
-        <mdicon name="download" size="45" @click="dialogStore.toggleDialog('downloads')"/>
+        <downloads />
         <mdicon name="refresh" size="45" @click="reloadRepos"/>
         <router-link class="button" to="/settings"><mdicon name="cog" size="45"/></router-link>
       </div>
@@ -11,8 +11,7 @@
     <ul class="repos__list">
       <repo v-for="(repo, i) of repos" :key="i" :repository="repo"></repo>
     </ul>
-    <mdicon name="plus" class="add-button" role="button" @click="dialogStore.toggleDialog('repoAdd')"></mdicon>
-    <downloads />
+    <mdicon name="plus" class="add-button" role="button"></mdicon>
     <repo-add />
   </div>
 </template>
@@ -27,7 +26,6 @@ import DownloadsVue from '@/components/download/Downloads.vue';
 import RepositoryAddVue from '@/components/RepositoryAdd.vue';
 import Toast from '@/components/util/Toast';
 import { mapState } from 'pinia';
-import { System } from '@/util/system';
 
 @Options({
     components: {
@@ -74,18 +72,15 @@ export default class ReposView extends Vue {
     }
 
     .icon-group {
-      > span {
+      span {
         cursor: pointer;
+        justify-content: center;
       }
       color: var(--c-text-3);
       display: grid;
-      grid-template-columns: repeat(3, 4rem);
+      grid-template-columns: repeat(3, 3rem);
       align-items: center;
       justify-content: center;
-      .mdi {
-        display: inline-flex;
-        justify-content: center;
-      }
     }
   }
 }

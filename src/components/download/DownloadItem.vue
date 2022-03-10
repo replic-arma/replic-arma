@@ -30,9 +30,9 @@ import { Prop } from 'vue-property-decorator';
 export default class DownloadItemVue extends Vue {
     @Prop({ type: Object }) private downloadItem!: DownloadItem;
     private downloadStore = useDownloadStore();
-    private startDownload = () => this.downloadStore.startDownload(this.downloadItem);
-    private stopDownload = () => this.downloadStore.stopDownload();
-    private pauseDownload = () => this.downloadStore.pauseDownload(this.downloadItem);
+    private startDownload = () => { console.info(); };
+    private stopDownload = () => { console.info(); };
+    private pauseDownload = () => { console.info(); };
 }
 </script>
 <style lang="scss" scoped>

@@ -46,9 +46,15 @@ export const useHashStore = defineStore('hash', {
                 const modsets = repo?.modsets ? Array.from(repo?.modsets?.values()) : [];
                 this.cache.set(repo.id, { checkedFiles: hashes[0], outdatedFiles: outDatedFiles, missingFiles: hashes[1] as unknown as string[] });
                 for (const modset of modsets) {
-                    await repoStore.getModsetStatus(repo.id, modset.id);
+                    const cached = toRaw(hashStore.cache.get(this.current.repoId));
+                    if (cached?.checkedFiles === undefined) throw new Error('cache empty!');
+                    const fileChangesWorker = await hashStore.getWorker;
+                    const modsetFiles = await fileChangesWorker.getFilesForModset(toRaw(repoStore.modsetCache.get(modset.id)));
+                    const outDatedFiles = await fileChangesWorker.isFileIn(modsetFiles, cached?.outdatedFiles);
+                    const missingFiles = await fileChangesWorker.isFileIn(modsetFiles, cached?.missingFiles);
+                    hashStore.cache.set(modset.id, { checkedFiles: cached?.checkedFiles, outdatedFiles: outDatedFiles, missingFiles: missingFiles });
                 }
-                console.info(`Finsihed hash calc for repo ${repo.name}`);
+                console.info(`Finished hash calc for repo ${repo.name}`);
                 Promise.all([repoStore.saveRepoState(), hashStore.next()]);
             }
         }

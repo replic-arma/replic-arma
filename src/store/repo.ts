@@ -2,9 +2,8 @@ import { Collection, GameServer, JSONMap, Modset, ReplicArmaRepository } from '@
 import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
-import { useHashStore } from './hash';
 import { toRaw } from 'vue';
-import { Thread } from 'threads';
+import { useHashStore } from './hash';
 export const useRepoStore = defineStore('repo', {
     state: (): {repos: JSONMap<string, ReplicArmaRepository>, currentRepoId: string|null, currentModsetId: string|null, currentCollectionId: string|null, currentModId: string|null, modsetCache: JSONMap<string, Modset>} => ({
         repos: new JSONMap<string, ReplicArmaRepository>(),
@@ -34,27 +33,15 @@ export const useRepoStore = defineStore('repo', {
             return (repoId: string|null, collectionId: string|null) => repoId !== null && collectionId !== null ? state.repos.get(repoId)?.collections?.get(collectionId) : undefined;
         },
         getModsetStatus: (state) => {
-            return async (repoId: string|null, modsetId: string|null) => {
+            return (modsetId: string|null) => {
                 const hashStore = useHashStore();
-                if (repoId === null) throw new Error('Repository id is null');
-                if (modsetId === null) throw new Error('Modset id is null');
-                const repo = toRaw(state.repos.get(repoId));
-                if (repo === undefined) throw new Error(`Repository with id ${repoId} does not exist`);
-                const modset = repo.modsets?.get(modsetId);
-                if (modset === undefined) throw new Error(`Modset with id ${modsetId} does not exist`);
-                repo.modsets?.set(modset.id, modset);
-                state.repos.set(repo.id, repo);
-                const cached = toRaw(hashStore.cache.get(repoId));
-                if (cached?.checkedFiles === undefined) throw new Error('cache empty!');
-                const fileChangesWorker = await hashStore.getWorker;
-                const modsetFiles = await fileChangesWorker.getFilesForModset(toRaw(state.modsetCache.get(modset.id)));
-                const outDatedFiles = await fileChangesWorker.isFileIn(modsetFiles, cached?.outdatedFiles);
-                const missingFiles = await fileChangesWorker.isFileIn(modsetFiles, cached?.missingFiles);
-                // console.log(state.modsetCache.get(modset.id));
-                // console.log(cached);
-                // console.log(outDatedFiles);
-                // console.log(missingFiles);
-                hashStore.cache.set(modsetId, { checkedFiles: cached?.checkedFiles, outdatedFiles: outDatedFiles, missingFiles: missingFiles });
+                const cache = hashStore.cache.get(modsetId ?? '');
+                if (cache === undefined) return 'checking';
+                if (cache?.outdatedFiles.length > 0 || cache?.missingFiles.length > 0) {
+                    return 'outdated';
+                } else {
+                    return 'ready';
+                }
             };
         }
     },
@@ -66,10 +53,10 @@ export const useRepoStore = defineStore('repo', {
             replicRepo.calcHash();
             this.saveRepoState();
         },
-        removeRepo (id: string|null) {
+        async removeRepo (id: string|null) {
             if (id !== null) this.repos.delete(id);
-            this.saveRepoState();
-            this.loadRepositories();
+            await this.saveRepoState();
+            await this.loadRepositories();
         },
         addServerToRepo (id: string, server: GameServer) {
             const repositoriy = this.repos.get(id);
@@ -100,17 +87,17 @@ export const useRepoStore = defineStore('repo', {
         addToModsetCache (cache: JSONMap<string, Modset>) {
             this.modsetCache = new JSONMap<string, Modset>([...toRaw(this.modsetCache), ...cache]);
         },
-        async loadRepositories () {
+        async loadRepositories (calcHash = false) {
             const repoJson = await System.getRepoJson();
             if (repoJson !== null) {
                 const repoMap = new JSONMap<string, ReplicArmaRepository>(repoJson);
                 repoMap.forEach(repo => {
-                    new ReplicArmaRepository().loadFromJson(repo);
+                    new ReplicArmaRepository().loadFromJson(repo, calcHash);
                 });
             }
         },
         async saveRepoState () {
-            System.updateRepoJson(this.repos);
+            await System.updateRepoJson(this.repos);
         }
     }
 });

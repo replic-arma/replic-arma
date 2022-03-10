@@ -4,7 +4,6 @@ use std::{
 };
 
 use anyhow::Result;
-
 use serde::{de::DeserializeOwned, Serialize};
 
 pub fn load_t<T>(path: PathBuf) -> Result<T>

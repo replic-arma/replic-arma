@@ -10,13 +10,12 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import { Prop, Watch } from 'vue-property-decorator';
+import { Watch } from 'vue-property-decorator';
 @Options({
     components: { }
 })
 export default class DownloadProgressVue extends Vue {
-    @Prop({ type: Array, required: true })
-    private speeds!: number[];
+    private speeds: number[] = [];
 
     private displayedSpeeds: number[] = [];
 

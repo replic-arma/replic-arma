@@ -29,13 +29,6 @@ export default class CollectionItemVue extends Vue {
     private downloadStore = useDownloadStore();
     private repoStore = useRepoStore();
     private get status () {
-        if (this.downloadStore.getUpdateNeeded.find(downloadItem => downloadItem.item.id === this.collection?.id)) {
-            return 'outdated';
-        } else if (this.downloadStore.getDownloads.find(downloadItem => downloadItem.item.id === this.collection?.id)) {
-            return 'downloading';
-        } else if (this.downloadStore.getQueue.find(downloadItem => downloadItem.item.id === this.collection?.id)) {
-            return 'queued';
-        }
         return 'finished';
     }
 }

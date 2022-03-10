@@ -46,8 +46,6 @@ const replicWorker = {
             });
             modset.mods = mods;
         });
-        const mods =  [...new Map(modsets.map(modset => modset.mods).flat().map((mod) => [mod.name, mod])).values()]?? [];
-        modsets.push({id: uuidv4(), name: 'All Mods', description: 'Contains all Mods from the Repository', mods: mods});
         return modsets;
     },
     async getFileChanges (wantedFiles: File[], checkedFiles: Array<Array<string>>): Promise<string[]> {

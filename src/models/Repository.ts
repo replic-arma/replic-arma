@@ -79,7 +79,7 @@ export class Repository {
     public build_date!: string;
     public revision!: number;
     public files?: Array<File>;
-    public modsets?: JSONMap<string, Modset>;
+    public modsets!: JSONMap<string, Modset>;
     public game_servers?: JSONMap<string, GameServer>;
     public download_server?: DownloadServer;
     public collections?: JSONMap<string, Collection>;
@@ -116,7 +116,7 @@ export class ReplicArmaRepository extends Repository {
         this.save();
     }
 
-    public async loadFromJson (repo: any): Promise<void> {
+    public async loadFromJson (repo: ReplicArmaRepository, calcHash = false): Promise<void> {
         this.id = repo.id;
         this.name = repo.name;
         this.image = repo.image;
@@ -124,21 +124,26 @@ export class ReplicArmaRepository extends Repository {
         this.type = repo.type;
         this.files = repo.files;
         // this.collections = await this.loadCollections(repo);
-        this.modsets = await this.loadModsets(repo);
+        this.modsets = new JSONMap<string, Modset>(repo.modsets);
         this.download_server = repo.download_server;
         this.game_servers = repo.game_servers;
         this.revision = repo.revision;
         this.build_date = repo.build_date;
         this.config_url = repo.config_url;
         this.save();
-        this.calcHash();
+        if (calcHash) {
+            this.calcHash();
+        }
     }
 
     private async initModsets (repo: ReplicArmaRepository): Promise<JSONMap<string, Modset>> {
         const modsets = new JSONMap<string, Modset>();
         const modsetDataMap = new JSONMap<string, Modset>();
         const modWorker = await useHashStore().getWorker;
-        Array.from(repo.modsets as unknown as Modset[]).map(async (repoModset: Modset) => {
+        const repoModsets = Array.from(repo.modsets as unknown as Modset[]);
+        const mods = [...new Map(repoModsets.map(modset => modset.mods).flat().map((mod) => [mod.name, mod])).values()] ?? [];
+        repoModsets.unshift({ id: uuidv4(), name: 'All Mods', description: 'Contains all Mods from the Repository', mods: mods });
+        repoModsets.map(async (repoModset: Modset) => {
             repoModset.id = uuidv4();
             modsets.set(repoModset.id, repoModset);
         });
@@ -146,16 +151,10 @@ export class ReplicArmaRepository extends Repository {
         for (const modset of modsetData) {
             modsetDataMap.set(modset.id, modset);
         }
-        const mods = [...new Map(Array.from(modsets.values()).map(modset => modset.mods).flat().map((mod) => [mod.name, mod])).values()] ?? [];
-        const id = uuidv4();
-        modsets.set(id, { id: id, name: 'All Mods', description: 'Contains all Mods from the Repository', mods: mods });
+        const repoStore = useRepoStore();
+        repoStore.addToModsetCache(modsetDataMap);
         System.updateModsetCache(this.id, modsetDataMap);
         return modsets;
-    }
-
-    private async loadModsets (repo: {modsets: [string, Modset][]} | undefined): Promise<JSONMap<string, Modset>> {
-        if (repo === undefined) throw new Error('Repo undefined');
-        return new JSONMap<string, Modset>(repo.modsets);
     }
 
     private async loadCollections (repo: ReplicArmaRepository | undefined): Promise<JSONMap<string, Collection>> {
@@ -173,7 +172,6 @@ export class ReplicArmaRepository extends Repository {
     public async calcHash (): Promise<void> {
         const hashStore = useHashStore();
         const repoStore = useRepoStore();
-        this.save();
         const cacheData = await System.getModsetCache(this.id);
         repoStore.addToModsetCache(new JSONMap<string, Modset>(cacheData));
         hashStore.startHash(this);

@@ -13,6 +13,7 @@ mod swifty;
 mod util;
 
 use std::collections::HashMap;
+use std::ffi::c_void;
 
 use crate::commands::repo::download;
 use crate::commands::repo::get_repo;
@@ -22,9 +23,25 @@ use crate::commands::util::file_exists;
 use crate::commands::util::get_a3_dir;
 use directories::ProjectDirs;
 use tauri::async_runtime::Mutex;
+use tauri::Event;
+use tauri::EventHandler;
 use util::methods::load_t;
 
 use state::ReplicArmaState;
+use windows::Win32::Foundation::HINSTANCE;
+use windows::Win32::Foundation::HWND;
+use windows::Win32::Foundation::LPARAM;
+use windows::Win32::Foundation::LRESULT;
+use windows::Win32::Foundation::WPARAM;
+use windows::Win32::System::Threading::GetThreadId;
+use windows::Win32::UI::Input::KeyboardAndMouse::SetFocus;
+use windows::Win32::UI::WindowsAndMessaging::CallNextHookEx;
+use windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;
+use windows::Win32::UI::WindowsAndMessaging::SetWindowsHookExW;
+use windows::Win32::UI::WindowsAndMessaging::HHOOK;
+use windows::Win32::UI::WindowsAndMessaging::MSG;
+use windows::Win32::UI::WindowsAndMessaging::WH_GETMESSAGE;
+use windows::Win32::UI::WindowsAndMessaging::WM_NCLBUTTONDOWN;
 
 fn init_state() -> anyhow::Result<ReplicArmaState> {
     let proj_dirs = Box::new(
@@ -44,6 +61,14 @@ fn init_state() -> anyhow::Result<ReplicArmaState> {
     Ok(state)
 }
 
+unsafe extern "system" fn hook_callback(code: i32, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
+    let msg = l_param.0 as *mut MSG;
+    if (*msg).message == WM_NCLBUTTONDOWN {
+        SetFocus((*msg).hwnd);
+    }
+    CallNextHookEx(HHOOK(0), code, w_param, l_param)
+}
+
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // let a3s_repo = A3SRepository::from_auto_config(String::from(
     //     "http://a3s.gruppe-adler.de/mods/.a3s/autoconfig",
@@ -58,7 +83,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // println!("{}", repo.build_date);
     // let swifty = SwiftyRepository::from_repo_json(String::from("https://swifty.projectawesome.net/event/repo.json"));
     //repo.generate_file_map();
-
+    // let app =
     tauri::Builder::default()
         .manage(init_state()?)
         .invoke_handler(tauri::generate_handler![
@@ -69,12 +94,36 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             dir_exists,
             get_a3_dir
         ])
+        .on_page_load(|x, y| {
+            if let Ok(hwnd) = x.hwnd() {
+                unsafe {
+                    let hwnd_win = HWND(hwnd as isize);
+                    let thread_id = GetWindowThreadProcessId(hwnd_win, std::ptr::null_mut());
+                    SetWindowsHookExW(
+                        WH_GETMESSAGE,
+                        Some(hook_callback),
+                        HINSTANCE::default(),
+                        thread_id,
+                    );
+                }
+            }
+            println!("Test");
+        })
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::Moved(_) = event.event() {
+                let win = event.window();
+                // TODO: call NotifyParentWindowPositionChanged here
+                // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
+                // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
+            }
+        })
         // .build(tauri::generate_context!())
         // .expect("error while running tauri application")
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
     // app.run(|app_handle, e| {
+    //     EventHandl
     //     if let Event::CloseRequested { label, api, .. } = e {
     //         let app_handle = app_handle.clone();
     //         let window = app_handle.get_window(&label).unwrap();

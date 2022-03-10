@@ -9,13 +9,17 @@
     </div>
 </template>
 <script lang="ts">
+import { useDownloadStore } from '@/store/download';
 import { Options, Vue } from 'vue-class-component';
 import { Watch } from 'vue-property-decorator';
 @Options({
     components: { }
 })
 export default class DownloadProgressVue extends Vue {
-    private speeds: number[] = [];
+    private downloadStore = useDownloadStore();
+    private get speeds () {
+        return this.downloadStore.speeds;
+    }
 
     private displayedSpeeds: number[] = [];
 
@@ -38,13 +42,14 @@ export default class DownloadProgressVue extends Vue {
                 max: Math.max(...this.speeds),
                 avg: Math.floor(this.speeds.reduce((prev, cur) => prev + cur, 0) / this.speeds.length)
             };
+            this.downloadStore.stats = this.stats;
         }
 
         // TODO: Remove invisble speeds
     }
 
     private formatSpeed (speed: number): string {
-        return `${speed} B/s`;
+        return `${speed} KB/s`;
     }
 }
 </script>

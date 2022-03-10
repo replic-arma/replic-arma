@@ -5,4 +5,5 @@ export interface DownloadItem {
     item: Modset;
     size: number;
     done: number;
+    repoId: string;
 }

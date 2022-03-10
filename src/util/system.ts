@@ -9,6 +9,7 @@ import { Command } from '@tauri-apps/api/shell';
 import { listen } from '@tauri-apps/api/event';
 import { useHashStore } from '@/store/hash';
 import { toRaw } from 'vue';
+import { useDownloadStore } from '@/store/download';
 export class System {
     private static APPDIR = 'Replic-Arma';
     private static DOCUMENTDIRECTORY = (async () => await documentDir())();
@@ -160,28 +161,43 @@ export class System {
         return await invoke('hash_check', { pathPrefix: path, files: files.map(file => file.path) });
     }
 
+    public static async pauseDownload (): Promise<void> {
+        return await invoke('pause_download');
+    }
+
     public static async registerListener (): Promise<void> {
         const hashStore = useHashStore();
+        const downloadStore = useDownloadStore();
         await listen('hash_calculated', () => {
             if (hashStore.current === null) throw new Error('Current hash object empty');
             hashStore.current.checkedFiles += 1;
         });
-        await listen('download_report', (data) => {
-            console.log(data);
+        await listen('download_report', (data: {payload: number}) => {
+            if (downloadStore.current !== null) {
+                downloadStore.current.done += data.payload;
+                downloadStore.speeds.push(data.payload);
+            }
         });
-        await listen('download_finished', (data) => {
-            console.log(data);
+        await listen('download_finished', (data: {payload: string}) => {
+            if (downloadStore.current !== null) {
+                const cacheData = hashStore.cache.get(downloadStore.current.item.id);
+                if (cacheData !== undefined) {
+                    cacheData.missingFiles = cacheData.missingFiles.filter(path => path !== data.payload);
+                    cacheData.outdatedFiles = cacheData.outdatedFiles.filter(path => path !== data.payload);
+                    hashStore.cache.set(downloadStore.current.item.id, cacheData);
+                }
+            }
         });
         // await listen('hash_failed', (event: any) => {
         //     repoStore.filesFailed.push(event.payload);
         // });
     }
 
-    public static async downloadFiles (repoId: string|null, modsetId: string|null, outdatedFiles: string[], missingFiles: string[]): Promise<void> {
+    public static async downloadFiles (repoId: string|null, modsetId: string|null, files: string[]): Promise<void> {
         const repoStore = useRepoStore();
         const settingsStore = useSettingsStore();
         const repo = repoStore.getRepo(repoId);
         if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
-        return await invoke('download', { repoType: repo.type?.toUpperCase(), url: repo.download_server?.url, targetPath: `${settingsStore.settings.downloadDirectoryPath}${System.SEPERATOR}`, fileArray: [...missingFiles, ...outdatedFiles] });
+        return await invoke('download', { repoType: repo.type?.toUpperCase(), url: repo.download_server?.url, targetPath: `${settingsStore.settings.downloadDirectoryPath}${System.SEPERATOR}`, fileArray: files });
     }
 }

@@ -90,14 +90,9 @@ export default class ModsetView extends Vue {
 
   private download () {
       const modset = this.repoStore.getModset(this.repoStore.currentRepoId, this.repoStore.currentModsetId);
-      if (modset === undefined) return;
-      this.downloadStore.addToDownloadQueue(modset);
-      // System.downloadFiles(this.repoStore.currentRepoId, this.repoStore.currentModsetId, this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.outdatedFiles ?? [], this.hashStore.cache.get(this.repoStore.currentModsetId ?? '')?.missingFiles ?? []).then(
-      //     () => {
-      //         const currentRepo = this.repoStore.getRepo(this.repoStore.currentRepoId);
-      //         if (currentRepo === undefined) return;
-      //         this.hashStore.startHash(currentRepo);
-      //     }).catch(error => console.error(error));
+      const repo = this.repoStore.getRepo(this.repoStore.currentRepoId);
+      if (modset === undefined || repo === undefined) return;
+      this.downloadStore.addToDownloadQueue(modset, repo?.id);
   }
 }
 </script>

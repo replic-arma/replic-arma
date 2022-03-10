@@ -33,7 +33,6 @@ use windows::Win32::Foundation::HWND;
 use windows::Win32::Foundation::LPARAM;
 use windows::Win32::Foundation::LRESULT;
 use windows::Win32::Foundation::WPARAM;
-use windows::Win32::System::Threading::GetThreadId;
 use windows::Win32::UI::Input::KeyboardAndMouse::SetFocus;
 use windows::Win32::UI::WindowsAndMessaging::CallNextHookEx;
 use windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;

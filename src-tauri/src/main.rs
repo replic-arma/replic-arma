@@ -13,6 +13,8 @@ mod swifty;
 mod util;
 
 use std::collections::HashMap;
+use std::fs;
+use std::path::PathBuf;
 
 use crate::commands::repo::download;
 use crate::commands::repo::get_repo;
@@ -35,7 +37,21 @@ fn init_state() -> anyhow::Result<ReplicArmaState> {
             .to_owned(),
     );
 
-    let hashes: HashMap<String, (String, i64)> = load_t(proj_dirs.join("hashes.json"))?;
+    let file_path = proj_dirs.join("hashes.json");
+
+    let hashes_load_result: anyhow::Result<HashMap<String, (String, i64)>> = load_t(&file_path);
+
+    let hashes = match hashes_load_result {
+        Ok(hashes) => hashes,
+        Err(_) => {
+            if file_path.is_file() {
+                if let Err(err) = fs::remove_file(file_path) {
+                    println!("Error {}", err);
+                }
+            }
+            HashMap::<String, (String, i64)>::new()
+        }
+    };
 
     let state = ReplicArmaState {
         data_dir: proj_dirs,
@@ -62,7 +78,14 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     //repo.generate_file_map();
 
     tauri::Builder::default()
-        .manage(init_state()?)
+        .manage(init_state().unwrap_or_else(|_| {
+            println!("Error during init state! Using default state!");
+            ReplicArmaState {
+                data_dir: Box::new(PathBuf::new()),
+                known_hashes: Mutex::new(HashMap::new()),
+                downloader: Mutex::new(None),
+            }
+        }))
         .invoke_handler(tauri::generate_handler![
             hash_check,
             get_repo,

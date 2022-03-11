@@ -81,7 +81,7 @@ pub async fn hash_check(
         old_hashes.insert(hash.0.clone(), (hash.1.clone(), hash.2));
     }
 
-    save_t(state.data_dir.join("hashes.json"), old_hashes.clone())?;
+    save_t(&state.data_dir.join("hashes.json"), old_hashes.clone())?;
 
     let result: Vec<_> = new_hashes
         .into_iter()

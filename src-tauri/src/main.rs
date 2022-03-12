@@ -28,6 +28,17 @@ use tauri::async_runtime::Mutex;
 use util::methods::load_t;
 
 use state::ReplicArmaState;
+use windows::Win32::{
+    Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, RECT, WPARAM},
+    UI::{
+        Input::KeyboardAndMouse::SetFocus,
+        WindowsAndMessaging::{
+            CallNextHookEx, GetWindowRect, GetWindowThreadProcessId, SetWindowPos,
+            SetWindowsHookExW, CWPSTRUCT, HHOOK, MSG, SWP_NOMOVE, WH_CALLWNDPROC, WH_GETMESSAGE,
+            WM_MOVE, WM_NCLBUTTONDOWN,
+        },
+    },
+};
 
 fn init_state() -> anyhow::Result<ReplicArmaState> {
     let proj_dirs = Box::new(
@@ -62,6 +73,33 @@ fn init_state() -> anyhow::Result<ReplicArmaState> {
     Ok(state)
 }
 
+unsafe extern "system" fn get_msg_callback(code: i32, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
+    let msg = *(l_param.0 as *mut MSG);
+    if msg.message == WM_NCLBUTTONDOWN {
+        SetFocus(msg.hwnd);
+    }
+    CallNextHookEx(HHOOK(0), code, w_param, l_param)
+}
+
+unsafe extern "system" fn call_wnd_callback(
+    code: i32,
+    w_param: WPARAM,
+    l_param: LPARAM,
+) -> LRESULT {
+    let cwp = *(l_param.0 as *mut CWPSTRUCT);
+    if cwp.message == WM_MOVE {
+        let mut rect = RECT::default();
+        if GetWindowRect(cwp.hwnd, &mut rect as *mut RECT).as_bool() {
+            let width = rect.right - rect.left;
+            let height = rect.bottom - rect.top;
+
+            SetWindowPos(cwp.hwnd, HWND(0), 0, 0, width + 1, height + 1, SWP_NOMOVE);
+            SetWindowPos(cwp.hwnd, HWND(0), 0, 0, width, height, SWP_NOMOVE);
+        }
+    }
+    CallNextHookEx(HHOOK(0), code, w_param, l_param)
+}
+
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // let a3s_repo = A3SRepository::from_auto_config(String::from(
     //     "http://a3s.gruppe-adler.de/mods/.a3s/autoconfig",
@@ -76,7 +114,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // println!("{}", repo.build_date);
     // let swifty = SwiftyRepository::from_repo_json(String::from("https://swifty.projectawesome.net/event/repo.json"));
     //repo.generate_file_map();
-
+    // let app =
     tauri::Builder::default()
         .manage(init_state().unwrap_or_else(|_| {
             println!("Error during init state! Using default state!");
@@ -95,12 +133,42 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             dir_exists,
             get_a3_dir
         ])
+        .on_page_load(|window, _| {
+            if let Ok(hwnd) = window.hwnd() {
+                unsafe {
+                    let hwnd_win = HWND(hwnd as isize);
+                    let thread_id = GetWindowThreadProcessId(hwnd_win, std::ptr::null_mut());
+                    SetWindowsHookExW(
+                        WH_GETMESSAGE,
+                        Some(get_msg_callback),
+                        HINSTANCE::default(),
+                        thread_id,
+                    );
+                    SetWindowsHookExW(
+                        WH_CALLWNDPROC,
+                        Some(call_wnd_callback),
+                        HINSTANCE::default(),
+                        thread_id,
+                    );
+                }
+            }
+            println!("Test");
+        })
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::Moved(_) = event.event() {
+                // let win = event.window();
+                // TODO: call NotifyParentWindowPositionChanged here
+                // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
+                // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
+            }
+        })
         // .build(tauri::generate_context!())
         // .expect("error while running tauri application")
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
     // app.run(|app_handle, e| {
+    //     EventHandl
     //     if let Event::CloseRequested { label, api, .. } = e {
     //         let app_handle = app_handle.clone();
     //         let window = app_handle.get_window(&label).unwrap();

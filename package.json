@@ -12,6 +12,7 @@
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-rc.1",
     "@tauri-apps/cli": "^1.0.0-rc.4",
+    "dayjs": "^1.10.8",
     "mdi-vue": "^3.0.12",
     "pako": "^2.0.4",
     "pinia": "^2.0.5",

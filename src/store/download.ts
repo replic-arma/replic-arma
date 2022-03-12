@@ -21,12 +21,19 @@ export const useDownloadStore = defineStore('download', {
     }),
     getters: {},
     actions: {
-        addToDownloadQueue (modset: Modset, repoId: string) {
+        async addToDownloadQueue (modset: Modset, repoId: string) {
+            const hashStore = useHashStore();
+            const repoStore = useRepoStore();
+            const modsetCacheData = repoStore.modsetCache.get(modset.id);
+            const cacheData = hashStore.cache.get(modset.id);
+            if (cacheData === undefined) return;
+            const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
+            const totalSize = await (await hashStore.getWorker).getFileSize(toRaw(modsetCacheData?.mods), fliesToDownload);
             this.queue.set(uuidv4(), {
                 item: modset,
                 status: 'paused',
-                size: 0,
-                done: 0,
+                size: totalSize,
+                received: 0,
                 repoId: repoId
             });
             if (this.current === null) {
@@ -34,18 +41,21 @@ export const useDownloadStore = defineStore('download', {
             }
         },
         async next () {
-            if (this.queue.size > 0) {
+            const hashStore = useHashStore();
+            if (this.queue.size > 0 && this.current === null) {
                 const index = Array.from(this.queue.keys())[0];
                 this.current = this.queue.get(index) as DownloadItem;
                 this.queue.delete(index);
-                const hashStore = useHashStore();
-                const repoStore = useRepoStore();
                 const cacheData = hashStore.cache.get(this.current.item.id);
                 if (cacheData === undefined) return;
-                const modsetCacheData = repoStore.modsetCache.get(this.current.item.id);
                 const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
-                this.current.size = await (await hashStore.getWorker).getFileSize(toRaw(modsetCacheData?.mods), fliesToDownload);
                 this.current.status = 'downloading';
+                System.downloadFiles(this.current.repoId, this.current.item.id, fliesToDownload);
+            } else if (this.current !== null) {
+                this.current.status = 'downloading';
+                const cacheData = hashStore.cache.get(this.current.item.id);
+                if (cacheData === undefined) return;
+                const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
                 System.downloadFiles(this.current.repoId, this.current.item.id, fliesToDownload);
             }
         }

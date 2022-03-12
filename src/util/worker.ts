@@ -55,9 +55,11 @@ const replicWorker = {
     async getFilesForModset (modset: Modset) {
         return modset?.mods !== undefined ? modset.mods?.flatMap(mod => mod.files) : [];
     },
-    async getFileSize (mods: ModsetMod[], files: string[]) {
-        const initialValue = 0;
-        return mods.flatMap(mod => mod.files).filter(file => files.includes(file?.path as string)).reduce((previousValue, currentValue) => previousValue + (currentValue as File)?.size, initialValue);
+    async getFileSize (mods: ModsetMod[], filesPaths: string[]) {
+        return mods
+            .flatMap(mod => mod.files ?? [])
+            .filter(file => filesPaths.includes(file.path))
+            .reduce((previousValue, currentValue) => previousValue + currentValue.size, 0);
     },
     async isFileIn (wantedFiles: File[], fileList: Array<string>): Promise<string[]> {
         return wantedFiles.filter((wantedFile) => fileList.includes(wantedFile.path)).map(file => file.path)

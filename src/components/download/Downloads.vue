@@ -66,26 +66,18 @@ import { toRaw } from 'vue';
 })
 export default class DownloadsVue extends Vue {
     private downloadStore = useDownloadStore();
-    private downloadItem: DownloadItem | null = null;
-    private queueItems: DownloadItem[] = [];
+    private get downloadItem (): DownloadItem | null {
+        return this.downloadStore.current;
+    }
+
+    private get queueItems (): DownloadItem[] {
+        return toRaw(Array.from(this.downloadStore.queue.values()));
+    }
+
     private updateNeededItems: DownloadItem[] = [];
     private speedOverTime: number[] = [];
     private storeSubscription: (() => void) | undefined;
     private isOpen = false;
-
-    public created (): void {
-        this.queueItems = [];
-        this.updateNeededItems = [];
-        this.storeSubscription = this.downloadStore.$subscribe(() => {
-            this.downloadItem = toRaw(
-                this.downloadStore.current as DownloadItem
-            );
-            this.queueItems = toRaw(
-                Array.from(this.downloadStore.queue.values())
-            );
-            this.updateNeededItems = [];
-        });
-    }
 }
 </script>
 <style lang="scss" scoped>

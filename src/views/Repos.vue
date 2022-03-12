@@ -11,7 +11,6 @@
     <ul class="repos__list">
       <repo v-for="(repo, i) of repos" :key="i" :repository="repo"></repo>
     </ul>
-    <mdicon name="plus" class="add-button" role="button"></mdicon>
     <repo-add />
   </div>
 </template>

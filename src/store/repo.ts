@@ -83,6 +83,7 @@ export const useRepoStore = defineStore('repo', {
             }
             repositoriy.collections?.set(collection.id, collection);
             this.repos.set(id, repositoriy);
+            this.saveRepoState();
         },
         addToModsetCache (cache: JSONMap<string, Modset>) {
             this.modsetCache = new JSONMap<string, Modset>([...toRaw(this.modsetCache), ...cache]);

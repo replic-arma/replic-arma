@@ -1,6 +1,6 @@
 <template>
   <div class="collection">
-    <div class="collection__heading">
+    <div class="collection__heading"  v-if="collection !== undefined">
       <mdicon name="chevron-left" size="55" @click="$router.back()" />
       <h1>{{ collection.name }}</h1>
       <div class="icon-group">
@@ -20,6 +20,7 @@ import TabsVue, { TabsItem } from '@/components/util/Tabs.vue';
 import { Collection } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useRepoStore } from '@/store/repo';
+import { shallowRef } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 
 @Options({
@@ -28,8 +29,8 @@ import { Options, Vue } from 'vue-class-component';
 export default class CollectionView extends Vue {
   private collection!: Collection | undefined;
   private subnaviItems: TabsItem[] = [
-      { label: 'General', component: CollectionMods },
-      { label: 'Launch Options', component: LaunchVue }
+      { label: 'General', component: shallowRef(CollectionMods) },
+      { label: 'Launch Options', component: shallowRef(LaunchVue) }
   ];
 
   private repoStore = useRepoStore();

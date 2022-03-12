@@ -4,7 +4,7 @@
         <span class="download-item__name">{{downloadItem.item.name}}</span>
         <div class="download-item__status" v-if="downloadItem.status === 'downloading'">
             <span class="download-item__progress">{{progress}}%</span>
-            <span class="download-item__size">{{done}} GB / {{size}} GB</span>
+            <span class="download-item__size">{{received}} GB / {{size}} GB</span>
             <div class="download-item__progress-bar" :style="`--progress: ${progress}%;`"></div>
             <span class="download-item__time">~{{remaining}} minutes left</span>
         </div>
@@ -30,19 +30,29 @@ import { System } from '@/util/system';
     components: { },
     computed: {
         ...mapState(useDownloadStore, {
-            progress: store => Math.floor(((store.current?.done as number) / 1024 / 1024) / ((store.current?.size as number) / 1024 / 1024 / 1024) * 100),
-            size: store => Math.floor((store.current?.size as number) / 1024 / 1024 / 1024),
-            done: store => Math.floor((store.current?.done as number) / 1024 / 1024),
-            remaining: store => store.stats !== null ? Number(((((store.current?.size as number) / 1024) - ((store.current?.done as number))) / store.stats?.avg) / 60).toFixed(2) : 0
+            progress: store => Math.floor(((store.current?.received as number) / 1000 / 1000) / ((store.current?.size as number) / 1000 / 1000 / 1000) * 100),
+            size: store => Math.floor((store.current?.size as number) / 1000 / 1000 / 1000),
+            received: store => Math.floor((store.current?.received as number) / 1000 / 1000),
+            remaining: store => store.stats !== null ? Number(((((store.current?.size as number) / 1000) - ((store.current?.received as number))) / store.stats?.avg) / 60).toFixed(2) : 0
         })
     }
 })
 export default class DownloadItemVue extends Vue {
     @Prop({ type: Object }) private downloadItem!: DownloadItem;
     private downloadStore = useDownloadStore();
-    private startDownload = () => { console.info(); };
-    private stopDownload = () => { console.info(); };
-    private pauseDownload = () => { System.pauseDownload(); };
+    private startDownload = () => {
+        const downloadStore = useDownloadStore();
+        downloadStore.next();
+    };
+
+    private stopDownload = () => {
+        this.downloadStore.current = null;
+    };
+
+    private pauseDownload = () => {
+        (this.downloadStore.current as DownloadItem).status = 'paused';
+        System.pauseDownload();
+    };
 }
 </script>
 <style lang="scss" scoped>

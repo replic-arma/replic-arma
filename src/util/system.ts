@@ -174,7 +174,7 @@ export class System {
         });
         await listen('download_report', (data: {payload: number}) => {
             if (downloadStore.current !== null) {
-                downloadStore.current.done += data.payload;
+                downloadStore.current.received += data.payload;
                 downloadStore.speeds.push(data.payload);
             }
         });

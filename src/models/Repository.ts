@@ -53,7 +53,7 @@ export class Collection {
     public id!: string;
     public name!: string;
     public description?: string;
-    public modsets?: Map<string, Modset>;
+    public modsets?: Array<string>;
     public dlc?: Array<string>;
     public localMods?: Array<ModsetMod>;
 
@@ -123,7 +123,7 @@ export class ReplicArmaRepository extends Repository {
         this.settings = repo.settings;
         this.type = repo.type;
         this.files = repo.files;
-        // this.collections = await this.loadCollections(repo);
+        this.collections = repo.collections !== undefined ? new JSONMap<string, Collection>(repo.collections) : undefined;
         this.modsets = new JSONMap<string, Modset>(repo.modsets);
         this.download_server = repo.download_server;
         this.game_servers = repo.game_servers;

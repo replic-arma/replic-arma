@@ -196,7 +196,7 @@ async fn download_a3s(
             let bytes = *wb.lock().await;
             *wb.lock().await = 0;
             //println!("BBytes per sec {}", bytes / 1024 * 4);
-            win.emit("download_report", bytes / 1024 * 4).unwrap();
+            win.emit("download_report", bytes / 1000 * 4).unwrap();
             sleep(Duration::from_millis(250)).await;
         }
     });

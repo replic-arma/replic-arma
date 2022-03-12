@@ -2,7 +2,7 @@ use std::{
     fs::{self, File},
     io::Write,
     path::Path,
-    time::{Duration, SystemTime},
+    sync::Arc,
 };
 
 use anyhow::Result;
@@ -21,7 +21,7 @@ use hyper::{
 };
 use hyper_tls::HttpsConnector;
 use serde::{Deserialize, Serialize};
-use tauri::Window;
+use tauri::async_runtime::Mutex;
 use url::Url;
 
 pub(crate) fn get_header_value(
@@ -72,13 +72,18 @@ pub(crate) struct PartInfo {
 
 #[async_trait]
 pub trait Downloader {
-    async fn download_file(&self, window: &Window, url: Url, destination: &Path) -> Result<()>;
+    async fn download_file(
+        &self,
+        window: &Arc<Mutex<usize>>,
+        url: Url,
+        destination: &Path,
+    ) -> Result<()>;
     async fn pause(&mut self);
     async fn get_pause(&self) -> bool;
 }
 
 async fn download_file<C>(
-    window: &Window,
+    window: &Arc<Mutex<usize>>,
     downloader: &(dyn Downloader + Send + Sync),
     client: Client<C>,
     url: Url,
@@ -90,7 +95,6 @@ where
 {
     let uri: Uri = url.as_str().parse::<_>()?;
 
-    //let mut res;
     let mut out = File::create(destination)?;
     let mut _write_size: usize = 0;
 
@@ -98,48 +102,21 @@ where
 
     let mut part_info = get_part_info_from_headers(res.headers());
 
-    // let content_length: usize = get_header_value(res.headers(), CONTENT_LENGTH)
-    //     .unwrap_or_default()
-    //     .parse()
-    //     .unwrap_or_default();
-
-    // let last_modified = DateTime::parse_from_rfc2822(
-    //     get_header_value(res.headers(), LAST_MODIFIED).unwrap_or_default(),
-    // )
-    // .map(|t| t.with_timezone(&Utc))
-    // .ok();
-
-    // let e_tag = get_header_value(res.headers(), ETAG)
-    //     .unwrap_or_default()
-    //     .to_owned();
-
     let accept_ranges =
         get_header_value(res.headers(), ACCEPT_RANGES).unwrap_or_default() != "none";
 
-    // let length = res.headers().try_entry(CONTENT_LENGTH).unwrap();
-    // let mut hash = Sha1::new();
-    let mut now = SystemTime::now();
-    let one_sec = Duration::from_millis(250);
-
-    let mut bytes_written_sec: usize = 0;
     let mut bytes_written_complete: usize = 0;
-
-    //let mut paused = false;
 
     while let Some(next) = res.data().await {
         let chunk = next?;
 
         _write_size += out.write(&chunk)?;
-        bytes_written_sec += chunk.len();
-        bytes_written_complete += chunk.len();
 
-        if now.elapsed().unwrap_or_default() >= one_sec {
-            let dl_speed = bytes_written_sec * 4 / 1024;
-            window.emit("download_report", dl_speed).unwrap();
+        let chunk_len = chunk.len();
 
-            now = SystemTime::now();
-            bytes_written_sec = 0;
-        }
+        *window.lock().await += chunk_len;
+
+        bytes_written_complete += chunk_len;
 
         if downloader.get_pause().await && accept_ranges {
             part_info.written_bytes = bytes_written_complete;
@@ -212,7 +189,12 @@ impl HttpDownloader {
 
 #[async_trait]
 impl Downloader for HttpDownloader {
-    async fn download_file(&self, window: &Window, url: Url, destination: &Path) -> Result<()> {
+    async fn download_file(
+        &self,
+        window: &Arc<Mutex<usize>>,
+        url: Url,
+        destination: &Path,
+    ) -> Result<()> {
         // Client is cheap to clone and cloning is the recommended way to share a Client.
         // The underlying connection pool will be reused.
         Ok(download_file(window, self, self.client.clone(), url, destination).await?)
@@ -245,7 +227,12 @@ impl HttpsDownloader {
 
 #[async_trait]
 impl Downloader for HttpsDownloader {
-    async fn download_file(&self, window: &Window, url: Url, destination: &Path) -> Result<()> {
+    async fn download_file(
+        &self,
+        window: &Arc<Mutex<usize>>,
+        url: Url,
+        destination: &Path,
+    ) -> Result<()> {
         // Client is cheap to clone and cloning is the recommended way to share a Client.
         // The underlying connection pool will be reused.
         Ok(download_file(window, self, self.client.clone(), url, destination).await?)

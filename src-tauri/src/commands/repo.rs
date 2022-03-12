@@ -3,6 +3,8 @@ use std::{
     io::{self},
     path::{Path, PathBuf},
     str::FromStr,
+    sync::Arc,
+    time::Duration,
 };
 
 use crate::{
@@ -19,7 +21,8 @@ use anyhow::Result;
 use filetime::FileTime;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 use sha1::{Digest, Sha1};
-use tauri::Window;
+use tauri::{async_runtime::Mutex, Window};
+use tokio::{task, time::sleep};
 use url::Url;
 
 #[tauri::command]
@@ -182,6 +185,22 @@ async fn download_a3s(
         up => return Err(anyhow!("Unknown protocol/scheme: {}", up)),
     };
 
+    let downloading = Arc::new(Mutex::new(true));
+    let written_bytes = Arc::new(Mutex::new(0_usize));
+
+    let dl = downloading.clone();
+    let wb = written_bytes.clone();
+    let win = window.clone();
+    task::spawn(async move {
+        while *dl.lock().await {
+            let bytes = *wb.lock().await;
+            *wb.lock().await = 0;
+            //println!("BBytes per sec {}", bytes / 1024 * 4);
+            win.emit("download_report", bytes / 1024 * 4).unwrap();
+            sleep(Duration::from_millis(250)).await;
+        }
+    });
+
     // NOT THREADSAFE (I think :P)
     //files.into_iter().for_each(|file| {
     for file in files {
@@ -193,10 +212,14 @@ async fn download_a3s(
         println!("Downloading: {} to {}", url, target_file.display());
 
         fs::create_dir_all(target_path)?;
-        downloader.download_file(&window, url, &target_file).await?;
+        downloader
+            .download_file(&written_bytes, url, &target_file)
+            .await?;
         window.emit("download_finished", file).unwrap();
         //});
     }
+
+    *downloading.lock().await = false;
 
     Ok(())
 }

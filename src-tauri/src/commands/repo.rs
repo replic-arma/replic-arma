@@ -123,8 +123,8 @@ pub async fn get_repo(url: String) -> JSResult<Repository> {
 
 #[tauri::command]
 pub async fn pause_download(state: tauri::State<'_, ReplicArmaState>) -> JSResult<()> {
-    if let Some(dl) = (*state.downloader.lock().await).as_mut() {
-        dl.pause().await;
+    if let Some(dl) = (&mut *state.downloading.lock().await).as_mut() {
+        *dl = false;
     }
     Ok(())
 }
@@ -132,35 +132,38 @@ pub async fn pause_download(state: tauri::State<'_, ReplicArmaState>) -> JSResul
 #[tauri::command]
 pub async fn download(
     window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
     repo_type: RepoType,
     url: String,
     target_path: String,
     file_array: Vec<String>,
 ) -> JSResult<()> {
-    Ok(download_wrapper(window, repo_type, url, target_path, file_array).await?)
+    Ok(download_wrapper(window, state, repo_type, url, target_path, file_array).await?)
 }
 
 pub async fn download_wrapper(
     window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
     repo_type: RepoType,
     url: String,
     target_path: String,
     file_array: Vec<String>,
 ) -> Result<()> {
     let target_dir = PathBuf::from_str(&target_path)?;
-    download_files(window, repo_type, url, target_dir, file_array).await?;
+    download_files(window, state, repo_type, url, target_dir, file_array).await?;
     Ok(())
 }
 
 async fn download_files(
     window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
     repo_type: RepoType,
     url: String,
     target_dir: PathBuf,
     file_array: Vec<String>,
 ) -> Result<()> {
     match repo_type {
-        RepoType::A3S => download_a3s(window, url, target_dir, file_array).await?,
+        RepoType::A3S => download_a3s(window, state, url, target_dir, file_array).await?,
         RepoType::Swifty => todo!(),
     };
 
@@ -169,6 +172,7 @@ async fn download_files(
 
 async fn download_a3s(
     window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
     url: String,
     target_dir: PathBuf,
     files: Vec<String>,
@@ -185,6 +189,8 @@ async fn download_a3s(
         up => return Err(anyhow!("Unknown protocol/scheme: {}", up)),
     };
 
+    *state.downloading.lock().await = Some(true);
+
     let downloading = Arc::new(Mutex::new(true));
     let written_bytes = Arc::new(Mutex::new(0_usize));
 
@@ -195,7 +201,7 @@ async fn download_a3s(
         while *dl.lock().await {
             let bytes = *wb.lock().await;
             *wb.lock().await = 0;
-            //println!("BBytes per sec {}", bytes / 1024 * 4);
+            println!("BBytes per sec {}", bytes / 1024 * 4);
             win.emit("download_report", bytes / 1000 * 4).unwrap();
             sleep(Duration::from_millis(250)).await;
         }
@@ -212,11 +218,16 @@ async fn download_a3s(
         println!("Downloading: {} to {}", url, target_file.display());
 
         fs::create_dir_all(target_path)?;
+
         downloader
-            .download_file(&written_bytes, url, &target_file)
+            .download_file(&state, &written_bytes, url, &target_file)
             .await?;
-        window.emit("download_finished", file).unwrap();
-        //});
+        if (*state.downloading.lock().await).unwrap_or(true) {
+            window.emit("download_finished", file).unwrap();
+        } else {
+            *downloading.lock().await = false;
+            break;
+        }
     }
 
     *downloading.lock().await = false;

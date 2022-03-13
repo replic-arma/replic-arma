@@ -1,7 +1,8 @@
 use std::{
-    fs::{self, File},
+    ffi::{OsStr, OsString},
+    fs::{self, File, OpenOptions},
     io::Write,
-    path::Path,
+    path::{Path, PathBuf},
     sync::Arc,
 };
 
@@ -23,6 +24,8 @@ use hyper_tls::HttpsConnector;
 use serde::{Deserialize, Serialize};
 use tauri::async_runtime::Mutex;
 use url::Url;
+
+use crate::state::ReplicArmaState;
 
 pub(crate) fn get_header_value(
     headers: &HeaderMap<HeaderValue>,
@@ -74,17 +77,23 @@ pub(crate) struct PartInfo {
 pub trait Downloader {
     async fn download_file(
         &self,
-        window: &Arc<Mutex<usize>>,
+        state: &tauri::State<'_, ReplicArmaState>,
+        total_written_bytes: &Arc<Mutex<usize>>,
         url: Url,
         destination: &Path,
     ) -> Result<()>;
-    async fn pause(&mut self);
-    async fn get_pause(&self) -> bool;
+}
+
+fn append_ext(ext: impl AsRef<OsStr>, path: PathBuf) -> PathBuf {
+    let mut os_string: OsString = path.into();
+    os_string.push(".");
+    os_string.push(ext.as_ref());
+    os_string.into()
 }
 
 async fn download_file<C>(
-    window: &Arc<Mutex<usize>>,
-    downloader: &(dyn Downloader + Send + Sync),
+    state: &tauri::State<'_, ReplicArmaState>,
+    total_written_bytes: &Arc<Mutex<usize>>,
     client: Client<C>,
     url: Url,
     destination: &Path,
@@ -95,10 +104,20 @@ where
 {
     let uri: Uri = url.as_str().parse::<_>()?;
 
-    let mut out = File::create(destination)?;
     let mut _write_size: usize = 0;
 
-    let mut res = get_response(destination, uri, client).await?;
+    let res_tuple = get_response(destination, uri, client).await?;
+    let mut res = res_tuple.0;
+
+    let mut out;
+    if res_tuple.1 {
+        out = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(destination)?;
+    } else {
+        out = File::create(destination)?;
+    }
 
     let mut part_info = get_part_info_from_headers(res.headers());
 
@@ -114,17 +133,27 @@ where
 
         let chunk_len = chunk.len();
 
-        *window.lock().await += chunk_len;
+        *total_written_bytes.lock().await += chunk_len;
 
         bytes_written_complete += chunk_len;
 
-        if downloader.get_pause().await && accept_ranges {
+        let keep_downloading = (*state.downloading.lock().await).unwrap_or(true);
+
+        if !keep_downloading && accept_ranges {
             part_info.written_bytes = bytes_written_complete;
 
+            println!(
+                "Writing part file: {}",
+                append_ext("part", destination.to_path_buf())
+                    .to_str()
+                    .unwrap_or_default()
+            );
             fs::write(
-                destination.join(".part"),
+                append_ext("part", destination.to_path_buf()),
                 serde_json::to_string(&part_info)?,
             )?;
+
+            println!("Writing part file done");
 
             break;
         }
@@ -140,19 +169,26 @@ async fn get_response<C>(
     destination: &Path,
     uri: Uri,
     client: Client<C>,
-) -> Result<hyper::Response<Body>>
+) -> Result<(hyper::Response<Body>, bool)>
 where
     C: Connect + Clone + Send + Sync,
     C: 'static,
 {
-    let part_file = &destination.join(".part");
+    let part_file = &append_ext("part", destination.to_path_buf()); // &destination.join(".part");
     if Path::new(part_file).is_file() {
         let part_info_old: PartInfo = serde_json::from_reader(File::open(part_file)?)?;
         fs::remove_file(part_file)?;
 
         let req = Request::get(uri.clone())
-            .header(RANGE, part_info_old.written_bytes + 1)
+            .header(
+                RANGE,
+                format!(
+                    "bytes={}-{}",
+                    part_info_old.written_bytes, part_info_old.content_length
+                ),
+            )
             .body(Body::empty())?;
+        println!("Request Debug: {:?}", req);
         let res = client.request(req).await?;
 
         if let Some(accept_ranges) = get_header_value(res.headers(), ACCEPT_RANGES) {
@@ -162,27 +198,25 @@ where
                 if part_info.file_modified == part_info_old.file_modified
                     && part_info.e_tag == part_info_old.e_tag
                 {
-                    return Ok(res);
+                    return Ok((res, true));
                 }
             }
         }
 
-        Ok(res)
+        Ok((res, false))
     } else {
-        Ok(client.get(uri).await?)
+        Ok((client.get(uri).await?, false))
     }
 }
 
 pub struct HttpDownloader {
     client: Client<HttpConnector>,
-    paused: bool,
 }
 
 impl HttpDownloader {
     pub fn new() -> Self {
         HttpDownloader {
             client: Client::new(),
-            paused: false,
         }
     }
 }
@@ -191,37 +225,26 @@ impl HttpDownloader {
 impl Downloader for HttpDownloader {
     async fn download_file(
         &self,
+        state: &tauri::State<'_, ReplicArmaState>,
         window: &Arc<Mutex<usize>>,
         url: Url,
         destination: &Path,
     ) -> Result<()> {
         // Client is cheap to clone and cloning is the recommended way to share a Client.
         // The underlying connection pool will be reused.
-        Ok(download_file(window, self, self.client.clone(), url, destination).await?)
-    }
-
-    async fn pause(&mut self) {
-        self.paused = true;
-    }
-
-    async fn get_pause(&self) -> bool {
-        self.paused
+        Ok(download_file(state, window, self.client.clone(), url, destination).await?)
     }
 }
 
 pub struct HttpsDownloader {
     client: Client<HttpsConnector<HttpConnector>>,
-    paused: bool,
 }
 
 impl HttpsDownloader {
     pub fn new() -> Self {
         let https = HttpsConnector::new();
         let client = Client::builder().build::<_, hyper::Body>(https);
-        HttpsDownloader {
-            client,
-            paused: false,
-        }
+        HttpsDownloader { client }
     }
 }
 
@@ -229,20 +252,13 @@ impl HttpsDownloader {
 impl Downloader for HttpsDownloader {
     async fn download_file(
         &self,
+        state: &tauri::State<'_, ReplicArmaState>,
         window: &Arc<Mutex<usize>>,
         url: Url,
         destination: &Path,
     ) -> Result<()> {
         // Client is cheap to clone and cloning is the recommended way to share a Client.
         // The underlying connection pool will be reused.
-        Ok(download_file(window, self, self.client.clone(), url, destination).await?)
-    }
-
-    async fn pause(&mut self) {
-        self.paused = true;
-    }
-
-    async fn get_pause(&self) -> bool {
-        self.paused
+        Ok(download_file(state, window, self.client.clone(), url, destination).await?)
     }
 }

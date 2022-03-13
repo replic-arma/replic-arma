@@ -67,7 +67,7 @@ fn init_state() -> anyhow::Result<ReplicArmaState> {
     let state = ReplicArmaState {
         data_dir: proj_dirs,
         known_hashes: Mutex::new(hashes),
-        downloader: Mutex::new(None),
+        downloading: Mutex::new(None),
     };
 
     Ok(state)
@@ -121,7 +121,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             ReplicArmaState {
                 data_dir: Box::new(PathBuf::new()),
                 known_hashes: Mutex::new(HashMap::new()),
-                downloader: Mutex::new(None),
+                downloading: Mutex::new(None),
             }
         }))
         .invoke_handler(tauri::generate_handler![

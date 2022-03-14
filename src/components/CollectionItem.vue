@@ -1,13 +1,13 @@
 <template>
     <li class="collection">
         <div class="collection__info">
-            <span class="collection__name">{{collection.name}}</span>
-            <small class="collection__description">{{collection.description}}</small>
+            <span class="collection__name">{{ collection.name }}</span>
+            <small class="collection__description">{{ collection.description }}</small>
         </div>
-        <span class="repo__status" :class="`status--${status}`">{{$t('download-status.' + status)}}</span>
+        <span class="repo__status" :class="`status--${status}`">{{ $t('download-status.' + status) }}</span>
         <div class="collection__play">
             <span>Play</span>
-            <mdicon name="play" size="35"/>
+            <mdicon name="play" size="35" />
         </div>
         <router-link :to="'./collection/' + collection.id" class="collection__open button">
             <mdicon name="folder-open"></mdicon>
@@ -22,13 +22,13 @@ import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 
 @Options({
-    components: { }
+    components: {},
 })
 export default class CollectionItemVue extends Vue {
     @Prop({ type: Object }) private collection!: Collection;
     private downloadStore = useDownloadStore();
     private repoStore = useRepoStore();
-    private get status () {
+    private get status() {
         return 'finished';
     }
 }
@@ -73,7 +73,7 @@ export default class CollectionItemVue extends Vue {
 
         &::before {
             content: '';
-            transition: all .1s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             background-color: var(--c-surf-4);
             border-top-right-radius: inherit;
             border-bottom-right-radius: inherit;
@@ -82,7 +82,6 @@ export default class CollectionItemVue extends Vue {
             display: block;
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
         }
-
     }
 
     &:hover #{&}__open::before {
@@ -92,14 +91,14 @@ export default class CollectionItemVue extends Vue {
     &__play {
         display: flex;
         align-items: center;
-        justify-content:center;
+        justify-content: center;
         cursor: pointer;
         border-radius: 5rem;
         & > span:first-child {
             color: var(--c-surf-2);
         }
         &:hover {
-            transition: all .1s ease-in;
+            transition: all 0.1s ease-in;
             background-color: var(--c-surf-3);
         }
     }

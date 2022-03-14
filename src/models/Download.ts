@@ -1,7 +1,7 @@
-import { Modset } from './Repository';
+import type { Modset } from './Repository';
 
 export interface DownloadItem {
-    status: 'finished'|'paused'|'downloading';
+    status: 'finished' | 'paused' | 'downloading';
     item: Modset;
     size: number;
     received: number;

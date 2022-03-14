@@ -1,33 +1,16 @@
 <template>
-    <mdicon
-        name="plus"
-        class="add-button"
-        role="button"
-        @click="isOpen = true"
-    ></mdicon>
+    <mdicon name="plus" class="add-button" role="button" @click="isOpen = true"></mdicon>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
                 <span>{{ $t('repository.add') }}</span>
-                <mdicon
-                    role="button"
-                    @click="isOpen = false"
-                    name="close"
-                    size="35"
-                />
+                <mdicon role="button" @click="isOpen = false" name="close" size="35" />
             </div>
             <div class="replic-dialog__content">
                 <div class="txt">
-                    <label for="repoName">{{
-                        $t('repository.autoconfig')
-                    }}</label>
+                    <label for="repoName">{{ $t('repository.autoconfig') }}</label>
                     <div class="txt__input-wrapper">
-                        <input
-                            class="txt__input"
-                            type="text"
-                            name="repoName"
-                            v-model="autoConfigModel"
-                        />
+                        <input class="txt__input" type="text" name="repoName" v-model="autoConfigModel" />
                     </div>
                 </div>
                 <div class="txt">
@@ -50,13 +33,13 @@ import { useRepoStore } from '@/store/repo';
 import Toast from './util/Toast';
 @Options({
     components: {
-        ReplicDialog: ReplicDialogVue
-    }
+        ReplicDialog: ReplicDialogVue,
+    },
 })
 export default class RepositoryAddVue extends Vue {
     private autoConfigModel = '';
     private isOpen = false;
-    private addRepo () {
+    private addRepo() {
         const repoStore = useRepoStore();
         repoStore.addRepo(this.autoConfigModel).then(() => {
             this.isOpen = false;

@@ -1,6 +1,7 @@
-import { DownloadItem } from '@/models/Download';
-import { Modset } from '@/models/Repository';
+import type { DownloadItem } from '@/models/Download';
+import type { Modset } from '@/models/Repository';
 import { System } from '@/util/system';
+import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 import { toRaw } from 'vue';
@@ -11,36 +12,36 @@ export const useDownloadStore = defineStore('download', {
     state: (): {
         current: null | DownloadItem;
         queue: Map<string, DownloadItem>;
-        speeds: number[],
-        stats: null|{avg: number, cur:number, max: number}
+        speeds: number[];
+        stats: null | { avg: number; cur: number; max: number };
     } => ({
         current: null,
         queue: new Map<string, DownloadItem>(),
         speeds: [],
-        stats: null
+        stats: null,
     }),
     getters: {},
     actions: {
-        async addToDownloadQueue (modset: Modset, repoId: string) {
+        async addToDownloadQueue(modset: Modset, repoId: string) {
             const hashStore = useHashStore();
             const repoStore = useRepoStore();
             const modsetCacheData = repoStore.modsetCache.get(modset.id);
             const cacheData = hashStore.cache.get(modset.id);
             if (cacheData === undefined) return;
             const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
-            const totalSize = await (await hashStore.getWorker).getFileSize(toRaw(modsetCacheData?.mods), fliesToDownload);
+            const totalSize = await ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods), fliesToDownload);
             this.queue.set(uuidv4(), {
                 item: modset,
                 status: 'paused',
                 size: totalSize,
                 received: 0,
-                repoId: repoId
+                repoId,
             });
             if (this.current === null) {
                 this.next();
             }
         },
-        async next () {
+        async next() {
             const hashStore = useHashStore();
             if (this.queue.size > 0 && this.current === null) {
                 const index = Array.from(this.queue.keys())[0];
@@ -58,6 +59,6 @@ export const useDownloadStore = defineStore('download', {
                 const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
                 System.downloadFiles(this.current.repoId, this.current.item.id, fliesToDownload);
             }
-        }
-    }
+        },
+    },
 });

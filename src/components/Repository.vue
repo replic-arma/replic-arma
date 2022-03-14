@@ -1,32 +1,32 @@
 <template>
     <li class="repo">
-        <img class="repo__img" :src="repository.image">
-        <span class="repo__name">{{repository.name}}</span>
+        <img class="repo__img" :src="repository.image" />
+        <span class="repo__name">{{ repository.name }}</span>
         <span class="repo__status" :class="`status--${status}`">
             <template v-if="status === 'checking'">
                 <mdicon name="loading" spin />
             </template>
-            {{$t('download-status.' + status)}}
+            {{ $t('download-status.' + status) }}
             <template v-if="status === 'checking' && progress !== 0">
-                <span>...{{progress}}%</span>
+                <span>...{{ progress }}%</span>
             </template>
         </span>
         <div class="repo__modset">
             <select v-model="currentModsetId" @change="checkCurrentModset">
-                <option v-for="(modset, i) of modsets" :key="i" :value="modset.id">{{modset.name}}</option>
+                <option v-for="(modset, i) of modsets" :key="i" :value="modset.id">{{ modset.name }}</option>
             </select>
         </div>
         <div class="repo__play" @click="launchGame()">
             <span>Play</span>
-            <mdicon name="play" size="35"/>
+            <mdicon name="play" size="35" />
         </div>
-        <router-link :to="'/repo/'+ repository.id + '/modsets'" class="repo__open button">
+        <router-link :to="'/repo/' + repository.id + '/modsets'" class="repo__open button">
             <mdicon name="folder-open"></mdicon>
         </router-link>
     </li>
 </template>
 <script lang="ts">
-import { ReplicArmaRepository } from '@/models/Repository';
+import type { ReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
@@ -34,28 +34,31 @@ import { System } from '@/util/system';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 @Options({
-    components: { }
+    components: {},
 })
 export default class RepoVue extends Vue {
     @Prop({ type: Object }) private repository!: ReplicArmaRepository;
     private downloadStore = useDownloadStore();
-    private currentModsetId = this.modsets[0].id;
     private hashStore = useHashStore();
     private repoStore = useRepoStore();
-    private get status () {
+    private get currentModsetId () {
+        return this.modsets[0] !== undefined ? this.modsets[0].id : '';
+    }
+
+    private get status() {
         return this.repoStore.getModsetStatus(this.currentModsetId);
     }
 
-    private get progress () {
+    private get progress() {
         if (this.hashStore.current === null || this.hashStore.current.repoId !== this.repository.id) return 0;
-        return Math.floor(this.hashStore.current.checkedFiles / this.hashStore.current.filesToCheck * 100);
+        return Math.floor((this.hashStore.current.checkedFiles / this.hashStore.current.filesToCheck) * 100);
     }
 
-    private get modsets () {
+    private get modsets() {
         return this.repository?.modsets ? Array.from(this.repository?.modsets?.values()) : [];
     }
 
-    private async launchGame () {
+    private async launchGame() {
         await System.launchGame(this.repository.id, this.currentModsetId);
     }
 }
@@ -78,7 +81,8 @@ export default class RepoVue extends Vue {
         box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }
 
-    &:hover > &__play, &:hover > &__modset {
+    &:hover > &__play,
+    &:hover > &__modset {
         visibility: visible;
     }
 
@@ -112,7 +116,7 @@ export default class RepoVue extends Vue {
 
         &::before {
             content: '';
-            transition: all .1s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             background-color: var(--c-surf-4);
             border-top-right-radius: inherit;
             border-bottom-right-radius: inherit;
@@ -121,7 +125,6 @@ export default class RepoVue extends Vue {
             display: block;
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
         }
-
     }
 
     &:hover #{&}__open::before {
@@ -132,7 +135,7 @@ export default class RepoVue extends Vue {
         visibility: hidden;
         display: flex;
         align-items: center;
-        justify-content:center;
+        justify-content: center;
         cursor: pointer;
         border-radius: 5rem;
         margin-inline-start: 1rem;
@@ -140,7 +143,7 @@ export default class RepoVue extends Vue {
             color: var(--c-surf-2);
         }
         &:hover {
-            transition: all .1s ease-in;
+            transition: all 0.1s ease-in;
             background-color: var(--c-surf-3);
         }
     }
@@ -148,7 +151,7 @@ export default class RepoVue extends Vue {
         visibility: hidden;
         position: relative;
         select {
-            background: #F2F2F2;
+            background: #f2f2f2;
             cursor: pointer;
             appearance: none;
             border: none;
@@ -157,32 +160,17 @@ export default class RepoVue extends Vue {
             border-radius: 1rem;
             text-align: center;
             color: var(--c-surf-2);
-            background-size:
-                5px 5px,
-                5px 5px,
-                1px 1.5em;
+            background-size: 5px 5px, 5px 5px, 1px 1.5em;
             background-repeat: no-repeat;
-            background-image:
-                linear-gradient(45deg, transparent 50%, gray 50%),
-                linear-gradient(135deg, gray 50%, transparent 50%),
-                linear-gradient(to right, #ccc, #ccc);
-            background-position:
-                calc(100% - 20px) calc(1em + 2px),
-                calc(100% - 15px) calc(1em + 2px),
+            background-image: linear-gradient(45deg, transparent 50%, gray 50%),
+                linear-gradient(135deg, gray 50%, transparent 50%), linear-gradient(to right, #ccc, #ccc);
+            background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px),
                 calc(100% - 2.5em) 0.5em;
             &:focus {
-                background-image:
-                    linear-gradient(45deg, gray 50%, transparent 50%),
-                    linear-gradient(135deg, transparent 50%, gray 50%),
-                    linear-gradient(to right, #ccc, #ccc);
-                background-position:
-                    calc(100% - 15px) 1em,
-                    calc(100% - 20px) 1em,
-                    calc(100% - 2.5em) 0.5em;
-                background-size:
-                    5px 5px,
-                    5px 5px,
-                    1px 1.5em;
+                background-image: linear-gradient(45deg, gray 50%, transparent 50%),
+                    linear-gradient(135deg, transparent 50%, gray 50%), linear-gradient(to right, #ccc, #ccc);
+                background-position: calc(100% - 15px) 1em, calc(100% - 20px) 1em, calc(100% - 2.5em) 0.5em;
+                background-size: 5px 5px, 5px 5px, 1px 1.5em;
                 background-repeat: no-repeat;
                 outline: 0;
             }

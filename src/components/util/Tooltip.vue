@@ -15,7 +15,7 @@ export default class TooltipVue extends Vue {
      * @description Adjusts position of tooltip to make sure it doesn't clip over the left side of the screen
      * @author DerZade
      */
-    public mounted (): void {
+    public mounted(): void {
         // TODO: Clipping is only calculated on first render. Window resize is not considered
         const tooltip = this.$refs.tooltip as HTMLSpanElement;
         if (!tooltip) return;
@@ -48,17 +48,17 @@ export default class TooltipVue extends Vue {
         visibility: hidden;
         font-family: 'Source Sans Pro', sans-serif;
         text-transform: none;
-        color: rgba(255,255,255,0);
+        color: rgba(255, 255, 255, 0);
         white-space: nowrap;
         background-color: rgba(black, 0);
-        border-radius: .25rem;
+        border-radius: 0.25rem;
         position: absolute;
         letter-spacing: 0.04em;
         z-index: 2;
-        padding: .25rem .5rem;
+        padding: 0.25rem 0.5rem;
         line-height: 0.9rem;
         font-size: 0.9rem;
-        transition: transform .15s ease-out;
+        transition: transform 0.15s ease-out;
         transform-origin: bottom center;
         pointer-events: none;
         transform: scale(0.9);
@@ -66,7 +66,7 @@ export default class TooltipVue extends Vue {
         top: -1.65rem;
     }
     &:hover #{&}__text {
-        color: rgba(255,255,255,1);
+        color: rgba(255, 255, 255, 1);
         transform: scale(1);
         background-color: rgba(black, 0.85);
     }

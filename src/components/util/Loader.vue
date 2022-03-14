@@ -5,35 +5,39 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-@Options({ components: { } })
+@Options({ components: {} })
 export default class LoaderVue extends Vue {}
 </script>
 <style lang="scss" scoped>
-@use "sass:math";
+@use 'sass:math';
 $offset: 187;
 $duration: 1.4s;
-$timeout: .5s;
+$timeout: 0.5s;
 svg {
     opacity: 0;
-    animation:
-        rotator $duration linear infinite $timeout,
-        showFromHidden $timeout forwards;
+    animation: rotator $duration linear infinite $timeout, showFromHidden $timeout forwards;
 }
 circle {
     stroke-dasharray: $offset;
     stroke-dashoffset: 0;
     transform-origin: center;
-    stroke: #D18F1F;
+    stroke: #d18f1f;
     animation: dash $duration ease-in-out infinite;
 }
 // show loader only after a timeout, to prevent it from
 // flasing on short loading times
 @keyframes showFromHidden {
-    99% { opacity: 0; }
-    100% { opacity: 1; }
+    99% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 @keyframes rotator {
-    to { transform: rotate(270deg); }
+    to {
+        transform: rotate(270deg);
+    }
 }
 @keyframes dash {
     0% {

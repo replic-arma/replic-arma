@@ -30,11 +30,11 @@ import ReplicDialogVue from './util/ReplicDialog.vue';
 @Options({
     components: {
         ReplicDialog: ReplicDialogVue,
-        ReplicCheckbox: ReplicCheckboxVue
-    }
+        ReplicCheckbox: ReplicCheckboxVue,
+    },
 })
 export default class CollectionMods extends Vue {
-    private collectionName: string|undefined;
+    private collectionName: string | undefined;
     private repoStore = useRepoStore();
     private modsets: Modset[] = [];
     private dlc = {
@@ -51,15 +51,17 @@ export default class CollectionMods extends Vue {
         'tac-ops': 'Tac Ops',
         tanks: 'Tanks',
         vn: 'S.O.G. Prairie Fire',
-        ws: 'Western Sahara'
+        ws: 'Western Sahara',
     };
 
-    created (): void {
+    created(): void {
         this.modsets = this.repoStore.getModsets(this.repoStore.currentRepoId);
-        this.modsets.forEach(modset => { this.modsetMap[modset.id] = false; });
+        this.modsets.forEach((modset) => {
+            this.modsetMap[modset.id] = false;
+        });
     }
 
-    private modsetMap: {[key: string]: boolean} = {};
+    private modsetMap: { [key: string]: boolean } = {};
 
     private dlcMap = {
         aow: false,
@@ -75,7 +77,7 @@ export default class CollectionMods extends Vue {
         'tac-ops': false,
         tanks: false,
         vn: false,
-        ws: false
+        ws: false,
     };
 }
 </script>
@@ -87,15 +89,15 @@ export default class CollectionMods extends Vue {
     .item-group {
         padding: 0;
         list-style-type: none;
-        gap: .75rem;
+        gap: 0.75rem;
         display: flex;
         flex-direction: column;
         .item {
             block-size: 3rem;
             display: flex;
-            border-radius: .5rem;
+            border-radius: 0.5rem;
             align-items: center;
-            padding-inline: .75rem;
+            padding-inline: 0.75rem;
             &:hover {
                 box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.25);
             }

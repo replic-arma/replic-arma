@@ -1,76 +1,112 @@
-import { File, Modset } from '@/models/Repository';
-import { expose } from 'threads';
+import type { File, Modset, ModsetMod } from '@/models/Repository';
 import pako from 'pako';
-import { v4 as uuidv4 } from 'uuid';
-export class ModsetMod {
-    public mod_type!: string;
-    public name!: string;
-    public allow_compat?: boolean;
-    public files?: File[];
-    public outdatedFiles?: [];
-    public missingFiles?: [];
+import { useWebWorkerFn } from '@vueuse/core';
 
-    constructor (name: string, mod_type: string, files: File[] = [], allow_compat = false) {
-        this.name = name;
-        this.mod_type = mod_type;
-        this.files = files;
-        this.allow_compat = allow_compat;
-    }
-}
+import DeflateWorker from './deflate_worker?worker';
+import UncompressWorker from './uncompress_worker?worker';
 
-const replicWorker = {
-    async splitFiles (files: File[], mod: ModsetMod): Promise<File[]> {
-        return [...new Set(files.filter(file => {
-            if (mod.name === file.path.split('\\')[0]) {
-                return file;
-            }
-        }
-        ))];
-    },
-    async mapFilesToMods (files: File[], modsets: Modset[]): Promise<Modset[]> {
-        modsets.map(modset => {
-            const modMap = new Map<string, File[]>();
-            files.forEach(file => {
-                const modName = file.path.split('\\')[0];
-                const foundMod = modMap.get(modName);
-                if (foundMod !== undefined) {
-                    foundMod.push(file);
-                    modMap.set(modName, foundMod);
-                } else {
-                    modMap.set(modName, [file]);
-                }
+export const ReplicWorker = {
+    async mapFilesToMods(files: File[], modsets: Modset[]): Promise<Modset[]> {
+        const { workerFn } = useWebWorkerFn((files: File[], modsets: Modset[]) => {
+            modsets.map((modset) => {
+                const modMap = new Map<string, File[]>();
+                files.forEach((file) => {
+                    const modName = file.path.split('\\')[0];
+                    if (modName === undefined) return;
+                    const foundMod = modMap.get(modName);
+                    if (foundMod !== undefined) {
+                        foundMod.push(file);
+                        modMap.set(modName, foundMod);
+                    } else {
+                        modMap.set(modName, [file]);
+                    }
+                });
+                const mods: ModsetMod[] = [];
+                modset.mods?.forEach((mod) => {
+                    mods.push({
+                        name: mod.name,
+                        mod_type: 'mod',
+                        files: modMap.get(mod.name) ?? [],
+                    });
+                });
+                modset.mods = mods;
+                return modset;
             });
-            const mods: ModsetMod[] = [];
-            modset.mods?.forEach(mod => {
-                mods.push({name: mod.name, mod_type: 'mod', files: modMap.get(mod.name) ?? []});
-            });
-            modset.mods = mods;
+            return modsets;
         });
-        return modsets;
+        return workerFn(files, modsets);
     },
-    async getFileChanges (wantedFiles: File[], checkedFiles: Array<Array<string>>): Promise<string[]> {
-        const flat = checkedFiles.flat();
-        return wantedFiles.filter((wantedFile) => !flat.includes(wantedFile.sha1) && wantedFile.sha1 !== "0").map(file => file.path);
+    async splitFiles(files: File[], mod: ModsetMod): Promise<File[]> {
+        const { workerFn } = useWebWorkerFn((files: File[], mod: ModsetMod) => {
+            return [...new Set(files.filter((file) => mod.name === file.path.split('\\')[0]))];
+        });
+        return workerFn(files, mod);
     },
-    async getFilesForModset (modset: Modset) {
-        return modset?.mods !== undefined ? modset.mods?.flatMap(mod => mod.files) : [];
+    async getFileChanges(wantedFiles: File[], checkedFiles: Array<Array<string>>): Promise<string[]> {
+        const { workerFn } = useWebWorkerFn((wantedFiles: File[], checkedFiles: Array<Array<string>>) => {
+            const flat = checkedFiles.flat();
+            return wantedFiles
+                .filter((wantedFile) => !flat.includes(wantedFile.sha1) && wantedFile.sha1 !== '0')
+                .map((file) => file.path);
+        });
+        return workerFn(wantedFiles, checkedFiles);
     },
-    async getFileSize (mods: ModsetMod[], filesPaths: string[]) {
-        return mods
-            .flatMap(mod => mod.files ?? [])
-            .filter(file => filesPaths.includes(file.path))
-            .reduce((previousValue, currentValue) => previousValue + currentValue.size, 0);
+    async getFilesForModset(modset: Modset) {
+        const { workerFn } = useWebWorkerFn((modset: Modset) => {
+            return modset?.mods !== undefined ? modset.mods?.flatMap((mod: ModsetMod) => mod.files) : [];
+        });
+        return workerFn(modset);
     },
-    async isFileIn (wantedFiles: File[], fileList: Array<string>): Promise<string[]> {
-        return wantedFiles.filter((wantedFile) => fileList.includes(wantedFile.path)).map(file => file.path)
+    async getFileSize(mods: ModsetMod[], filesPaths: string[]) {
+        const { workerFn } = useWebWorkerFn((mods: ModsetMod[], filesPaths: string[]) => {
+            return mods
+                .flatMap((mod: ModsetMod) => mod.files ?? [])
+                .filter((file: File) => filesPaths.includes(file.path))
+                .reduce(
+                    (previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size,
+                    0
+                );
+        });
+        return workerFn(mods, filesPaths);
     },
-    async compress (data: any) {
-        return pako.deflate(data);
+    async isFileIn(wantedFiles: File[], fileList: Array<string>): Promise<string[]> {
+        const { workerFn } = useWebWorkerFn((wantedFiles: File[], fileList: Array<string>) => {
+            return wantedFiles.filter((wantedFile) => fileList.includes(wantedFile.path)).map((file) => file.path);
+        });
+        return workerFn(wantedFiles, fileList);
     },
-    async uncompress (data: any) {
-        return JSON.parse(pako.inflate(data, { to: 'string' }));
-    }
-};
+    async compress(data: string) {
+        const shit = new DeflateWorker();
 
-export type ReplicWorker = typeof replicWorker;
-expose(replicWorker);
+        const promise = new Promise<Uint8Array>((resolve) => {
+            shit.addEventListener(
+                'message',
+                (e) => {
+                    resolve(e.data);
+                },
+                { once: true }
+            );
+        });
+
+        shit.postMessage(data);
+
+        return promise;
+    },
+    async uncompress<T>(data: Uint8Array): Promise<T> {
+        const shit = new UncompressWorker();
+
+        const promise = new Promise<T>((resolve) => {
+            shit.addEventListener(
+                'message',
+                (e) => {
+                    resolve(e.data);
+                },
+                { once: true }
+            );
+        });
+
+        shit.postMessage(data);
+
+        return promise;
+    },
+};

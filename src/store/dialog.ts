@@ -5,22 +5,22 @@ interface DialogModel {
 }
 
 export const useDialogStore = defineStore('dialog', {
-    state: (): {dialogs: DialogModel[]} => ({
-        dialogs: []
+    state: (): { dialogs: DialogModel[] } => ({
+        dialogs: [],
     }),
     getters: {
-        getDialog (state) {
-            return (dialogName: string) => state.dialogs.find(dialog => dialog.name === dialogName);
-        }
+        getDialog(state) {
+            return (dialogName: string) => state.dialogs.find((dialog) => dialog.name === dialogName);
+        },
     },
     actions: {
-        toggleDialog (dialogName: string) {
-            const dialog = this.dialogs.find(dialog => dialog.name === dialogName);
+        toggleDialog(dialogName: string) {
+            const dialog = this.dialogs.find((dialog) => dialog.name === dialogName);
             if (dialog === undefined) return;
             dialog.state = !dialog.state;
         },
-        addDialog (dialogName: string) {
+        addDialog(dialogName: string) {
             this.dialogs.push({ name: dialogName, state: false });
-        }
-    }
+        },
+    },
 });

@@ -1,11 +1,16 @@
 <template>
-  <div class="collections">
-    <ul class="collections__list">
-      <collection-item v-for="(collection, i) of collections" :key="i" :collection="collection"></collection-item>
-    </ul>
-    <mdicon name="plus" class="add-button" role="button" @click="dialogStore.toggleDialog('collectionAdd')"></mdicon>
-    <collection-add />
-  </div>
+    <div class="collections">
+        <ul class="collections__list">
+            <collection-item v-for="(collection, i) of collections" :key="i" :collection="collection"></collection-item>
+        </ul>
+        <mdicon
+            name="plus"
+            class="add-button"
+            role="button"
+            @click="dialogStore.toggleDialog('collectionAdd')"
+        ></mdicon>
+        <collection-add />
+    </div>
 </template>
 
 <script lang="ts">
@@ -19,26 +24,26 @@ import CollectionAddVue from '@/components/CollectionAdd.vue';
 @Options({
     components: {
         CollectionItem: CollectionItemVue,
-        CollectionAdd: CollectionAddVue
+        CollectionAdd: CollectionAddVue,
     },
     computed: {
         ...mapState(useRepoStore, {
-            collections: store => store.getCollections(store.currentRepoId)
-        })
-    }
+            collections: (store) => store.getCollections(store.currentRepoId),
+        }),
+    },
 })
 export default class CollectionsList extends Vue {
-  private repoStore = useRepoStore();
-  private dialogStore = useDialogStore();
+    private repoStore = useRepoStore();
+    private dialogStore = useDialogStore();
 }
 </script>
 
 <style lang="scss" scoped>
 .collections {
-  &__list {
-    padding: 0;
-    display: grid;
-    gap: var(--space-sm);
-  }
+    &__list {
+        padding: 0;
+        display: grid;
+        gap: var(--space-sm);
+    }
 }
 </style>

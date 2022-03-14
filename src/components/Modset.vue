@@ -1,21 +1,21 @@
 <template>
     <li class="modset">
         <div class="modset__info">
-            <span class="modset__name">{{modset.name}}</span>
-            <small class="modset__description">{{modset.description}}</small>
+            <span class="modset__name">{{ modset.name }}</span>
+            <small class="modset__description">{{ modset.description }}</small>
         </div>
         <span class="repo__status" :class="`status--${status}`">
             <template v-if="status === 'checking' || status === 'updating'">
                 <mdicon name="loading" spin />
             </template>
-            {{$t('download-status.' + status)}}
-            <template v-if="status === 'checking' || status === 'updating' && progress !== 0">
-                <span>...{{progress}}%</span>
+            {{ $t('download-status.' + status) }}
+            <template v-if="status === 'checking' || (status === 'updating' && progress !== 0)">
+                <span>...{{ progress }}%</span>
             </template>
         </span>
         <div class="button modset__play">
             <span>Play</span>
-            <mdicon name="play" size="35"/>
+            <mdicon name="play" size="35" />
         </div>
         <router-link :to="'./modset/' + modset.id" class="modset__open button">
             <mdicon name="folder-open"></mdicon>
@@ -23,7 +23,7 @@
     </li>
 </template>
 <script lang="ts">
-import { Modset } from '@/models/Repository';
+import type { Modset } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
@@ -31,21 +31,21 @@ import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 
 @Options({
-    components: { }
+    components: {},
 })
 export default class ModsetVue extends Vue {
     @Prop({ type: Object }) private modset!: Modset;
     private downloadStore = useDownloadStore();
     private repoStore = useRepoStore();
     private hashStore = useHashStore();
-    private get status () {
+    private get status() {
         return this.repoStore.getModsetStatus(this.modset.id);
     }
 
-    private get progress () {
+    private get progress() {
         const hashStore = useHashStore();
         if (hashStore.current === null || hashStore.current.repoId !== this.repoStore.currentRepoId) return 0;
-        return Math.floor(hashStore.current.checkedFiles / hashStore.current.filesToCheck * 100);
+        return Math.floor((hashStore.current.checkedFiles / hashStore.current.filesToCheck) * 100);
     }
 }
 </script>
@@ -89,7 +89,7 @@ export default class ModsetVue extends Vue {
 
         &::before {
             content: '';
-            transition: all .1s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             background-color: var(--c-surf-4);
             border-top-right-radius: inherit;
             border-bottom-right-radius: inherit;
@@ -98,7 +98,6 @@ export default class ModsetVue extends Vue {
             display: block;
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
         }
-
     }
 
     &:hover #{&}__open::before {
@@ -108,14 +107,14 @@ export default class ModsetVue extends Vue {
     &__play {
         display: flex;
         align-items: center;
-        justify-content:center;
+        justify-content: center;
         cursor: pointer;
         border-radius: 5rem;
         & > span:first-child {
             color: var(--c-surf-2);
         }
         &:hover {
-            transition: all .1s ease-in;
+            transition: all 0.1s ease-in;
             background-color: var(--c-surf-3);
         }
     }

@@ -16,23 +16,23 @@ import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 
 @Options({
-    components: { }
+    components: {},
 })
 export default class ReplicDialogVue extends Vue {
     @Prop({ type: String }) private dialogName!: string;
     public dialogStore = useDialogStore();
-    private storeSubscription: (() => void)|undefined;
+    private storeSubscription: (() => void) | undefined;
     private shown = false;
-    public mounted (): void {
+    public mounted(): void {
         this.dialogStore.addDialog(this.dialogName);
         this.storeSubscription = this.dialogStore.$subscribe(() => {
             this.shown = this.dialogStore.getDialog(this.dialogName)?.state ?? false;
         });
     }
 
-    public unmounted (): void {
+    public unmounted(): void {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        this.storeSubscription = () => { };
+        this.storeSubscription = () => {};
     }
 }
 </script>
@@ -55,27 +55,32 @@ export default class ReplicDialogVue extends Vue {
         background: var(--c-surf-1);
         z-index: -1;
         position: absolute;
-        top: 0; left: 0; right: 0;   bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         border-radius: 2px;
     }
     &::before {
         content: '';
         display: block;
-        background-color: rgba(0,0,0,0.6);
+        background-color: rgba(0, 0, 0, 0.6);
         z-index: -2;
         position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
     }
 }
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0;
+    opacity: 0;
 }
-
 </style>

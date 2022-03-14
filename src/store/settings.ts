@@ -3,9 +3,9 @@ import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 
 export const useSettingsStore = defineStore('settings', {
-    state: (): {settings: ApplicationSettings, launchOptions: GameLaunchSettings} => ({
+    state: (): { settings: ApplicationSettings; launchOptions: GameLaunchSettings } => ({
         settings: new ApplicationSettings(),
-        launchOptions: new GameLaunchSettings()
+        launchOptions: new GameLaunchSettings(),
     }),
     getters: {
         getSettings: (state) => {
@@ -13,22 +13,22 @@ export const useSettingsStore = defineStore('settings', {
         },
         getLaunchOptions: (state) => {
             return state.launchOptions;
-        }
+        },
     },
     actions: {
-        resetSettings () {
+        resetSettings() {
             System.resetSettings();
             this.loadData();
         },
-        resetLaunchOptions () {
+        resetLaunchOptions() {
             // TODO
         },
-        async loadData () {
+        async loadData() {
             const config = await System.getConfig();
             this.settings = config;
         },
-        synchData () {
+        synchData() {
             System.updateConfig(this.settings);
-        }
-    }
+        },
+    },
 });

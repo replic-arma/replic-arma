@@ -1,8 +1,8 @@
 <template>
     <div>
         <ul class="tabs">
-            <li class="tabs__item"  v-for="(item, i) of tabItems" :key="i" @click="activeIndex = i">
-                <span :class="{'active-tab': activeIndex === i}">{{item.label}}</span>
+            <li class="tabs__item" v-for="(item, i) of tabItems" :key="i" @click="activeIndex = i">
+                <span :class="{ 'active-tab': activeIndex === i }">{{ item.label }}</span>
             </li>
         </ul>
         <keep-alive>
@@ -12,7 +12,7 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import { Component } from 'vue-demi';
+import type { Component } from 'vue-demi';
 import { Prop, Watch } from 'vue-property-decorator';
 export interface TabsItem {
     label: string;
@@ -20,17 +20,17 @@ export interface TabsItem {
 }
 
 @Options({
-    components: { }
+    components: {},
 })
 export default class TabsVue extends Vue {
     @Prop({ type: Array }) private tabItems!: TabsItem[];
     private activeIndex = 0;
-    public created (): void {
+    public created(): void {
         this.onActiveTabChanged();
     }
 
     @Watch('activeIndex')
-    private onActiveTabChanged () {
+    private onActiveTabChanged() {
         this.$nextTick(() => {
             const anchor = this.$el.querySelector('.active-tab') as HTMLAnchorElement;
             if (anchor === null) return;
@@ -52,7 +52,7 @@ export default class TabsVue extends Vue {
     list-style-type: none;
     border-bottom: 1px solid #333333;
     display: flex;
-    gap: .5rem;
+    gap: 0.5rem;
     padding-block-end: var(--space-md);
     padding-inline-start: 0;
     position: relative;
@@ -71,7 +71,7 @@ export default class TabsVue extends Vue {
             padding-inline: 1rem;
             height: 1.5rem;
             block-size: 3.25rem;
-            border-radius: .25rem;
+            border-radius: 0.25rem;
         }
     }
     &::before {

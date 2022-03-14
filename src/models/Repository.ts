@@ -4,6 +4,7 @@ import { useRepoStore } from '@/store/repo';
 import { GameLaunchSettings } from './Settings';
 import { useHashStore } from '@/store/hash';
 import { System } from '@/util/system';
+import { ReplicWorker } from '@/util/worker';
 export interface File {
     path: string;
     size: number;
@@ -57,7 +58,7 @@ export class Collection {
     public dlc?: Array<string>;
     public localMods?: Array<ModsetMod>;
 
-    constructor (collection: Collection) {
+    constructor(collection: Collection) {
         this.id = collection.id ?? uuidv4();
         this.name = collection.name;
         this.description = collection.description;
@@ -67,8 +68,8 @@ export class Collection {
     }
 }
 
-export class JSONMap<K extends string|number, V> extends Map<K, V> {
-    public toJSON (): [K, V][] {
+export class JSONMap<K extends string | number, V> extends Map<K, V> {
+    public toJSON(): [K, V][] {
         return Array.from(this.entries());
     }
 }
@@ -95,13 +96,16 @@ export class ReplicArmaRepository extends Repository {
     public image?: string;
     public error?: ReplicArmaRepositoryError;
     public settings?: GameLaunchSettings;
-    public type?: 'local'|'a3s'|'swifty';
+    public type?: 'local' | 'a3s' | 'swifty';
     public autoconfig?: string;
     public revisionChanged?: boolean;
 
-    public async init (repo: any): Promise<void> {
+    public async init(repo: ReplicArmaRepository): Promise<void> {
         this.id = uuidv4();
-        if (repo.image === undefined) this.image = 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32' ?? repo.image;
+        if (repo.image === undefined)
+            this.image =
+                'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32' ??
+                repo.image;
         this.name = repo.name;
         this.settings = new GameLaunchSettings();
         this.type = 'a3s';
@@ -116,14 +120,15 @@ export class ReplicArmaRepository extends Repository {
         this.save();
     }
 
-    public async loadFromJson (repo: ReplicArmaRepository, calcHash = false): Promise<void> {
+    public async loadFromJson(repo: ReplicArmaRepository, calcHash = false): Promise<void> {
         this.id = repo.id;
         this.name = repo.name;
         this.image = repo.image;
         this.settings = repo.settings;
         this.type = repo.type;
         this.files = repo.files;
-        this.collections = repo.collections !== undefined ? new JSONMap<string, Collection>(repo.collections) : undefined;
+        this.collections =
+            repo.collections !== undefined ? new JSONMap<string, Collection>(repo.collections) : undefined;
         this.modsets = new JSONMap<string, Modset>(repo.modsets);
         this.download_server = repo.download_server;
         this.game_servers = repo.game_servers;
@@ -136,18 +141,31 @@ export class ReplicArmaRepository extends Repository {
         }
     }
 
-    private async initModsets (repo: ReplicArmaRepository): Promise<JSONMap<string, Modset>> {
+    private async initModsets(repo: ReplicArmaRepository): Promise<JSONMap<string, Modset>> {
         const modsets = new JSONMap<string, Modset>();
         const modsetDataMap = new JSONMap<string, Modset>();
-        const modWorker = await useHashStore().getWorker;
         const repoModsets = Array.from(repo.modsets as unknown as Modset[]);
-        const mods = [...new Map(repoModsets.map(modset => modset.mods).flat().map((mod) => [mod.name, mod])).values()] ?? [];
-        repoModsets.unshift({ id: uuidv4(), name: 'All Mods', description: 'Contains all Mods from the Repository', mods: mods });
+        const mods =
+            [
+                ...new Map(
+                    repoModsets
+                        .map((modset) => modset.mods)
+                        .flat()
+                        .map((mod) => [mod.name, mod])
+                ).values(),
+            ] ?? [];
+        repoModsets.unshift({
+            id: uuidv4(),
+            name: 'All Mods',
+            description: 'Contains all Mods from the Repository',
+            mods,
+        });
         repoModsets.map(async (repoModset: Modset) => {
             repoModset.id = uuidv4();
             modsets.set(repoModset.id, repoModset);
         });
-        const modsetData: Modset[] = await modWorker.mapFilesToMods(repo.files, Array.from(modsets.values()));
+        if (repo.files === undefined) throw new Error('No Files!');
+        const modsetData: Modset[] = await ReplicWorker.mapFilesToMods(repo.files, Array.from(modsets.values()));
         for (const modset of modsetData) {
             modsetDataMap.set(modset.id, modset);
         }
@@ -157,19 +175,23 @@ export class ReplicArmaRepository extends Repository {
         return modsets;
     }
 
-    private async loadCollections (repo: ReplicArmaRepository | undefined): Promise<JSONMap<string, Collection>> {
+    private async loadCollections(repo: ReplicArmaRepository | undefined): Promise<JSONMap<string, Collection>> {
         if (repo === undefined) throw new Error('Repo undefined');
         if (repo.collections !== undefined) {
-            const collections = Array.from(repo.collections as unknown as Collection[]).map((collection: Collection) => { return new Collection(collection); });
+            const collections = Array.from(repo.collections as unknown as Collection[]).map(
+                (collection: Collection) => {
+                    return new Collection(collection);
+                }
+            );
             repo.collections = new JSONMap<string, Collection>();
-            collections.map(collection => repo.collections?.set(collection.id, collection));
+            collections.map((collection) => repo.collections?.set(collection.id, collection));
         } else {
             repo.collections = new JSONMap<string, Collection>();
         }
         return repo.collections;
     }
 
-    public async calcHash (): Promise<void> {
+    public async calcHash(): Promise<void> {
         const hashStore = useHashStore();
         const repoStore = useRepoStore();
         const cacheData = await System.getModsetCache(this.id);
@@ -177,12 +199,12 @@ export class ReplicArmaRepository extends Repository {
         hashStore.startHash(this);
     }
 
-    public async save (): Promise<void> {
+    public async save(): Promise<void> {
         const repoStore = useRepoStore();
         repoStore.repos.set(this.id, this);
     }
 
-    public async connectToAutoConfig (): Promise<Repository> {
+    public async connectToAutoConfig(): Promise<Repository> {
         return await System.getRepo(`${this.config_url}autoconfig`);
     }
 }

@@ -1,8 +1,16 @@
 <template>
     <div class="replic-checkbox">
-        <label class="replic-checkbox__thumb" :for="'check-'+ label"><mdicon v-if="model" name="check" /></label>
-        <input class="replic-checkbox__check" type="checkbox" :id="'check-'+ label" v-model="model" @change="handleInput">
-        <label class="replic-checkbox__label" :for="'check-'+ label"><span>{{label}}</span></label>
+        <label class="replic-checkbox__thumb" :for="'check-' + label"><mdicon v-if="model" name="check" /></label>
+        <input
+            class="replic-checkbox__check"
+            type="checkbox"
+            :id="'check-' + label"
+            v-model="model"
+            @change="handleInput"
+        />
+        <label class="replic-checkbox__label" :for="'check-' + label"
+            ><span>{{ label }}</span></label
+        >
     </div>
 </template>
 <script lang="ts">
@@ -11,13 +19,18 @@ import { Prop } from 'vue-property-decorator';
 
 @Options({
     emits: ['update:modelValue'],
-    components: { }
+    components: {},
 })
 export default class ReplicCheckboxVue extends Vue {
     @Prop({ type: String }) private label!: string;
-    @Prop({ type: Boolean, required: true }) private modelValue!: boolean|null;
-    private get model () { return this.modelValue; }
-    private set model (val) { this.$emit('update:modelValue', val); }
+    @Prop({ type: Boolean, required: true }) private modelValue!: boolean | null;
+    private get model() {
+        return this.modelValue;
+    }
+
+    private set model(val) {
+        this.$emit('update:modelValue', val);
+    }
 }
 </script>
 
@@ -29,7 +42,7 @@ export default class ReplicCheckboxVue extends Vue {
     }
 
     &__check:checked ~ div {
-     display: block;
+        display: block;
     }
 
     &__label {
@@ -41,7 +54,7 @@ export default class ReplicCheckboxVue extends Vue {
         margin-inline-start: 1rem;
     }
     &__thumb {
-        content: "";
+        content: '';
         block-size: 2rem;
         inline-size: 2rem;
         border-radius: 2rem;
@@ -52,5 +65,4 @@ export default class ReplicCheckboxVue extends Vue {
         cursor: pointer;
     }
 }
-
 </style>

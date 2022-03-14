@@ -1,55 +1,55 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import ReposView from '../views/Repos.vue';
 import { useRepoStore } from '@/store/repo';
 
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
-        component: ReposView
+        component: ReposView,
     },
     {
         path: '/settings',
-        component: () => import(/* webpackChunkName: "settings" */ '../views/Settings.vue')
+        component: () => import('../views/Settings.vue'),
     },
     {
         path: '/repo/:repoId',
-        component: () => import(/* webpackChunkName: "repo" */ '../views/Repo.vue'),
+        component: () => import('../views/Repo.vue'),
         children: [
             {
                 path: 'modsets',
-                component: () => import(/* webpackChunkName: "modsets" */ '../views/ModsetList.vue')
+                component: () => import('../views/ModsetList.vue'),
             },
             {
                 path: 'servers',
-                component: () => import(/* webpackChunkName: "servers" */ '../views/ServerList.vue')
+                component: () => import('../views/ServerList.vue'),
             },
             {
                 path: 'collections',
-                component: () => import(/* webpackChunkName: "collections" */ '../views/CollectionsList.vue')
-            }
-        ]
+                component: () => import('../views/CollectionsList.vue'),
+            },
+        ],
     },
     {
         path: '/repo/:repoId/modset/:modsetId',
-        component: () => import(/* webpackChunkName: "modset" */ '../views/Modset.vue')
+        component: () => import('../views/Modset.vue'),
     },
     {
         path: '/repo/:repoId/collection/:collectionId',
-        component: () => import(/* webpackChunkName: "collection" */ '../views/Collection.vue')
+        component: () => import('../views/Collection.vue'),
     },
     {
         path: '/reposettings/:repoId',
-        component: () => import(/* webpackChunkName: "repoSettings" */ '../views/RepoSettings.vue')
+        component: () => import('../views/RepoSettings.vue'),
     },
     {
         path: '/:pathMatch(.*)*',
-        redirect: '/'
-    }
+        redirect: '/',
+    },
 ];
 
 const router = createRouter({
-    history: createWebHistory(process.env.BASE_URL),
-    routes
+    history: createWebHistory('/'),
+    routes,
 });
 router.beforeEach((to, from, next) => {
     const repoStore = useRepoStore();

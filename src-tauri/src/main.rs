@@ -37,7 +37,7 @@ use windows::Win32::{
         WindowsAndMessaging::{
             CallNextHookEx, GetWindowRect, GetWindowThreadProcessId, SetWindowPos,
             SetWindowsHookExW, CWPSTRUCT, HHOOK, MSG, SWP_NOMOVE, WH_CALLWNDPROC, WH_GETMESSAGE,
-            WM_MOVE, WM_NCLBUTTONDOWN,
+            WM_EXITSIZEMOVE, WM_NCLBUTTONDOWN,
         },
     },
 };

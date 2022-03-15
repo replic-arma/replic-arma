@@ -28,6 +28,8 @@ use tauri::async_runtime::Mutex;
 use util::methods::load_t;
 
 use state::ReplicArmaState;
+
+#[cfg(target_os = "windows")]
 use windows::Win32::{
     Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, RECT, WPARAM},
     UI::{
@@ -73,6 +75,7 @@ fn init_state() -> anyhow::Result<ReplicArmaState> {
     Ok(state)
 }
 
+#[cfg(target_os = "windows")]
 unsafe extern "system" fn get_msg_callback(code: i32, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
     let msg = *(l_param.0 as *mut MSG);
     if msg.message == WM_NCLBUTTONDOWN {
@@ -81,13 +84,14 @@ unsafe extern "system" fn get_msg_callback(code: i32, w_param: WPARAM, l_param: 
     CallNextHookEx(HHOOK(0), code, w_param, l_param)
 }
 
+#[cfg(target_os = "windows")]
 unsafe extern "system" fn call_wnd_callback(
     code: i32,
     w_param: WPARAM,
     l_param: LPARAM,
 ) -> LRESULT {
     let cwp = *(l_param.0 as *mut CWPSTRUCT);
-    if cwp.message == WM_MOVE {
+    if cwp.message == WM_EXITSIZEMOVE {
         let mut rect = RECT::default();
         if GetWindowRect(cwp.hwnd, &mut rect as *mut RECT).as_bool() {
             let width = rect.right - rect.left;
@@ -134,7 +138,10 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             get_a3_dir
         ])
         .on_page_load(|window, _| {
+            
+            #[cfg(target_os = "windows")]
             if let Ok(hwnd) = window.hwnd() {
+
                 unsafe {
                     let hwnd_win = HWND(hwnd as isize);
                     let thread_id = GetWindowThreadProcessId(hwnd_win, std::ptr::null_mut());

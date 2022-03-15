@@ -1,7 +1,7 @@
 <template>
     <replic-dialog :dialogName="'collectionAdd'">
         <template v-slot:header>
-            <span>{{ $t('collection.add') }}</span>
+            <span v-t="'collection.add'"></span>
             <mdicon role="button" @click="dialogStore.toggleDialog('collectionAdd')" name="close" size="35" />
         </template>
         <template v-slot:main>
@@ -11,7 +11,7 @@
                     <input class="txt__input" type="text" name="collectionName" v-model="collectionName" />
                 </div>
             </div>
-            <button class="button" @click="addCollection">{{ $t('collection.add') }}</button>
+            <button class="button" @click="addCollection" v-t="'collection.add'"></button>
         </template>
     </replic-dialog>
 </template>

@@ -36,6 +36,30 @@ export const ReplicWorker = {
         });
         return workerFn(files, modsets);
     },
+    async createModsetFromFiles(files: File[]): Promise<ModsetMod[]> {
+        const { workerFn } = useWebWorkerFn((files: File[]) => {
+            const modMap = new Map<string, File[]>();
+            files.forEach((file) => {
+                const modName = file.path.split('\\')[0];
+                if (modName === undefined) return;
+                const foundMod = modMap.get(modName);
+                if (foundMod !== undefined) {
+                    foundMod.push(file);
+                    modMap.set(modName, foundMod);
+                } else {
+                    modMap.set(modName, [file]);
+                }
+            });
+            return Array.from(modMap.keys()).map((modName) => {
+                return {
+                    name: modName,
+                    mod_type: 'mod',
+                    files: [],
+                };
+            });
+        });
+        return workerFn(files);
+    },
     async splitFiles(files: File[], mod: ModsetMod): Promise<File[]> {
         const { workerFn } = useWebWorkerFn((files: File[], mod: ModsetMod) => {
             return [...new Set(files.filter((file) => mod.name === file.path.split('\\')[0]))];
@@ -76,10 +100,10 @@ export const ReplicWorker = {
         return workerFn(wantedFiles, fileList);
     },
     async compress(data: string) {
-        const shit = new DeflateWorker();
+        const worker = new DeflateWorker();
 
         const promise = new Promise<Uint8Array>((resolve) => {
-            shit.addEventListener(
+            worker.addEventListener(
                 'message',
                 (e) => {
                     resolve(e.data);
@@ -88,15 +112,15 @@ export const ReplicWorker = {
             );
         });
 
-        shit.postMessage(data);
+        worker.postMessage(data);
 
         return promise;
     },
     async uncompress<T>(data: Uint8Array): Promise<T> {
-        const shit = new UncompressWorker();
+        const worker = new UncompressWorker();
 
         const promise = new Promise<T>((resolve) => {
-            shit.addEventListener(
+            worker.addEventListener(
                 'message',
                 (e) => {
                     resolve(e.data);
@@ -105,7 +129,7 @@ export const ReplicWorker = {
             );
         });
 
-        shit.postMessage(data);
+        worker.postMessage(data);
 
         return promise;
     },

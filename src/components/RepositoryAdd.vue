@@ -3,25 +3,24 @@
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
-                <span>{{ $t('repository.add') }}</span>
+                <span v-t="'repository.add'"></span>
                 <mdicon role="button" @click="isOpen = false" name="close" size="35" />
             </div>
             <div class="replic-dialog__content">
+                <loader v-if="loading" />
                 <div class="txt">
-                    <label for="repoName">{{ $t('repository.autoconfig') }}</label>
+                    <label for="repoName" v-t="'repository.autoconfig'"></label>
                     <div class="txt__input-wrapper">
-                        <input class="txt__input" type="text" name="repoName" v-model="autoConfigModel" />
+                        <input
+                            class="txt__input"
+                            type="text"
+                            name="repoName"
+                            v-model="autoConfigModel"
+                            :disabled="loading"
+                        />
                     </div>
                 </div>
-                <div class="txt">
-                    <label for="repoName">{{ $t('repository.name') }}</label>
-                    <div class="txt__input-wrapper">
-                        <input class="txt__input" type="text" name="repoName" />
-                    </div>
-                </div>
-                <button class="button" @click="addRepo">
-                    {{ $t('submit') }}
-                </button>
+                <button class="button" @click="addRepo" :disabled="loading" v-t="'submit'"></button>
             </div>
         </div>
     </Teleport>
@@ -39,12 +38,22 @@ import Toast from './util/Toast';
 export default class RepositoryAddVue extends Vue {
     private autoConfigModel = '';
     private isOpen = false;
+    private loading = false;
+    private errorMsg = '';
     private addRepo() {
+        this.loading = true;
         const repoStore = useRepoStore();
-        repoStore.addRepo(this.autoConfigModel).then(() => {
-            this.isOpen = false;
-            Toast('Added Repository');
-        });
+        repoStore
+            .addRepo(this.autoConfigModel)
+            .then(() => {
+                this.isOpen = false;
+                this.loading = false;
+                Toast('Added Repository');
+            })
+            .catch((error) => {
+                this.loading = false;
+                this.errorMsg = error;
+            });
     }
 }
 </script>

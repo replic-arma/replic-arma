@@ -55,7 +55,7 @@ export default class DownloadProgressVue extends Vue {
     }
 
     private formatSpeed(speed: number): string {
-        return `${speed} KB/s`;
+        return `${speed / 1000} MB/s`;
     }
 }
 </script>

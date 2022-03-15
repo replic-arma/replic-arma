@@ -38,7 +38,7 @@ export class System {
         const settingsStore = useSettingsStore();
         const repoStore = useRepoStore();
         Promise.all([settingsStore.loadData(), repoStore.loadRepositories(true)]);
-        // System.registerListener();
+        System.registerListener();
     }
 
     public static async getConfig(): Promise<ApplicationSettings> {

@@ -3,7 +3,6 @@ import type { Modset } from '@/models/Repository';
 import { System } from '@/util/system';
 import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
-import { v4 as uuidv4 } from 'uuid';
 import { toRaw } from 'vue';
 import { useHashStore } from './hash';
 import { useRepoStore } from './repo';
@@ -12,11 +11,13 @@ export const useDownloadStore = defineStore('download', {
     state: (): {
         current: null | DownloadItem;
         queue: Map<string, DownloadItem>;
+        finished: Map<string, DownloadItem>;
         speeds: number[];
         stats: null | { avg: number; cur: number; max: number };
     } => ({
         current: null,
         queue: new Map<string, DownloadItem>(),
+        finished: new Map<string, DownloadItem>(),
         speeds: [],
         stats: null,
     }),
@@ -29,8 +30,10 @@ export const useDownloadStore = defineStore('download', {
             const cacheData = hashStore.cache.get(modset.id);
             if (cacheData === undefined) return;
             const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
+            console.log(toRaw(modsetCacheData?.mods));
+            console.log(fliesToDownload);
             const totalSize = await ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods), fliesToDownload);
-            this.queue.set(uuidv4(), {
+            this.queue.set(modset.id, {
                 item: modset,
                 status: 'paused',
                 size: totalSize,
@@ -57,7 +60,8 @@ export const useDownloadStore = defineStore('download', {
                 const cacheData = hashStore.cache.get(this.current.item.id);
                 if (cacheData === undefined) return;
                 const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
-                System.downloadFiles(this.current.repoId, this.current.item.id, fliesToDownload);
+                await System.downloadFiles(this.current.repoId, this.current.item.id, fliesToDownload);
+                this.finished.set(this.current.item.id, this.current);
             }
         },
     },

@@ -16,7 +16,8 @@
 <script lang="ts">
 import CollectionMods from '@/components/CollectionMods.vue';
 import LaunchVue from '@/components/settings/Launch.vue';
-import TabsVue, { type TabsItem } from '@/components/util/Tabs.vue';
+import TabsVue from '@/components/util/Tabs.vue';
+import type { TabsItem } from '@/components/util/Tabs.vue';
 import type { Collection } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useRepoStore } from '@/store/repo';

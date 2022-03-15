@@ -15,7 +15,7 @@
     </li>
 </template>
 <script lang="ts">
-import { Collection } from '@/models/Repository';
+import type { Collection } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';

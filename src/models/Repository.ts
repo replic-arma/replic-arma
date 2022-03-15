@@ -145,15 +145,20 @@ export class ReplicArmaRepository extends Repository {
         const modsets = new JSONMap<string, Modset>();
         const modsetDataMap = new JSONMap<string, Modset>();
         const repoModsets = Array.from(repo.modsets as unknown as Modset[]);
-        const mods =
-            [
-                ...new Map(
-                    repoModsets
-                        .map((modset) => modset.mods)
-                        .flat()
-                        .map((mod) => [mod.name, mod])
-                ).values(),
-            ] ?? [];
+        let mods = [];
+        if (repoModsets.length === 0 && repo.files !== undefined) {
+            mods = await ReplicWorker.createModsetFromFiles(repo.files);
+        } else {
+            mods =
+                [
+                    ...new Map(
+                        repoModsets
+                            .map((modset) => modset.mods)
+                            .flat()
+                            .map((mod) => [mod.name, mod])
+                    ).values(),
+                ] ?? [];
+        }
         repoModsets.unshift({
             id: uuidv4(),
             name: 'All Mods',

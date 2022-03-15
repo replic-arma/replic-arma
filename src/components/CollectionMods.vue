@@ -22,7 +22,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Modset } from '@/models/Repository';
+import type { Modset } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
 import ReplicCheckboxVue from './util/ReplicCheckbox.vue';

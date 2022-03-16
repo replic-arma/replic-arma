@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { cacheDir, documentDir, sep } from '@tauri-apps/api/path';
+import { appDir, cacheDir, localDataDir, sep } from '@tauri-apps/api/path';
 import {
     createDir,
     BaseDirectory,
@@ -27,99 +27,79 @@ import { toRaw } from 'vue';
 import { useDownloadStore } from '@/store/download';
 import { ReplicWorker } from './worker';
 export class System {
-    private static APPDIR = 'Replic-Arma';
-    private static DOCUMENTDIRECTORY = (async () => await documentDir())();
-    private static CACHEDIRECTORY = (async () => await cacheDir())();
-    private static CONFIGPATH = `${System.APPDIR}${sep}config.json`;
-    private static REPOPATH = `${System.APPDIR}${sep}repos.json`;
+    private static APPDIR = appDir();
+    private static CONFIGPATH = `config.json`;
+    private static REPOPATH = `repos.json`;
     public static SEPERATOR = sep;
 
     public static init(): void {
         const settingsStore = useSettingsStore();
         const repoStore = useRepoStore();
+        System.APPDIR.then(asd => console.log(asd));
         Promise.all([settingsStore.loadData(), repoStore.loadRepositories(true)]);
         System.registerListener();
     }
 
     public static async getConfig(): Promise<ApplicationSettings> {
-        const documentDirectory = await System.DOCUMENTDIRECTORY;
-        const exists = await System.fileExists(documentDirectory + System.APPDIR + sep + 'config.json');
-
+        const exists = await System.fileExists(`${await System.APPDIR}${System.CONFIGPATH}`);
         if (!exists) return new ApplicationSettings();
-        return JSON.parse(await readTextFile(System.CONFIGPATH, { dir: BaseDirectory.Document }));
+
+        return JSON.parse(await readTextFile(`${await System.APPDIR}${System.CONFIGPATH}`, { dir: BaseDirectory.App }));
     }
 
     public static async updateConfig(content: ApplicationSettings): Promise<void> {
-        const documentDirectory = await System.DOCUMENTDIRECTORY;
+        const exists = await System.dirExists(await System.APPDIR);
+        if (!exists) await createDir(await System.APPDIR, { dir: BaseDirectory.App });
 
-        await System.dirExists(documentDirectory + System.APPDIR).then((exists) => {
-            if (exists) return;
-
-            return createDir(System.APPDIR, { dir: BaseDirectory.Document });
-        });
-        return writeFile(
-            { contents: JSON.stringify(content), path: System.CONFIGPATH },
-            { dir: BaseDirectory.Document }
-        );
+        return writeFile({ contents: JSON.stringify(content), path: System.CONFIGPATH }, { dir: BaseDirectory.App });
     }
 
     public static async getRepoJson(): Promise<Map<string, ReplicArmaRepository> | null> {
-        const documentDirectory = await System.DOCUMENTDIRECTORY;
-        const exists = await System.fileExists(`${documentDirectory}${System.REPOPATH}`);
-
+        const exists = await System.fileExists(`${await System.APPDIR}${System.REPOPATH}`);
         if (!exists) return null;
-        const data = await readBinaryFile(System.REPOPATH, { dir: BaseDirectory.Document });
+
+        const data = await readBinaryFile(`${await System.APPDIR}${System.REPOPATH}`, { dir: BaseDirectory.App });
         return await ReplicWorker.uncompress<JSONMap<string, ReplicArmaRepository>>(data);
     }
 
     public static async updateRepoJson(
         content: JSONMap<string, ReplicArmaRepository> | Record<string, never>
     ): Promise<void> {
-        const documentDirectory = await System.DOCUMENTDIRECTORY;
+        const exists = await System.dirExists(await System.APPDIR);
+        if (!exists) createDir(await System.APPDIR, { dir: BaseDirectory.App });
 
-        await System.dirExists(documentDirectory + System.APPDIR).then((exists) => {
-            if (exists) return;
-            return createDir(System.APPDIR, { dir: BaseDirectory.Document });
-        });
         const data = await ReplicWorker.compress(JSON.stringify(content));
-        return writeBinaryFile({ contents: data, path: System.REPOPATH }, { dir: BaseDirectory.Document });
+        return writeBinaryFile(
+            { contents: data, path: `${await System.APPDIR}${System.REPOPATH}` },
+            { dir: BaseDirectory.App }
+        );
     }
 
     public static async getModsetCache(repositoryId: string): Promise<JSONMap<string, Modset>> {
-        const documentDirectory = await System.DOCUMENTDIRECTORY;
-        const exists = await System.fileExists(`${documentDirectory}${System.APPDIR}${sep}${repositoryId}.json`);
-
+        const exists = await System.fileExists(`${await System.APPDIR}${sep}${repositoryId}.json`);
         if (!exists) return new JSONMap<string, Modset>();
-        const data = await readBinaryFile(`${System.APPDIR}${sep}${repositoryId}.json`, {
-            dir: BaseDirectory.Document,
+
+        const data = await readBinaryFile(`${await System.APPDIR}${sep}${repositoryId}.json`, {
+            dir: BaseDirectory.App,
         });
         return await ReplicWorker.uncompress(data);
     }
 
     public static async updateModsetCache(repositoryId: string, content: JSONMap<string, Modset>): Promise<void> {
-        const documentDirectory = await System.DOCUMENTDIRECTORY;
+        const exists = await System.dirExists(await System.APPDIR);
+        if (!exists) createDir(await System.APPDIR, { dir: BaseDirectory.App });
 
-        await System.dirExists(`${documentDirectory}${System.APPDIR}`).then((exists) => {
-            if (exists) return;
-
-            return createDir(System.APPDIR, { dir: BaseDirectory.Document });
-        });
-        // const hashStore = useHashStore();
         const data = await ReplicWorker.compress(JSON.stringify(content));
         return writeBinaryFile(
-            { contents: data, path: `${System.APPDIR}${sep}${repositoryId}.json` },
-            { dir: BaseDirectory.Document }
+            { contents: data, path: `${await System.APPDIR}${sep}${repositoryId}.json` },
+            { dir: BaseDirectory.App }
         );
     }
 
     public static async clearCache(): Promise<void> {
-        const cacheDirectory = await System.CACHEDIRECTORY;
-        let exists = await System.fileExists(cacheDirectory + System.APPDIR + sep + 'data' + sep + 'hashes.json');
+        const exists = await System.fileExists(`${await System.APPDIR}${sep}hashes.json`);
         if (!exists) return;
-        await removeFile(System.APPDIR + sep + 'data' + sep + 'hashes.json', { dir: BaseDirectory.Cache });
-        exists = await System.fileExists(System.APPDIR + sep + 'cache.json');
-        if (!exists) return;
-        await removeFile(System.APPDIR + sep + 'cache.json', { dir: BaseDirectory.Document });
+        await removeFile(`${await System.APPDIR}${sep}hashes.json`, { dir: BaseDirectory.App });
     }
 
     public static async launchGame(

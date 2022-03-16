@@ -150,7 +150,7 @@ impl A3SRepository {
             modsets,
             game_servers,
             download_server,
-            revision
+            revision,
         }
     }
 }

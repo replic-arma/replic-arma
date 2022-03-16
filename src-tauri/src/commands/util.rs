@@ -22,7 +22,7 @@ pub async fn dir_exists(path: String) -> JSResult<bool> {
 pub async fn get_a3_dir() -> JSResult<String> {
     #[cfg(target_os = "windows")]
     return get_a3_dir_win();
-    
+
     #[cfg(not(target_os = "windows"))]
     Ok(String::new())
 }

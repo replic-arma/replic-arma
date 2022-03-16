@@ -16,15 +16,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::commands::repo::download;
-use crate::commands::repo::get_repo;
-use crate::commands::repo::hash_check;
-use crate::commands::repo::pause_download;
-use crate::commands::util::dir_exists;
-use crate::commands::util::file_exists;
-use crate::commands::util::get_a3_dir;
-use directories::ProjectDirs;
-use tauri::async_runtime::Mutex;
+use crate::commands::{
+    repo::{download, get_repo, hash_check, pause_download},
+    util::{dir_exists, file_exists, get_a3_dir},
+};
+use tauri::{api::path::app_dir, async_runtime::Mutex, Manager};
 use util::methods::load_t;
 
 use state::ReplicArmaState;
@@ -42,16 +38,12 @@ use windows::Win32::{
     },
 };
 
-fn init_state() -> anyhow::Result<ReplicArmaState> {
-    let proj_dirs = Box::new(
-        ProjectDirs::from("", "", "replic-arma")
-            .unwrap()
-            .data_local_dir()
-            .to_owned(),
+fn init_state(app_dir: PathBuf) -> anyhow::Result<ReplicArmaState> {
+    let file_path = app_dir.join("hashes.json");
+    println!(
+        "Using app dir path: {}",
+        file_path.to_str().unwrap_or_default()
     );
-
-    let file_path = proj_dirs.join("hashes.json");
-
     let hashes_load_result: anyhow::Result<HashMap<String, (String, i64)>> = load_t(&file_path);
 
     let hashes = match hashes_load_result {
@@ -67,7 +59,7 @@ fn init_state() -> anyhow::Result<ReplicArmaState> {
     };
 
     let state = ReplicArmaState {
-        data_dir: proj_dirs,
+        data_dir: Box::new(app_dir),
         known_hashes: Mutex::new(hashes),
         downloading: Mutex::new(None),
     };
@@ -119,15 +111,20 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // let swifty = SwiftyRepository::from_repo_json(String::from("https://swifty.projectawesome.net/event/repo.json"));
     //repo.generate_file_map();
     // let app =
+
     tauri::Builder::default()
-        .manage(init_state().unwrap_or_else(|_| {
-            println!("Error during init state! Using default state!");
-            ReplicArmaState {
-                data_dir: Box::new(PathBuf::new()),
-                known_hashes: Mutex::new(HashMap::new()),
-                downloading: Mutex::new(None),
-            }
-        }))
+        .setup(move |app| {
+            let app_dir = app_dir(&app.config()).expect("Couldn't get app dir path!");
+            app.manage(init_state(app_dir.clone()).unwrap_or_else(|_| {
+                println!("Error during init state! Using default state!");
+                ReplicArmaState {
+                    data_dir: Box::new(app_dir),
+                    known_hashes: Mutex::new(HashMap::new()),
+                    downloading: Mutex::new(None),
+                }
+            }));
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             hash_check,
             get_repo,
@@ -138,10 +135,8 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             get_a3_dir
         ])
         .on_page_load(|window, _| {
-            
             #[cfg(target_os = "windows")]
             if let Ok(hwnd) = window.hwnd() {
-
                 unsafe {
                     let hwnd_win = HWND(hwnd as isize);
                     let thread_id = GetWindowThreadProcessId(hwnd_win, std::ptr::null_mut());

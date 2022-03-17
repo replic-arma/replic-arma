@@ -4,7 +4,7 @@
         <div class="replic-path-selector__input-wrapper">
             <input type="text" :id="pathSelector.name" class="replic-path-selector__input" v-model="model" />
             <button class="replic-path-selector__button" @click="openDialog">
-                <span>{{ $t('select') }}</span>
+                <span v-t="'select'"></span>
             </button>
         </div>
     </div>

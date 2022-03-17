@@ -8,7 +8,7 @@
                     <template v-if="status === 'checking' || status === 'updating'">
                         <mdicon name="loading" spin />
                     </template>
-                    {{ $t('download-status.' + status) }}
+                    <span v-t="'download-status.' + status"></span>
                     <template v-if="status === 'checking' || (status === 'updating' && progress !== 0)">
                         <span>...{{ progress }}%</span>
                     </template>

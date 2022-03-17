@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { appDir, cacheDir, localDataDir, sep } from '@tauri-apps/api/path';
+import { appDir, sep } from '@tauri-apps/api/path';
 import {
     createDir,
     BaseDirectory,
@@ -15,8 +15,8 @@ import {
     type GameServer,
     JSONMap,
     type Modset,
-    ReplicArmaRepository,
-    Repository,
+    type Repository,
+    type IReplicArmaRepository,
 } from '@/models/Repository';
 import { useSettingsStore } from '@/store/settings';
 import { useRepoStore } from '@/store/repo';
@@ -35,7 +35,7 @@ export class System {
     public static init(): void {
         const settingsStore = useSettingsStore();
         const repoStore = useRepoStore();
-        System.APPDIR.then(asd => console.log(asd));
+        System.APPDIR.then((asd) => console.log(asd));
         Promise.all([settingsStore.loadData(), repoStore.loadRepositories(true)]);
         System.registerListener();
     }
@@ -54,16 +54,16 @@ export class System {
         return writeFile({ contents: JSON.stringify(content), path: System.CONFIGPATH }, { dir: BaseDirectory.App });
     }
 
-    public static async getRepoJson(): Promise<Map<string, ReplicArmaRepository> | null> {
+    public static async getRepoJson(): Promise<Map<string, IReplicArmaRepository> | null> {
         const exists = await System.fileExists(`${await System.APPDIR}${System.REPOPATH}`);
         if (!exists) return null;
 
         const data = await readBinaryFile(`${await System.APPDIR}${System.REPOPATH}`, { dir: BaseDirectory.App });
-        return await ReplicWorker.uncompress<JSONMap<string, ReplicArmaRepository>>(data);
+        return await ReplicWorker.uncompress<JSONMap<string, IReplicArmaRepository>>(data);
     }
 
     public static async updateRepoJson(
-        content: JSONMap<string, ReplicArmaRepository> | Record<string, never>
+        content: JSONMap<string, IReplicArmaRepository> | Record<string, never>
     ): Promise<void> {
         const exists = await System.dirExists(await System.APPDIR);
         if (!exists) createDir(await System.APPDIR, { dir: BaseDirectory.App });
@@ -140,17 +140,6 @@ export class System {
     private static getConnectionString(gameServer: GameServer | null = null) {
         if (gameServer === null) return '';
         return `-ip=${gameServer.host};-port=${gameServer.port};-password=${gameServer.password};`;
-    }
-
-    public static async getFilesForModset(repoId: string | null, modsetId: string | null): Promise<File[]> {
-        const repoStore = useRepoStore();
-        const repo = toRaw(repoStore.getRepo(repoId));
-        if (repo === undefined) throw new Error(`Repository with id ${repoId} not found`);
-        if (repo.files === undefined) throw new Error(`Repository with id ${repoId} has no files`);
-        const modset = toRaw(repoStore.getModset(repoId, modsetId));
-        if (modset === undefined) throw new Error(`Modset with id ${modsetId} not found`);
-        const modsetFiles = await ReplicWorker.splitFiles(repo.files, modset);
-        return modsetFiles;
     }
 
     public static resetSettings(): void {

@@ -1,4 +1,11 @@
-import { Collection, type GameServer, JSONMap, type Modset, ReplicArmaRepository } from '@/models/Repository';
+import {
+    type Collection,
+    type GameServer,
+    JSONMap,
+    type Modset,
+    type IReplicArmaRepository,
+    ReplicArmaRepository,
+} from '@/models/Repository';
 import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,14 +13,14 @@ import { toRaw } from 'vue';
 import { useHashStore } from './hash';
 export const useRepoStore = defineStore('repo', {
     state: (): {
-        repos: JSONMap<string, ReplicArmaRepository>;
+        repos: JSONMap<string, IReplicArmaRepository>;
         currentRepoId: string | null;
         currentModsetId: string | null;
         currentCollectionId: string | null;
         currentModId: string | null;
         modsetCache: JSONMap<string, Modset>;
     } => ({
-        repos: new JSONMap<string, ReplicArmaRepository>(),
+        repos: new JSONMap<string, IReplicArmaRepository>(),
         currentRepoId: null,
         currentModsetId: null,
         currentCollectionId: null,
@@ -61,9 +68,8 @@ export const useRepoStore = defineStore('repo', {
     actions: {
         async addRepo(autoconfig: string) {
             const repo = await System.getRepo(autoconfig);
-            const replicRepo = new ReplicArmaRepository();
-            await replicRepo.init(repo);
-            replicRepo.calcHash();
+            const replicRepo = await ReplicArmaRepository.init(repo);
+            ReplicArmaRepository.calcHash(replicRepo);
             this.saveRepoState();
         },
         async removeRepo(id: string | null) {
@@ -104,9 +110,9 @@ export const useRepoStore = defineStore('repo', {
         async loadRepositories(calcHash = false) {
             const repoJson = await System.getRepoJson();
             if (repoJson !== null) {
-                const repoMap = new JSONMap<string, ReplicArmaRepository>(repoJson);
+                const repoMap = new JSONMap<string, IReplicArmaRepository>(repoJson);
                 repoMap.forEach((repo) => {
-                    new ReplicArmaRepository().loadFromJson(repo, calcHash);
+                    ReplicArmaRepository.loadFromJson(repo, calcHash);
                 });
             }
         },

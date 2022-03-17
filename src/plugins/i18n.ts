@@ -6,7 +6,7 @@ import de from '@/locales/de.json';
 type Schema = typeof en;
 
 const i18n = createI18n<[Schema], 'de' | 'en'>({
-    legacy: true,
+    legacy: false,
     locale: 'en',
     fallbackLocale: 'en',
     messages: { de, en },

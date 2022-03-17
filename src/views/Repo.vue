@@ -42,9 +42,9 @@ export default class RepoView extends Vue {
 
     public created(): void {
         this.subnaviItems = [
-            { label: this.$t('modsets'), link: '/repo/' + this.repoStore.currentRepoId + '/modsets' },
-            { label: this.$t('collections'), link: '/repo/' + this.repoStore.currentRepoId + '/collections' },
-            { label: this.$t('server.title'), link: '/repo/' + this.repoStore.currentRepoId + '/servers' },
+            { label: 'modsets', link: '/repo/' + this.repoStore.currentRepoId + '/modsets' },
+            { label: 'collections', link: '/repo/' + this.repoStore.currentRepoId + '/collections' },
+            { label: 'server.title', link: '/repo/' + this.repoStore.currentRepoId + '/servers' },
         ];
     }
 

@@ -4,7 +4,7 @@
             <span class="collection__name">{{ collection.name }}</span>
             <small class="collection__description">{{ collection.description }}</small>
         </div>
-        <span class="repo__status" :class="`status--${status}`">{{ $t('download-status.' + status) }}</span>
+        <span class="repo__status" :class="`status--${status}`" v-t="'download-status.' + status"></span>
         <div class="collection__play">
             <span>Play</span>
             <mdicon name="play" size="35" />

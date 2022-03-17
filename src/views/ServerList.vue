@@ -1,7 +1,7 @@
 <template>
     <ul class="servers">
         <server v-for="(server, i) of servers" :key="i" :server="server"></server>
-        <li class="servers__empty" v-if="servers.length === 0">{{ $t('server.empty') }}</li>
+        <li class="servers__empty" v-if="servers.length === 0" v-t="'server.empty'"></li>
     </ul>
 </template>
 

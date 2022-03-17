@@ -2,10 +2,12 @@
     <div class="settings">
         <div class="settings__heading">
             <router-link class="button" to="/"><mdicon name="chevron-left" size="55" /></router-link>
-            <h1>{{ $t('settings.title') }}</h1>
-            <button class="button settings__save button--center" @click="settingsStore.synchData()">
-                {{ $t('save') }}
-            </button>
+            <h1 v-t="'settings.title'"></h1>
+            <button
+                class="button settings__save button--center"
+                @click="settingsStore.synchData()"
+                v-t="'save'"
+            ></button>
         </div>
         <tabs :tabItems="subnaviItems"></tabs>
         <router-view />

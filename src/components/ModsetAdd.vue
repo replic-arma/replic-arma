@@ -1,17 +1,17 @@
 <template>
     <replic-dialog :dialogName="'modsetAdd'">
         <template v-slot:header>
-            <span>{{ $t('modset.add') }}</span>
+            <span v-t="'modset.add'"></span>
             <mdicon role="button" @click="dialogStore.toggleDialog('modsetAdd')" name="close" size="35" />
         </template>
         <template v-slot:main>
             <div class="txt">
-                <label for="modsetName">{{ $t('modset.name') }}</label>
+                <label for="modsetName" v-t="'modset.name'"></label>
                 <div class="txt__input-wrapper">
                     <input class="txt__input" type="text" name="modsetName" />
                 </div>
             </div>
-            <button class="button">{{ $t('submit') }}</button>
+            <button class="button" v-t="'submit'"></button>
         </template>
     </replic-dialog>
 </template>

@@ -1,32 +1,32 @@
 <template>
     <li class="repo">
-        <img class="repo__img" :src="repository.image" />
-        <span class="repo__name">{{ repository.name }}</span>
+        <img class="repo__img" v-once :src="repository.image" />
+        <span class="repo__name" v-once>{{ repository.name }}</span>
         <span class="repo__status" :class="`status--${status}`">
             <template v-if="status === 'checking'">
                 <mdicon name="loading" spin />
             </template>
-            {{ $t('download-status.' + status) }}
+            <span v-t="'download-status.' + status"></span>
             <template v-if="status === 'checking' && progress !== 0">
                 <span>...{{ progress }}%</span>
             </template>
         </span>
         <div class="repo__modset">
             <select v-model="currentModsetId" @change="checkCurrentModset">
-                <option v-for="(modset, i) of modsets" :key="i" :value="modset.id">{{ modset.name }}</option>
+                <option v-once v-for="(modset, i) of modsets" :key="i" :value="modset.id">{{ modset.name }}</option>
             </select>
         </div>
         <div class="repo__play" @click="launchGame()">
             <span>Play</span>
             <mdicon name="play" size="35" />
         </div>
-        <router-link :to="'/repo/' + repository.id + '/modsets'" class="repo__open button">
+        <router-link v-once :to="'/repo/' + repository.id + '/modsets'" class="repo__open button">
             <mdicon name="folder-open"></mdicon>
         </router-link>
     </li>
 </template>
 <script lang="ts">
-import type { ReplicArmaRepository } from '@/models/Repository';
+import type { IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
@@ -37,11 +37,11 @@ import { useRepoStore } from '@/store/repo';
     components: {},
 })
 export default class RepoVue extends Vue {
-    @Prop({ type: Object }) private repository!: ReplicArmaRepository;
+    @Prop({ type: Object }) private repository!: IReplicArmaRepository;
     private downloadStore = useDownloadStore();
     private hashStore = useHashStore();
     private repoStore = useRepoStore();
-    private get currentModsetId () {
+    private get currentModsetId() {
         return this.modsets[0] !== undefined ? this.modsets[0].id : '';
     }
 

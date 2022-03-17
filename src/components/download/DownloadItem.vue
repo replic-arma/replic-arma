@@ -11,7 +11,7 @@
             <div class="download-item__progress-bar" :style="`--progress: ${progress}%;`"></div>
             <span class="download-item__time">~{{ remaining }} minutes left</span>
         </div>
-        <span v-else class="download-item__status">{{ $t('download-status.' + downloadItem.status) }}</span>
+        <span v-else class="download-item__status" v-t="'download-status.' + downloadItem.status"></span>
         <div class="download-item__controls">
             <template v-if="downloadItem.status === 'downloading'">
                 <mdicon @click="pauseDownload" name="pause" />

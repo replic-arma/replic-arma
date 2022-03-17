@@ -1,4 +1,4 @@
-import { JSONMap, ReplicArmaRepository, type File } from '@/models/Repository';
+import { JSONMap, type IReplicArmaRepository, type File } from '@/models/Repository';
 import { System } from '@/util/system';
 import { defineStore } from 'pinia';
 import { useRepoStore } from './repo';
@@ -21,7 +21,7 @@ export const useHashStore = defineStore('hash', {
         },
     },
     actions: {
-        async startHash(repo: ReplicArmaRepository) {
+        async startHash(repo: IReplicArmaRepository) {
             console.info(`Repository ${repo.name} has been queued`);
             this.queue.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
             if (this.current === null) {

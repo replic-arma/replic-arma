@@ -13,8 +13,9 @@
 <script lang="ts">
 import GeneralRepoVue from '@/components/settings/GeneralRepo.vue';
 import LaunchVue from '@/components/settings/Launch.vue';
-import TabsVue, { type TabsItem } from '@/components/util/Tabs.vue';
-import { ReplicArmaRepository } from '@/models/Repository';
+import TabsVue from '@/components/util/Tabs.vue';
+import type { TabsItem } from '@/components/util/Tabs.vue';
+import type { IReplicArmaRepository } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
 
@@ -22,7 +23,7 @@ import { Options, Vue } from 'vue-class-component';
     components: { Tabs: TabsVue },
 })
 export default class RepoSettingsView extends Vue {
-    private repository!: ReplicArmaRepository | undefined;
+    private repository!: IReplicArmaRepository | undefined;
     private repoStore = useRepoStore();
     private subnaviItems: TabsItem[] = [
         { label: 'General', component: GeneralRepoVue },

@@ -11,16 +11,14 @@
             <ul class="download-items">
                 <download-item v-if="downloadItem !== null" :downloadItem="downloadItem"></download-item>
             </ul>
-            <span class="download-sub-head"
-                >{{ $t('download-status.queued')
-                }}<span class="download-sub-head__count">({{ queueItems.length }})</span></span
+            <span class="download-sub-head" v-t="'download-status.queued'"
+                ><span class="download-sub-head__count">({{ queueItems.length }})</span></span
             >
             <ul class="download-items">
                 <download-item v-for="(item, i) of queueItems" :key="i" :downloadItem="item"></download-item>
             </ul>
-            <span class="download-sub-head" v-if="updateNeededItems.length > 0"
-                >{{ $t('download-status.outdated')
-                }}<span class="download-sub-head__count">({{ updateNeededItems.length }})</span></span
+            <span class="download-sub-head" v-if="updateNeededItems.length > 0" v-t="'download-status.outdated'"
+                ><span class="download-sub-head__count">({{ updateNeededItems.length }})</span></span
             >
             <ul class="download-items" v-if="updateNeededItems.length > 0">
                 <download-item v-for="(item, i) of updateNeededItems" :key="i" :downloadItem="item"></download-item>

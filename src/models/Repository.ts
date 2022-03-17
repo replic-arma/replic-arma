@@ -50,22 +50,13 @@ export interface FileMap {
     local_hash: string;
     file_found: boolean;
 }
-export class Collection {
-    public id!: string;
-    public name!: string;
-    public description?: string;
-    public modsets?: Array<string>;
-    public dlc?: Array<string>;
-    public localMods?: Array<ModsetMod>;
-
-    constructor(collection: Collection) {
-        this.id = collection.id ?? uuidv4();
-        this.name = collection.name;
-        this.description = collection.description;
-        this.dlc = collection.dlc;
-        this.modsets = collection.modsets;
-        this.localMods = collection.localMods;
-    }
+export interface Collection {
+    id: string;
+    name: string;
+    description?: string;
+    modsets?: Array<string>;
+    dlc?: Array<string>;
+    localMods?: Array<ModsetMod>;
 }
 
 export class JSONMap<K extends string | number, V> extends Map<K, V> {
@@ -74,74 +65,61 @@ export class JSONMap<K extends string | number, V> extends Map<K, V> {
     }
 }
 
-export class Repository {
-    public open_repository_schema!: number;
-    public name!: string;
-    public build_date!: string;
-    public revision!: number;
-    public files?: Array<File>;
-    public modsets!: JSONMap<string, Modset>;
-    public game_servers?: JSONMap<string, GameServer>;
-    public download_server?: DownloadServer;
-    public collections?: JSONMap<string, Collection>;
+export interface Repository {
+    open_repository_schema: number;
+    name: string;
+    build_date: string;
+    revision: number;
+    files: Array<File>;
+    modsets: JSONMap<string, Modset>;
+    game_servers?: JSONMap<string, GameServer>;
+    download_server?: DownloadServer;
+    collections?: JSONMap<string, Collection>;
 }
 
 export interface ReplicArmaRepositoryError {
     message: string;
 }
 
-export class ReplicArmaRepository extends Repository {
-    public config_url: string | undefined;
-    public id!: string;
-    public image?: string;
-    public error?: ReplicArmaRepositoryError;
-    public settings?: GameLaunchSettings;
-    public type?: 'local' | 'a3s' | 'swifty';
-    public autoconfig?: string;
-    public revisionChanged?: boolean;
-
-    public async init(repo: ReplicArmaRepository): Promise<void> {
-        this.id = uuidv4();
-        if (repo.image === undefined)
-            this.image =
+export interface IReplicArmaRepository extends Repository {
+    config_url: string | undefined;
+    id: string;
+    image?: string;
+    error?: ReplicArmaRepositoryError;
+    settings?: GameLaunchSettings;
+    type?: 'local' | 'a3s' | 'swifty';
+    autoconfig?: string;
+    revisionChanged?: boolean;
+}
+export class ReplicArmaRepository {
+    public static async init(repo: Repository): Promise<IReplicArmaRepository> {
+        const repository = repo as unknown as IReplicArmaRepository;
+        repository.id = uuidv4();
+        if (repository.image === undefined)
+            repository.image =
                 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32' ??
-                repo.image;
-        this.name = repo.name;
-        this.settings = new GameLaunchSettings();
-        this.type = 'a3s';
-        this.files = repo.files;
-        this.collections = await this.loadCollections(repo);
-        this.modsets = await this.initModsets(repo);
-        this.download_server = repo.download_server;
-        this.game_servers = repo.game_servers;
-        this.revision = repo.revision;
-        this.build_date = repo.build_date;
-        this.config_url = repo.config_url;
-        this.save();
+                repository.image;
+        repository.settings = new GameLaunchSettings();
+        repository.type = 'a3s';
+        repository.collections = new JSONMap<string, Collection>();
+        repository.modsets = await ReplicArmaRepository.initModsets(repository);
+        ReplicArmaRepository.save(repository);
+        return repository;
     }
 
-    public async loadFromJson(repo: ReplicArmaRepository, calcHash = false): Promise<void> {
-        this.id = repo.id;
-        this.name = repo.name;
-        this.image = repo.image;
-        this.settings = repo.settings;
-        this.type = repo.type;
-        this.files = repo.files;
-        this.collections =
-            repo.collections !== undefined ? new JSONMap<string, Collection>(repo.collections) : undefined;
-        this.modsets = new JSONMap<string, Modset>(repo.modsets);
-        this.download_server = repo.download_server;
-        this.game_servers = repo.game_servers;
-        this.revision = repo.revision;
-        this.build_date = repo.build_date;
-        this.config_url = repo.config_url;
-        this.save();
+    public static async loadFromJson(repo: IReplicArmaRepository, calcHash = false): Promise<void> {
+        repo.collections =
+            repo.collections !== undefined
+                ? new JSONMap<string, Collection>(repo.collections)
+                : new JSONMap<string, Collection>();
+        repo.modsets = new JSONMap<string, Modset>(repo.modsets);
+        ReplicArmaRepository.save(repo);
         if (calcHash) {
-            this.calcHash();
+            ReplicArmaRepository.calcHash(repo);
         }
     }
 
-    private async initModsets(repo: ReplicArmaRepository): Promise<JSONMap<string, Modset>> {
+    private static async initModsets(repo: IReplicArmaRepository): Promise<JSONMap<string, Modset>> {
         const modsets = new JSONMap<string, Modset>();
         const modsetDataMap = new JSONMap<string, Modset>();
         const repoModsets = Array.from(repo.modsets as unknown as Modset[]);
@@ -149,15 +127,7 @@ export class ReplicArmaRepository extends Repository {
         if (repoModsets.length === 0 && repo.files !== undefined) {
             mods = await ReplicWorker.createModsetFromFiles(repo.files);
         } else {
-            mods =
-                [
-                    ...new Map(
-                        repoModsets
-                            .map((modset) => modset.mods)
-                            .flat()
-                            .map((mod) => [mod.name, mod])
-                    ).values(),
-                ] ?? [];
+            mods = await ReplicWorker.createModsetFromModset(repoModsets);
         }
         repoModsets.unshift({
             id: uuidv4(),
@@ -176,40 +146,24 @@ export class ReplicArmaRepository extends Repository {
         }
         const repoStore = useRepoStore();
         repoStore.addToModsetCache(modsetDataMap);
-        System.updateModsetCache(this.id, modsetDataMap);
+        System.updateModsetCache(repo.id, modsetDataMap);
         return modsets;
     }
 
-    private async loadCollections(repo: ReplicArmaRepository | undefined): Promise<JSONMap<string, Collection>> {
-        if (repo === undefined) throw new Error('Repo undefined');
-        if (repo.collections !== undefined) {
-            const collections = Array.from(repo.collections as unknown as Collection[]).map(
-                (collection: Collection) => {
-                    return new Collection(collection);
-                }
-            );
-            repo.collections = new JSONMap<string, Collection>();
-            collections.map((collection) => repo.collections?.set(collection.id, collection));
-        } else {
-            repo.collections = new JSONMap<string, Collection>();
-        }
-        return repo.collections;
-    }
-
-    public async calcHash(): Promise<void> {
+    public static async calcHash(repo: IReplicArmaRepository): Promise<void> {
         const hashStore = useHashStore();
         const repoStore = useRepoStore();
-        const cacheData = await System.getModsetCache(this.id);
+        const cacheData = await System.getModsetCache(repo.id);
         repoStore.addToModsetCache(new JSONMap<string, Modset>(cacheData));
-        hashStore.startHash(this);
+        hashStore.startHash(repo);
     }
 
-    public async save(): Promise<void> {
+    public static async save(repo: IReplicArmaRepository): Promise<void> {
         const repoStore = useRepoStore();
-        repoStore.repos.set(this.id, this);
+        repoStore.repos.set(repo.id, repo);
     }
 
-    public async connectToAutoConfig(): Promise<Repository> {
-        return await System.getRepo(`${this.config_url}autoconfig`);
+    public static async connectToAutoConfig(repo: IReplicArmaRepository): Promise<Repository> {
+        return await System.getRepo(`${repo.config_url}autoconfig`);
     }
 }

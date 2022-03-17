@@ -4,8 +4,7 @@
             <mdicon name="chevron-left" size="55" @click="$router.back()" />
             <h1>{{ collection.name }}</h1>
             <div class="icon-group">
-                <button class="button">
-                    {{ $t('save') }}
+                <button class="button" v-t="'save'">
                 </button>
             </div>
         </div>

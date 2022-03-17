@@ -1,15 +1,15 @@
 <template>
     <div class="launch-settings">
         <div class="launch-settings__fieldset" v-for="(category, i) of Object.keys(settings)" :key="i">
-            <span>{{ $t('settings.' + category) }}</span>
+            <span v-t="'settings.' + category"></span>
             <ul>
                 <li v-for="(setting, i) of Object.keys(settings[category])" :key="i">
-                    <input type="checkbox" role="switch" :name="setting" /><span>{{ $t('settings.' + setting) }}</span>
+                    <input type="checkbox" role="switch" :name="setting" /><span v-t="'settings.' + setting"></span>
                 </li>
             </ul>
         </div>
         <div class="launch-settings__custom">
-            <label>{{ $t('settings.custom_parameter') }}</label>
+            <label v-t="'settings.custom_parameter'"></label>
             <textarea />
         </div>
     </div>

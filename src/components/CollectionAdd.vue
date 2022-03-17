@@ -6,12 +6,12 @@
         </template>
         <template v-slot:main>
             <div class="txt">
-                <label for="collectionName">{{ $t('collection.name') }}</label>
+                <label for="collectionName" v-t="'collection.name'"></label>
                 <div class="txt__input-wrapper">
                     <input class="txt__input" type="text" name="collectionName" v-model="collectionName" />
                 </div>
             </div>
-            <button class="button" @click="addCollection" v-t="'collection.add'"></button>
+            <button class="button" v-once @click="addCollection" v-t="'collection.add'"></button>
         </template>
     </replic-dialog>
 </template>

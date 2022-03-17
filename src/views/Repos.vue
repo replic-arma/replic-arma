@@ -1,10 +1,10 @@
 <template>
     <div class="repos">
         <div class="repos__heading">
-            <h1>{{ $t('repositories') }}</h1>
+            <h1 v-t="'repositories'"></h1>
             <div class="icon-group">
                 <downloads />
-                <mdicon name="refresh" size="45" @click="reloadRepos" />
+                <mdicon name="refresh" size="45" v-once @click="reloadRepos" />
                 <router-link class="button" to="/settings"><mdicon name="cog" size="45" /></router-link>
             </div>
         </div>

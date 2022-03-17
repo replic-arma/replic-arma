@@ -23,11 +23,10 @@ import { useRepoStore } from '@/store/repo';
 import { Command } from '@tauri-apps/api/shell';
 import { listen } from '@tauri-apps/api/event';
 import { useHashStore } from '@/store/hash';
-import { toRaw } from 'vue';
 import { useDownloadStore } from '@/store/download';
 import { ReplicWorker } from './worker';
 export class System {
-    private static APPDIR = appDir();
+    public static APPDIR = appDir();
     private static CONFIGPATH = `config.json`;
     private static REPOPATH = `repos.json`;
     public static SEPERATOR = sep;
@@ -35,44 +34,8 @@ export class System {
     public static init(): void {
         const settingsStore = useSettingsStore();
         const repoStore = useRepoStore();
-        System.APPDIR.then((asd) => console.log(asd));
         Promise.all([settingsStore.loadData(), repoStore.loadRepositories(true)]);
         System.registerListener();
-    }
-
-    public static async getConfig(): Promise<ApplicationSettings> {
-        const exists = await System.fileExists(`${await System.APPDIR}${System.CONFIGPATH}`);
-        if (!exists) return new ApplicationSettings();
-
-        return JSON.parse(await readTextFile(`${await System.APPDIR}${System.CONFIGPATH}`, { dir: BaseDirectory.App }));
-    }
-
-    public static async updateConfig(content: ApplicationSettings): Promise<void> {
-        const exists = await System.dirExists(await System.APPDIR);
-        if (!exists) await createDir(await System.APPDIR, { dir: BaseDirectory.App });
-
-        return writeFile({ contents: JSON.stringify(content), path: System.CONFIGPATH }, { dir: BaseDirectory.App });
-    }
-
-    public static async getRepoJson(): Promise<Map<string, IReplicArmaRepository> | null> {
-        const exists = await System.fileExists(`${await System.APPDIR}${System.REPOPATH}`);
-        if (!exists) return null;
-
-        const data = await readBinaryFile(`${await System.APPDIR}${System.REPOPATH}`, { dir: BaseDirectory.App });
-        return await ReplicWorker.uncompress<JSONMap<string, IReplicArmaRepository>>(data);
-    }
-
-    public static async updateRepoJson(
-        content: JSONMap<string, IReplicArmaRepository> | Record<string, never>
-    ): Promise<void> {
-        const exists = await System.dirExists(await System.APPDIR);
-        if (!exists) createDir(await System.APPDIR, { dir: BaseDirectory.App });
-
-        const data = await ReplicWorker.compress(JSON.stringify(content));
-        return writeBinaryFile(
-            { contents: data, path: `${await System.APPDIR}${System.REPOPATH}` },
-            { dir: BaseDirectory.App }
-        );
     }
 
     public static async getModsetCache(repositoryId: string): Promise<JSONMap<string, Modset>> {
@@ -148,14 +111,6 @@ export class System {
 
     public static async getRepo(url: string | undefined): Promise<Repository> {
         return await invoke('get_repo', { url });
-    }
-
-    public static async fileExists(path: string): Promise<boolean> {
-        return await invoke('file_exists', { path });
-    }
-
-    public static async dirExists(path: string): Promise<boolean> {
-        return await invoke('dir_exists', { path });
     }
 
     public static async hashCheck(path: string, files: File[]): Promise<Array<Array<Array<string>>>> {

@@ -29,10 +29,8 @@ export const useDownloadStore = defineStore('download', {
             const modsetCacheData = repoStore.modsetCache.get(modset.id);
             const cacheData = hashStore.cache.get(modset.id);
             if (cacheData === undefined) return;
-            const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
-            console.log(toRaw(modsetCacheData?.mods));
-            console.log(fliesToDownload);
-            const totalSize = await ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods) ?? [], fliesToDownload);
+            const filesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
+            const totalSize = await ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods) ?? [], filesToDownload);
             this.queue.set(modset.id, {
                 item: modset,
                 status: 'paused',

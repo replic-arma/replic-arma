@@ -1,7 +1,7 @@
 <template>
     <ul class="subnavi">
         <li class="subnavi__item" v-for="(item, i) of subnaviItems" :key="i">
-            <router-link class="button" :to="item.link">{{ item.label }}</router-link>
+            <router-link class="button" :to="item.link" v-t="item.label"></router-link>
         </li>
     </ul>
 </template>

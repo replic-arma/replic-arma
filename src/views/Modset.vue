@@ -75,6 +75,18 @@ export default class ModsetView extends Vue {
         return this.repoStore.getModsetStatus(this.repoStore.currentModsetId);
     }
 
+    // private get size() {
+    //     const modsetCacheData = this.repoStore.modsetCache.get(this.repoStore.currentModsetId ?? '');
+    //     const cacheData = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
+    //     if (cacheData === undefined) return;
+    //     const fliesToDownload = modsetCacheData?.mods
+    //         .flatMap((mod: ModsetMod) => mod.files ?? [])
+    //         .map((file: File) => file.path);
+    //     if (fliesToDownload === undefined) return;
+    //     ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods) ?? [], fliesToDownload).then((size) =>    );
+    //     return 5;
+    // }
+
     private get progress() {
         const hashStore = useHashStore();
         if (hashStore.current === null || hashStore.current.repoId !== this.repoStore.currentRepoId) return 0;

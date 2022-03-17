@@ -51,6 +51,7 @@ export default class RepositoryAddVue extends Vue {
                 Toast('Added Repository');
             })
             .catch((error) => {
+                console.log(error);
                 this.loading = false;
                 this.errorMsg = error;
             });

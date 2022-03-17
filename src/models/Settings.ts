@@ -1,9 +1,9 @@
-export class ApplicationSettings {
-    public language = 'en';
-    public theme = 'light';
-    public gamePath: string | null = null;
-    public downloadDirectoryPath: string | null = null;
-    public maxDownloadSpeed = 0;
+export interface IApplicationSettings {
+    language: string;
+    theme: 'light'|'dark';
+    gamePath: string | null;
+    downloadDirectoryPath: string | null;
+    maxDownloadSpeed: number;
 }
 
 export class GameLaunchSettings {

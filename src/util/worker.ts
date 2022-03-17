@@ -1,6 +1,6 @@
 import type { File, Modset, ModsetMod } from '@/models/Repository';
 import { useWebWorkerFn } from '@vueuse/core';
-
+import { System } from '@/util/system';
 import DeflateWorker from './deflate_worker?worker';
 import UncompressWorker from './uncompress_worker?worker';
 
@@ -99,7 +99,7 @@ export const ReplicWorker = {
         const { workerFn } = useWebWorkerFn((mods: ModsetMod[], filesPaths: string[]) => {
             return mods
                 .flatMap((mod: ModsetMod) => mod.files ?? [])
-                .filter((file: File) => filesPaths.includes(file.path))
+                .filter((file: File) => filesPaths.indexOf(file.path) !== -1)
                 .reduce(
                     (previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size,
                     0
@@ -109,7 +109,9 @@ export const ReplicWorker = {
     },
     async isFileIn(wantedFiles: File[], fileList: Array<string>): Promise<string[]> {
         const { workerFn } = useWebWorkerFn((wantedFiles: File[], fileList: Array<string>) => {
-            return wantedFiles.filter((wantedFile) => fileList.includes(wantedFile.path)).map((file) => file.path);
+            return wantedFiles
+                .filter((wantedFile) => fileList.indexOf(wantedFile.path) !== -1)
+                .map((file) => file.path);
         });
         return workerFn(wantedFiles, fileList);
     },
@@ -127,7 +129,6 @@ export const ReplicWorker = {
         });
 
         worker.postMessage(data);
-
         return promise;
     },
     async uncompress<T>(data: Uint8Array): Promise<T> {
@@ -144,7 +145,6 @@ export const ReplicWorker = {
         });
 
         worker.postMessage(data);
-
         return promise;
     },
 };

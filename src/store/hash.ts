@@ -55,8 +55,8 @@ export const useHashStore = defineStore('hash', {
                     outdatedFiles: outDatedFiles,
                     missingFiles: hashes[1] as unknown as string[],
                 });
+                const cached = toRaw(hashStore.cache.get(this.current.repoId));
                 for (const modset of modsets) {
-                    const cached = toRaw(hashStore.cache.get(this.current.repoId));
                     const modsetCache = toRaw(repoStore.modsetCache.get(modset.id));
                     if (cached?.checkedFiles === undefined || modsetCache === undefined)
                         throw new Error('cache empty!');
@@ -70,7 +70,7 @@ export const useHashStore = defineStore('hash', {
                     });
                 }
                 console.info(`Finished hash calc for repo ${repo.name}`);
-                Promise.all([repoStore.saveRepoState(), hashStore.next()]);
+                hashStore.next();
             }
         },
     },

@@ -108,6 +108,7 @@ export class ReplicArmaRepository {
     }
 
     public static async loadFromJson(repo: IReplicArmaRepository, calcHash = false): Promise<void> {
+        console.log(repo.name, repo.files);
         repo.collections =
             repo.collections !== undefined
                 ? new JSONMap<string, Collection>(repo.collections)

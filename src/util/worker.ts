@@ -1,8 +1,7 @@
 import type { File, Modset, ModsetMod } from '@/models/Repository';
 import { useWebWorkerFn } from '@vueuse/core';
-import { System } from '@/util/system';
-import DeflateWorker from './deflate_worker?worker';
-import UncompressWorker from './uncompress_worker?worker';
+// import DeflateWorker from './deflate_worker?worker';
+// import UncompressWorker from './uncompress_worker?worker';
 
 export const ReplicWorker = {
     async mapFilesToMods(files: File[], modsets: Modset[]): Promise<Modset[]> {
@@ -114,37 +113,5 @@ export const ReplicWorker = {
                 .map((file) => file.path);
         });
         return workerFn(wantedFiles, fileList);
-    },
-    async compress(data: string) {
-        const worker = new DeflateWorker();
-
-        const promise = new Promise<Uint8Array>((resolve) => {
-            worker.addEventListener(
-                'message',
-                (e) => {
-                    resolve(e.data);
-                },
-                { once: true }
-            );
-        });
-
-        worker.postMessage(data);
-        return promise;
-    },
-    async uncompress<T>(data: Uint8Array): Promise<T> {
-        const worker = new UncompressWorker();
-
-        const promise = new Promise<T>((resolve) => {
-            worker.addEventListener(
-                'message',
-                (e) => {
-                    resolve(e.data);
-                },
-                { once: true }
-            );
-        });
-
-        worker.postMessage(data);
-        return promise;
     },
 };

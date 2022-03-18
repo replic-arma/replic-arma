@@ -8,7 +8,7 @@ import { createPinia } from 'pinia';
 import TransitionVue from './components/util/Transition.vue';
 import LoaderVue from './components/util/Loader.vue';
 import TooltipVue from './components/util/Tooltip.vue';
-import { System } from './util/system';
+import { useRepoStore } from './store/repo';
 const app = createApp(App);
 app.component('rtransition', TransitionVue);
 app.component('loader', LoaderVue);
@@ -19,5 +19,7 @@ app.use(mdiVue, {
     icons: mdijs,
 });
 app.mount('#app');
-System.init();
+
+useRepoStore().loadRepositories(true);
+
 app.use(i18n);

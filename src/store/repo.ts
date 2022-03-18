@@ -6,11 +6,37 @@ import {
     type IReplicArmaRepository,
     ReplicArmaRepository,
 } from '@/models/Repository';
-import { System } from '@/util/system';
+import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
-import { toRaw } from 'vue';
+import { ref, toRaw } from 'vue';
 import { useHashStore } from './hash';
+
+export const useRepoStore1 = defineStore('repo', () => {
+    const repos = ref(null as null | { [id: string]: IReplicArmaRepository | undefined });
+    // const currentModID = ref(null as string|null);
+
+    function save() {
+        if (repos.value === null) throw new Error('Repositories not loaded yet.');
+
+        return saveRepos(repos.value);
+    }
+
+    async function addRepo(url: string) {
+        const repo = await getRepoFromURL(url);
+        // TODO
+    }
+
+    async function addServer(repoID: string, options: Omit<GameServer, 'id'>) {
+        if (repos.value === null) throw new Error('Repositories not loaded yet.');
+
+        const repo = repos.value[repoID];
+        if (repo === undefined) throw new Error('Repository not found');
+
+        const server = { ...options, id: uuidv4() };
+    }
+});
+
 export const useRepoStore = defineStore('repo', {
     state: (): {
         repos: JSONMap<string, IReplicArmaRepository>;
@@ -67,7 +93,7 @@ export const useRepoStore = defineStore('repo', {
     },
     actions: {
         async addRepo(autoconfig: string) {
-            const repo = await System.getRepo(autoconfig);
+            const repo = await getRepoFromURL(autoconfig);
             const replicRepo = await ReplicArmaRepository.init(repo);
             ReplicArmaRepository.calcHash(replicRepo);
             this.saveRepoState();
@@ -77,9 +103,9 @@ export const useRepoStore = defineStore('repo', {
             await this.saveRepoState();
             await this.loadRepositories();
         },
-        addServerToRepo(id: string, server: GameServer) {
+        addServerToRepo(id: string, serverOpts: Omit<GameServer, 'id'>) {
             const repositoriy = this.repos.get(id);
-            server.id = uuidv4();
+            const server = { ...serverOpts, id: uuidv4() };
             repositoriy?.game_servers?.set(server.id, server);
             if (repositoriy === undefined) return;
             this.repos.set(id, repositoriy);
@@ -108,16 +134,18 @@ export const useRepoStore = defineStore('repo', {
             this.modsetCache = new JSONMap<string, Modset>([...toRaw(this.modsetCache), ...cache]);
         },
         async loadRepositories(calcHash = false) {
-            const repoJson = await System.getRepoJson();
+            const repoJson = await loadRepos();
             if (repoJson !== null) {
-                const repoMap = new JSONMap<string, IReplicArmaRepository>(repoJson);
-                repoMap.forEach((repo) => {
-                    ReplicArmaRepository.loadFromJson(repo, calcHash);
-                });
+                // TODO
+                // const repoMap = new JSONMap<string, IReplicArmaRepository>(repoJson);
+                // repoMap.forEach((repo) => {
+                //     ReplicArmaRepository.loadFromJson(repo, calcHash);
+                // });
             }
         },
         async saveRepoState() {
-            await System.updateRepoJson(this.repos);
+            // TODO
+            // await saveRepos(this.repos);
         },
     },
 });

@@ -1,24 +1,26 @@
-import type { IReplicArmaRepository } from '@/models/Repository';
+import type { Modset } from '@/models/Repository';
 import { compress, uncompress } from './compress';
 import { ensureAppDir, fileExists, readBinaryFile, writeBinaryFile } from './fs';
 
-const FILE_NAME = 'repos.json.gz';
+type TContents = { [key: string]: Modset | undefined };
 
-type TContents = { [key: string]: IReplicArmaRepository | undefined };
+export async function loadModsetCache(repositoryID: string): Promise<TContents> {
+    const fileName = `${repositoryID}.json`;
 
-export async function loadFromJSON(repositoryID: string): Promise<TContents> {
-    const exists = await fileExists(FILE_NAME);
+    const exists = await fileExists(fileName);
     if (!exists) return {};
 
-    const data = await readBinaryFile(FILE_NAME);
+    const data = await readBinaryFile(fileName);
 
     return JSON.parse(await uncompress(data));
 }
 
-export async function saveToJSON(contents: TContents): Promise<void> {
+export async function saveModsetCache(repositoryID: string, contents: TContents): Promise<void> {
+    const fileName = `${repositoryID}.json`;
+
     await ensureAppDir();
 
     const data = await compress(JSON.stringify(contents));
 
-    return writeBinaryFile(FILE_NAME, data);
+    return writeBinaryFile(fileName, data);
 }

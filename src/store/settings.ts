@@ -1,34 +1,29 @@
-import { ApplicationSettings, GameLaunchSettings } from '@/models/Settings';
-import { System } from '@/util/system';
+import type { IApplicationSettings } from '@/models/Settings';
+import { loadConfig, resetConfig, saveConfig } from '@/util/system/config';
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-export const useSettingsStore = defineStore('settings', {
-    state: (): { settings: ApplicationSettings; launchOptions: GameLaunchSettings } => ({
-        settings: new ApplicationSettings(),
-        launchOptions: new GameLaunchSettings(),
-    }),
-    getters: {
-        getSettings: (state) => {
-            return state.settings;
-        },
-        getLaunchOptions: (state) => {
-            return state.launchOptions;
-        },
-    },
-    actions: {
-        resetSettings() {
-            System.resetSettings();
-            this.loadData();
-        },
-        resetLaunchOptions() {
-            // TODO
-        },
-        async loadData() {
-            const config = await System.getConfig();
-            this.settings = config;
-        },
-        synchData() {
-            System.updateConfig(this.settings);
-        },
-    },
+export const useSettingsStore = defineStore('settings', () => {
+    const settings = ref(null as null | IApplicationSettings);
+
+    function save() {
+        if (settings.value === null) throw new Error('Application settings not loaded yet.');
+        return saveConfig(settings.value);
+    }
+
+    async function reset() {
+        const defaults = await resetConfig();
+        settings.value = defaults;
+    }
+
+    // load config from the get-go
+    loadConfig().then((config) => {
+        settings.value = config;
+    });
+
+    return {
+        settings,
+        reset,
+        save,
+    };
 });

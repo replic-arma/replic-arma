@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import ReposView from '../views/Repos.vue';
-import { useRepoStore } from '@/store/repo';
+import { useRouteStore } from '@/store/route';
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -52,11 +52,7 @@ const router = createRouter({
     routes,
 });
 router.beforeEach((to, from, next) => {
-    const repoStore = useRepoStore();
-    repoStore.currentRepoId = 'repoId' in to.params ? (to.params.repoId as string) : null;
-    repoStore.currentModsetId = 'modsetId' in to.params ? (to.params.modsetId as string) : null;
-    repoStore.currentCollectionId = 'collectionId' in to.params ? (to.params.collectionId as string) : null;
-    repoStore.currentModId = 'modId' in to.params ? (to.params.modId as string) : null;
+    useRouteStore().switchRoute(to);
 
     next();
 });

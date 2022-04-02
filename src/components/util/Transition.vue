@@ -13,7 +13,7 @@ export default class TransitionVue extends Vue {}
 <style lang="scss" scoped>
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.01s ease;
+    transition: opacity 0.125s ease;
 }
 
 .fade-enter-from,

@@ -2,7 +2,7 @@
     <replic-dialog :dialogName="'modsetAdd'">
         <template v-slot:header>
             <span v-t="'modset.add'"></span>
-            <mdicon role="button" @click="dialogStore.toggleDialog('modsetAdd')" name="close" size="35" />
+            <mdicon role="button" name="close" size="35" />
         </template>
         <template v-slot:main>
             <div class="txt">
@@ -18,7 +18,6 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import ReplicDialogVue from './util/ReplicDialog.vue';
-import { useDialogStore } from '@/store/dialog';
 import { useRepoStore } from '@/store/repo';
 
 @Options({
@@ -28,10 +27,6 @@ import { useRepoStore } from '@/store/repo';
 })
 export default class ModsetAddVue extends Vue {
     private repoStore = useRepoStore();
-    private dialogStore = useDialogStore();
-    private toggleDialog = () => {
-        this.dialogStore.toggleDialog('modsetAdd');
-    };
 }
 </script>
 <style lang="scss" scoped>

@@ -12,11 +12,13 @@
             </template>
         </span>
         <div class="repo__modset">
-            <select v-model="currentModsetId" @change="checkCurrentModset">
-                <option v-once v-for="(modset, i) of modsets" :key="i" :value="modset.id">{{ modset.name }}</option>
+            <select v-model="currentModsetId">
+                <option v-once v-for="(modset, i) of repository.modsets" :key="i" :value="modset.id">
+                    {{ modset.name }}
+                </option>
             </select>
         </div>
-        <div class="repo__play" @click="launchGame()">
+        <div class="repo__play">
             <span>Play</span>
             <mdicon name="play" size="35" />
         </div>
@@ -25,43 +27,38 @@
         </router-link>
     </li>
 </template>
-<script lang="ts">
-import type { IReplicArmaRepository } from '@/models/Repository';
-import { useDownloadStore } from '@/store/download';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
-import { System } from '@/util/system';
+<script lang="ts" setup>
 import { useHashStore } from '@/store/hash';
-import { useRepoStore } from '@/store/repo';
-@Options({
-    components: {},
-})
-export default class RepoVue extends Vue {
-    @Prop({ type: Object }) private repository!: IReplicArmaRepository;
-    private downloadStore = useDownloadStore();
-    private hashStore = useHashStore();
-    private repoStore = useRepoStore();
-    private get currentModsetId() {
-        return this.modsets[0] !== undefined ? this.modsets[0].id : '';
+import type { IHashItem } from '@/store/hash';
+import { computed, onMounted, ref } from 'vue';
+const props = defineProps({
+    repository: {
+        type: Object,
+        default: null,
+    },
+});
+const status = computed(() => {
+    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === currentModsetId.value);
+    if (cacheData === undefined) return 'checking';
+    if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+        return 'outdated';
+    } else {
+        return 'ready';
     }
+});
 
-    private get status() {
-        return this.repoStore.getModsetStatus(this.currentModsetId);
-    }
+const progress = computed(() => {
+    if (useHashStore().current === null || useHashStore().current?.repoId !== props.repository.id) return 0;
+    const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
+    return Math.floor((checkedFiles / filesToCheck) * 100);
+});
 
-    private get progress() {
-        if (this.hashStore.current === null || this.hashStore.current.repoId !== this.repository.id) return 0;
-        return Math.floor((this.hashStore.current.checkedFiles / this.hashStore.current.filesToCheck) * 100);
-    }
+onMounted(() => {
+    if (props.repository.modsets.length === 0) return '';
+    currentModsetId.value = props.repository.modsets[0].id ?? '';
+});
 
-    private get modsets() {
-        return this.repository?.modsets ? Array.from(this.repository?.modsets?.values()) : [];
-    }
-
-    private async launchGame() {
-        await System.launchGame(this.repository.id, this.currentModsetId);
-    }
-}
+const currentModsetId = ref('');
 </script>
 <style lang="scss" scoped>
 .repo {

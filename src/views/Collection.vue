@@ -1,48 +1,29 @@
 <template>
-    <div class="collection">
-        <div class="collection__heading" v-if="collection !== undefined">
+    <div class="collection" v-if="collection !== undefined">
+        <div class="collection__heading" >
             <mdicon name="chevron-left" size="55" @click="$router.back()" />
             <h1>{{ collection.name }}</h1>
             <div class="icon-group">
-                <button class="button" v-t="'save'">
-                </button>
+                <button class="button" v-t="'save'"></button>
             </div>
         </div>
-        <tabs :tabItems="subnaviItems"></tabs>
+        <TabsVue :tabItems="subnaviItems" />
     </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import CollectionMods from '@/components/CollectionMods.vue';
 import LaunchVue from '@/components/settings/Launch.vue';
 import TabsVue from '@/components/util/Tabs.vue';
 import type { TabsItem } from '@/components/util/Tabs.vue';
-import type { Collection } from '@/models/Repository';
-import { useDownloadStore } from '@/store/download';
 import { useRepoStore } from '@/store/repo';
-import { shallowRef } from 'vue';
-import { Options, Vue } from 'vue-class-component';
+import { computed, shallowRef } from 'vue';
 
-@Options({
-    components: { Tabs: TabsVue },
-})
-export default class CollectionView extends Vue {
-    private collection!: Collection | undefined;
-    private subnaviItems: TabsItem[] = [
-        { label: 'General', component: shallowRef(CollectionMods) },
-        { label: 'Launch Options', component: shallowRef(LaunchVue) },
-    ];
-
-    private repoStore = useRepoStore();
-    private downloadStore = useDownloadStore();
-
-    public created(): void {
-        this.collection = this.repoStore.getCollection(
-            this.repoStore.currentRepoId,
-            this.repoStore.currentCollectionId
-        );
-    }
-}
+const subnaviItems: TabsItem[] = [
+    { label: 'General', component: shallowRef(CollectionMods) },
+    { label: 'Launch Options', component: shallowRef(LaunchVue) },
+];
+const collection = computed(() => useRepoStore().currentCollection);
 </script>
 
 <style lang="scss" scoped>

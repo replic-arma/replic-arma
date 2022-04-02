@@ -15,30 +15,17 @@
         <button class="button" type="button" @click="removeRepo" v-t="'remove'"></button>
     </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import type { IReplicArmaRepository } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
 import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
 import Toast from '../util/Toast';
-@Options({
-    components: {
-        ReplicPathSelector: ReplicPathSelectorVue,
-    },
-})
-export default class GeneralRepoVue extends Vue {
-    private repoStore = useRepoStore();
-    private repository!: IReplicArmaRepository | undefined;
-
-    public created(): void {
-        this.repository = this.repoStore.getRepo(this.repoStore.currentRepoId);
-    }
-
-    public removeRepo(): void {
-        this.repoStore.removeRepo(this.repoStore.currentRepoId);
-        this.$router.push('/');
-        Toast('Removed Repository ' + this.repository?.name);
-    }
+const repository = useRepoStore().currentRepository;
+function removeRepo(): void {
+    useRepoStore().repos =
+        useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repository?.id) ?? [];
+    Toast('Removed Repository ' + repository?.name);
 }
 </script>
 <style lang="scss" scoped>

@@ -1,5 +1,5 @@
 <template>
-    <div class="modset">
+    <div class="modset" v-if="modset !== undefined">
         <div class="modset__heading">
             <mdicon name="chevron-left" size="55" @click="$router.back()" />
             <h1>{{ modset?.name }}</h1>
@@ -30,6 +30,7 @@
                 <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
             </div>
         </div>
+        <p>Size: {{ size }}GB Files: {{ files }}</p>
         <ul class="modset__mods">
             <li v-for="(mod, i) of modset?.mods" :key="i">
                 <Tooltip :text="mod.size" style="grid-column: 1">
@@ -48,65 +49,53 @@
     </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import TooltipVue from '@/components/util/Tooltip.vue';
-import type { ModsetMod } from '@/models/Repository';
-import { useDownloadStore } from '@/store/download';
+import type { File, Modset, ModsetMod } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
+import type { IHashItem } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
-import { mapState } from 'pinia';
-import { Options, Vue } from 'vue-class-component';
-
-@Options({
-    components: {
-        Tooltip: TooltipVue,
-    },
-    computed: {
-        ...mapState(useRepoStore, {
-            modset: (store) => store.getModset(store.currentRepoId, store.currentModsetId),
-        }),
-    },
-})
-export default class ModsetView extends Vue {
-    private repoStore = useRepoStore();
-    private hashStore = useHashStore();
-    private downloadStore = useDownloadStore();
-    private get status() {
-        return this.repoStore.getModsetStatus(this.repoStore.currentModsetId);
+import { useRouteStore } from '@/store/route';
+import { computed, ref } from 'vue';
+import { useDownloadStore } from '@/store/download';
+const modset = useRepoStore().currentModset;
+const files = ref(0);
+const size = computed(() => {
+    const modsetCache = useRepoStore().modsetCache;
+    if (modsetCache === null) return 0;
+    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset?.id);
+    const mods = cacheData?.mods.flatMap((mod: ModsetMod) => mod.files ?? []) ?? [];
+    files.value = mods.length;
+    return Number(
+        mods.reduce((previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size, 0) /
+            10e8
+    ).toFixed(2);
+});
+const status = computed(() => {
+    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === modset?.id);
+    if (cacheData === undefined) return 'checking';
+    if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+        return 'outdated';
+    } else {
+        return 'ready';
     }
+});
+const progress = computed(() => {
+    if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID) return 0;
+    const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
+    return Math.floor((checkedFiles / filesToCheck) * 100);
+});
+function download() {
+    if (modset === undefined) return;
+    useDownloadStore().addToDownloadQueue(modset, useRouteStore().currentRepoID ?? '');
+}
 
-    // private get size() {
-    //     const modsetCacheData = this.repoStore.modsetCache.get(this.repoStore.currentModsetId ?? '');
-    //     const cacheData = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
-    //     if (cacheData === undefined) return;
-    //     const fliesToDownload = modsetCacheData?.mods
-    //         .flatMap((mod: ModsetMod) => mod.files ?? [])
-    //         .map((file: File) => file.path);
-    //     if (fliesToDownload === undefined) return;
-    //     ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods) ?? [], fliesToDownload).then((size) =>    );
-    //     return 5;
-    // }
-
-    private get progress() {
-        const hashStore = useHashStore();
-        if (hashStore.current === null || hashStore.current.repoId !== this.repoStore.currentRepoId) return 0;
-        return Math.floor((hashStore.current.checkedFiles / hashStore.current.filesToCheck) * 100);
-    }
-
-    private outdated(mod: ModsetMod) {
-        const cache = this.hashStore.cache.get(this.repoStore.currentModsetId ?? '');
-        return (
-            cache?.missingFiles.map((file) => file.split('\\').includes(mod.name)).includes(true) ||
-            cache?.outdatedFiles.map((file) => file.split('\\').includes(mod.name)).includes(true)
-        );
-    }
-
-    private download() {
-        const modset = this.repoStore.getModset(this.repoStore.currentRepoId, this.repoStore.currentModsetId);
-        const repo = this.repoStore.getRepo(this.repoStore.currentRepoId);
-        if (modset === undefined || repo === undefined) return;
-        this.downloadStore.addToDownloadQueue(modset, repo?.id);
-    }
+function outdated(mod: ModsetMod) {
+    const cache = useHashStore().cache.find((cache) => cache.id === modset?.id);
+    return (
+        cache?.missingFiles.map((filePath: string) => filePath.split('\\').includes(mod.name)).includes(true) ||
+        cache?.outdatedFiles.map((filePath: string) => filePath.split('\\').includes(mod.name)).includes(true)
+    );
 }
 </script>
 

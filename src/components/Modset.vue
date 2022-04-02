@@ -1,15 +1,15 @@
 <template>
-    <li class="modset">
+    <li class="modset" v-if="modset !== undefined">
         <div class="modset__info">
             <span class="modset__name">{{ modset.name }}</span>
             <small class="modset__description">{{ modset.description }}</small>
         </div>
         <span class="repo__status" :class="`status--${status}`">
-            <template v-if="status === 'checking' || status === 'updating'">
+            <template v-if="status === 'checking'">
                 <mdicon name="loading" spin />
             </template>
             <span v-t="'download-status.' + status"></span>
-            <template v-if="status === 'checking' || (status === 'updating' && progress !== 0)">
+            <template v-if="status === 'checking'">
                 <span>...{{ progress }}%</span>
             </template>
         </span>
@@ -22,32 +22,31 @@
         </router-link>
     </li>
 </template>
-<script lang="ts">
-import type { Modset } from '@/models/Repository';
-import { useDownloadStore } from '@/store/download';
+<script lang="ts" setup>
 import { useHashStore } from '@/store/hash';
-import { useRepoStore } from '@/store/repo';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
-
-@Options({
-    components: {},
-})
-export default class ModsetVue extends Vue {
-    @Prop({ type: Object }) private modset!: Modset;
-    private downloadStore = useDownloadStore();
-    private repoStore = useRepoStore();
-    private hashStore = useHashStore();
-    private get status() {
-        return this.repoStore.getModsetStatus(this.modset.id);
+import type { IHashItem } from '@/store/hash';
+import { useRouteStore } from '@/store/route';
+import { computed } from 'vue';
+const props = defineProps({
+    modset: {
+        type: Object,
+        default: null,
+    },
+});
+const status = computed(() => {
+    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.modset.id);
+    if (cacheData === undefined) return 'checking';
+    if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+        return 'outdated';
+    } else {
+        return 'ready';
     }
-
-    private get progress() {
-        const hashStore = useHashStore();
-        if (hashStore.current === null || hashStore.current.repoId !== this.repoStore.currentRepoId) return 0;
-        return Math.floor((hashStore.current.checkedFiles / hashStore.current.filesToCheck) * 100);
-    }
-}
+});
+const progress = computed(() => {
+    if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID) return 0;
+    const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
+    return Math.floor((checkedFiles / filesToCheck) * 100);
+});
 </script>
 <style lang="scss" scoped>
 .modset {

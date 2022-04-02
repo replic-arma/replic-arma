@@ -58,21 +58,6 @@ export const ReplicWorker = {
         });
         return workerFn(files);
     },
-    async createModsetFromModset(modsets: Modset[]): Promise<ModsetMod[]> {
-        const { workerFn } = useWebWorkerFn((modsets: Modset[]) => {
-            return (
-                [
-                    ...new Map(
-                        modsets
-                            .map((modset) => modset.mods)
-                            .flat()
-                            .map((mod) => [mod.name, mod])
-                    ).values(),
-                ] ?? []
-            );
-        });
-        return workerFn(modsets);
-    },
     async splitFiles(files: File[], mod: ModsetMod): Promise<File[]> {
         const { workerFn } = useWebWorkerFn((files: File[], mod: ModsetMod) => {
             return [...new Set(files.filter((file) => mod.name === file.path.split('\\')[0]))];
@@ -87,12 +72,6 @@ export const ReplicWorker = {
                 .map((file) => file.path);
         });
         return workerFn(wantedFiles, checkedFiles);
-    },
-    async getFilesForModset(modset: Modset) {
-        const { workerFn } = useWebWorkerFn((modset: Modset) => {
-            return modset?.mods !== undefined ? modset.mods?.flatMap((mod: ModsetMod) => mod.files) : [];
-        });
-        return workerFn(modset);
     },
     async getFileSize(mods: ModsetMod[], filesPaths: string[]) {
         const { workerFn } = useWebWorkerFn((mods: ModsetMod[], filesPaths: string[]) => {

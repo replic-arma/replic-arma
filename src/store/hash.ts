@@ -1,77 +1,95 @@
-import { JSONMap, type IReplicArmaRepository, type File } from '@/models/Repository';
-import { System } from '@/util/system';
+import type { IReplicArmaRepository, File, Modset, ModsetMod } from '@/models/Repository';
 import { defineStore } from 'pinia';
 import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
-import { toRaw } from 'vue';
+import { computed, ref, toRaw } from 'vue';
 import { ReplicWorker } from '@/util/worker';
-export const useHashStore = defineStore('hash', {
-    state: (): {
-        current: null | { repoId: string; filesToCheck: number; checkedFiles: number };
-        queue: { repoId: string; filesToCheck: number; checkedFiles: number }[];
-        cache: JSONMap<string, { checkedFiles: string[][]; outdatedFiles: string[]; missingFiles: string[] }>;
-    } => ({
-        current: null,
-        queue: [],
-        cache: new JSONMap<string, { checkedFiles: string[][]; outdatedFiles: string[]; missingFiles: string[] }>(),
-    }),
-    getters: {
-        getQueue: (state) => {
-            return state.queue;
-        },
-    },
-    actions: {
-        async startHash(repo: IReplicArmaRepository) {
-            console.info(`Repository ${repo.name} has been queued`);
-            this.queue.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
-            if (this.current === null) {
-                this.next();
-            }
-        },
-        async next() {
-            this.current = null;
-            if (this.queue.length > 0) {
-                const firstElement = this.queue.splice(0, 1)[0];
-                if (firstElement === undefined) throw new Error('Queue empty');
-                this.current = firstElement;
-                if (this.current === null) throw new Error('Current hash object empty');
-                const hashStore = useHashStore();
-                const settingsStore = useSettingsStore();
-                const repoStore = useRepoStore();
-                const repo = toRaw(repoStore.getRepo(this.current.repoId));
-                if (repo === undefined) throw new Error(`Repository with id ${this.current.repoId} not found`);
-                console.info(`Starting hash calc for repo ${repo.name}`);
-                if (repo.files === undefined) throw new Error(`Repository with id ${this.current.repoId} has no files`);
-                this.current.filesToCheck = repo.files.length;
-                const hashes = await System.hashCheck(
-                    `${settingsStore.settings.downloadDirectoryPath ?? ''}${System.SEPERATOR}`,
-                    repo.files
+import { checkHashes } from '@/util/system/hashes';
+import { loadModsetCache } from '@/util/system/modset_cache';
+export interface IHashItem {
+    repoId: string;
+    filesToCheck: number;
+    checkedFiles: number;
+}
+
+export const useHashStore = defineStore('hash', () => {
+    const current = ref(null as null | IHashItem);
+    const queue = ref([] as Array<IHashItem>);
+    const cache = ref(
+        [] as Array<{ id: string; checkedFiles: string[][]; outdatedFiles: string[]; missingFiles: string[] }>
+    );
+    async function addToQueue(repo: IReplicArmaRepository) {
+        console.info(`Repository ${repo.name} has been queued`);
+        queue.value.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
+        if (current.value === null) {
+            next();
+        }
+    }
+
+    const currentHashRepo = computed(() => {
+        return useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === current.value?.repoId);
+    });
+
+    async function getHashes() {
+        const settings = useSettingsStore().settings;
+        if (settings === null) throw Error('Settings null');
+        if (currentHashRepo.value === undefined) throw new Error('Queue empty');
+        const reponse = await checkHashes(
+            `${settings.downloadDirectoryPath ?? ''}\\`,
+            currentHashRepo.value.files.map((file: File) => file.path)
+        );
+        return {
+            checkedFiles: (reponse[0] as string[][]) ?? [],
+            missingFiles: (reponse[1] as unknown as string[]) ?? [],
+        };
+    }
+
+    async function next() {
+        if (queue.value.length > 0) {
+            const firstElement = queue.value.splice(0, 1)[0];
+            if (firstElement === undefined) throw new Error('Queue empty');
+            current.value = firstElement;
+            if (currentHashRepo.value === undefined) throw new Error('Queue empty');
+            current.value.filesToCheck = currentHashRepo.value.files.length;
+            const hashData = await getHashes();
+            const outDatedFiles = await ReplicWorker.getFileChanges(
+                toRaw(currentHashRepo.value.files),
+                hashData.checkedFiles
+            );
+            cache.value.push({
+                id: currentHashRepo.value.id,
+                checkedFiles: hashData.checkedFiles,
+                outdatedFiles: outDatedFiles,
+                missingFiles: hashData.missingFiles,
+            });
+            useRepoStore().modsetCache = [
+                ...(await loadModsetCache(currentHashRepo.value.id)),
+                ...(useRepoStore().modsetCache ?? []),
+            ];
+            const cached = toRaw(cache.value.find((cacheValue) => cacheValue.id === currentHashRepo.value?.id));
+            for (const modset of currentHashRepo.value.modsets) {
+                const modsetCache = toRaw(
+                    useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modset.id)
                 );
-                if (hashes[0] === undefined) throw new Error('versteh ich alles nichtm ehr');
-                const outDatedFiles = await ReplicWorker.getFileChanges(repo.files, hashes[0]);
-                const modsets = repo?.modsets ? Array.from(repo?.modsets?.values()) : [];
-                this.cache.set(repo.id, {
-                    checkedFiles: hashes[0] as string[][],
+                if (cached?.checkedFiles === undefined || modsetCache === undefined) throw new Error('cache empty!');
+                const modsetFiles = modsetCache.mods?.flatMap((mod: ModsetMod) => mod.files);
+                const outDatedFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.outdatedFiles);
+                const missingFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.missingFiles);
+                cache.value.push({
+                    id: modset.id,
+                    checkedFiles: cached?.checkedFiles,
                     outdatedFiles: outDatedFiles,
-                    missingFiles: hashes[1] as unknown as string[],
+                    missingFiles,
                 });
-                const cached = toRaw(hashStore.cache.get(this.current.repoId));
-                for (const modset of modsets) {
-                    const modsetCache = toRaw(repoStore.modsetCache.get(modset.id));
-                    if (cached?.checkedFiles === undefined || modsetCache === undefined)
-                        throw new Error('cache empty!');
-                    const modsetFiles = await ReplicWorker.getFilesForModset(modsetCache);
-                    const outDatedFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.outdatedFiles);
-                    const missingFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.missingFiles);
-                    hashStore.cache.set(modset.id, {
-                        checkedFiles: cached?.checkedFiles,
-                        outdatedFiles: outDatedFiles,
-                        missingFiles,
-                    });
-                }
-                console.info(`Finished hash calc for repo ${repo.name}`);
-                hashStore.next();
             }
-        },
-    },
+            console.info(`Finished hash calc for repo ${currentHashRepo.value.name}`);
+            next();
+        }
+    }
+
+    return {
+        addToQueue,
+        current,
+        cache,
+    };
 });

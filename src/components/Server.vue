@@ -20,7 +20,6 @@
 <script lang="ts">
 import type { GameServer } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
-import { System } from '@/util/system';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 
@@ -30,10 +29,7 @@ import { Prop } from 'vue-property-decorator';
 export default class ServerVue extends Vue {
     @Prop({ type: Object }) private server!: GameServer;
     private async launchGame() {
-        const repoStore = useRepoStore();
         if (this.server.modset === undefined) throw new Error('Server Modset undefined');
-        if (repoStore.currentRepoId === null) throw new Error('Current repo null');
-        await System.launchGame(repoStore.currentRepoId, this.server.modset, this.server);
     }
 }
 </script>

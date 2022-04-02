@@ -1,20 +1,32 @@
-import {
-    type Collection,
-    type GameServer,
-    JSONMap,
-    type Modset,
-    type IReplicArmaRepository,
-    ReplicArmaRepository,
-} from '@/models/Repository';
+import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod } from '@/models/Repository';
+import { saveModsetCache } from '@/util/system/modset_cache';
 import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
+import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
-import { ref, toRaw } from 'vue';
+import { ref, computed } from 'vue';
 import { useHashStore } from './hash';
+import { useRouteStore } from './route';
 
-export const useRepoStore1 = defineStore('repo', () => {
-    const repos = ref(null as null | { [id: string]: IReplicArmaRepository | undefined });
-    // const currentModID = ref(null as string|null);
+export const useRepoStore = defineStore('repo', () => {
+    const repos = ref(null as null | Array<IReplicArmaRepository>);
+    const modsetCache = ref(null as null | Array<Modset>);
+
+    const currentRepository = computed(() => {
+        return repos.value?.find((repo: IReplicArmaRepository) => repo.id === useRouteStore().currentRepoID);
+    });
+
+    const currentModset = computed(() => {
+        return repos.value
+            ?.find((repo: IReplicArmaRepository) => repo.id === useRouteStore().currentRepoID)
+            ?.modsets.find((modset: Modset) => modset.id === useRouteStore().currentModsetID);
+    });
+
+    const currentCollection = computed(() => {
+        return repos.value
+            ?.find((repo: IReplicArmaRepository) => repo.id === useRouteStore().currentRepoID)
+            ?.collections.find((collection: Collection) => collection.id === useRouteStore().currentCollectionID);
+    });
 
     function save() {
         if (repos.value === null) throw new Error('Repositories not loaded yet.');
@@ -24,128 +36,78 @@ export const useRepoStore1 = defineStore('repo', () => {
 
     async function addRepo(url: string) {
         const repo = await getRepoFromURL(url);
-        // TODO
+        let mods: ModsetMod[] = [];
+        if (repo.files !== undefined) {
+            mods = await ReplicWorker.createModsetFromFiles(repo.files);
+        }
+        repo.modsets.unshift({
+            id: uuidv4(),
+            name: 'All Mods',
+            description: 'Contains all Mods from the Repository',
+            mods,
+        });
+        repo.modsets = repo.modsets.map((modset: Modset) => {
+            return { ...modset, id: uuidv4() };
+        });
+        modsetCache.value = await ReplicWorker.mapFilesToMods(repo.files, repo.modsets);
+        const repoId = uuidv4();
+        saveModsetCache(repoId, modsetCache.value);
+        repos.value?.push({
+            ...repo,
+            id: repoId,
+            image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
+            type: 'a3s',
+            collections: [],
+        });
+        save();
+        useHashStore().addToQueue(repo as IReplicArmaRepository);
+    }
+
+    async function addModset(repoID: string, options: Omit<Modset, 'id'>) {
+        if (repos.value === null) throw new Error('Repositories not loaded yet.');
+
+        const repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
+        if (repo === undefined) throw new Error('Repository not found');
+
+        const modset = { ...options, id: uuidv4() };
+        repo.modsets?.push(modset);
+    }
+
+    async function addCollection(repoID: string, options: Omit<Collection, 'id'>) {
+        if (repos.value === null) throw new Error('Repositories not loaded yet.');
+
+        const repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
+        if (repo === undefined) throw new Error('Repository not found');
+
+        const collection = { ...options, id: uuidv4() };
+        repo.collections?.push(collection);
     }
 
     async function addServer(repoID: string, options: Omit<GameServer, 'id'>) {
         if (repos.value === null) throw new Error('Repositories not loaded yet.');
 
-        const repo = repos.value[repoID];
+        const repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
         if (repo === undefined) throw new Error('Repository not found');
 
         const server = { ...options, id: uuidv4() };
+        repo.game_servers?.push(server);
     }
-});
 
-export const useRepoStore = defineStore('repo', {
-    state: (): {
-        repos: JSONMap<string, IReplicArmaRepository>;
-        currentRepoId: string | null;
-        currentModsetId: string | null;
-        currentCollectionId: string | null;
-        currentModId: string | null;
-        modsetCache: JSONMap<string, Modset>;
-    } => ({
-        repos: new JSONMap<string, IReplicArmaRepository>(),
-        currentRepoId: null,
-        currentModsetId: null,
-        currentCollectionId: null,
-        currentModId: null,
-        modsetCache: new JSONMap<string, Modset>(),
-    }),
-    getters: {
-        getRepos: (state) => {
-            return toRaw(Array.from(state.repos.values()));
-        },
-        getRepo: (state) => {
-            return (repoId: string | null) => (repoId !== null ? state.repos.get(repoId) : undefined);
-        },
-        getModsets: (state) => {
-            return (repoId: string | null) =>
-                repoId !== null ? Array.from(state.repos.get(repoId)?.modsets?.values() ?? []) : [];
-        },
-        getModset: (state) => {
-            return (repoId: string | null, modsetId: string | null) =>
-                repoId !== null && modsetId !== null ? state.repos.get(repoId)?.modsets?.get(modsetId) : undefined;
-        },
-        getCollections: (state) => {
-            return (repoId: string | null) =>
-                repoId !== null ? Array.from(state.repos.get(repoId)?.collections?.values() ?? []) : [];
-        },
-        getCollection: (state) => {
-            return (repoId: string | null, collectionId: string | null) =>
-                repoId !== null && collectionId !== null
-                    ? state.repos.get(repoId)?.collections?.get(collectionId)
-                    : undefined;
-        },
-        getModsetStatus: () => {
-            return (modsetId: string | null) => {
-                const hashStore = useHashStore();
-                const cache = hashStore.cache.get(modsetId ?? '');
-                if (cache === undefined) return 'checking';
-                if (cache?.outdatedFiles.length > 0 || cache?.missingFiles.length > 0) {
-                    return 'outdated';
-                } else {
-                    return 'ready';
-                }
-            };
-        },
-    },
-    actions: {
-        async addRepo(autoconfig: string) {
-            const repo = await getRepoFromURL(autoconfig);
-            const replicRepo = await ReplicArmaRepository.init(repo);
-            ReplicArmaRepository.calcHash(replicRepo);
-            this.saveRepoState();
-        },
-        async removeRepo(id: string | null) {
-            if (id !== null) this.repos.delete(id);
-            await this.saveRepoState();
-            await this.loadRepositories();
-        },
-        addServerToRepo(id: string, serverOpts: Omit<GameServer, 'id'>) {
-            const repositoriy = this.repos.get(id);
-            const server = { ...serverOpts, id: uuidv4() };
-            repositoriy?.game_servers?.set(server.id, server);
-            if (repositoriy === undefined) return;
-            this.repos.set(id, repositoriy);
-        },
-        addModsetToRepo(id: string | null, modset: Modset) {
-            if (id === null) throw new Error('Repository id is null');
-            const repositoriy = this.repos.get(id);
-            if (repositoriy === undefined) throw new Error(`Repository with id ${id} does not exist`);
-            modset.id = uuidv4();
-            repositoriy.modsets?.set(modset.id, modset);
-            this.repos.set(id, repositoriy);
-        },
-        addCollectionToRepo(id: string | null, collection: Collection) {
-            if (id === null) throw new Error('Repository id is null');
-            const repositoriy = this.repos.get(id);
-            if (repositoriy === undefined) throw new Error(`Repository with id ${id} does not exist`);
-            collection.id = uuidv4();
-            if (repositoriy.collections === undefined) {
-                repositoriy.collections = new JSONMap<string, Collection>();
-            }
-            repositoriy.collections?.set(collection.id, collection);
-            this.repos.set(id, repositoriy);
-            this.saveRepoState();
-        },
-        addToModsetCache(cache: JSONMap<string, Modset>) {
-            this.modsetCache = new JSONMap<string, Modset>([...toRaw(this.modsetCache), ...cache]);
-        },
-        async loadRepositories(calcHash = false) {
-            const repoJson = await loadRepos();
-            if (repoJson !== null) {
-                // TODO
-                // const repoMap = new JSONMap<string, IReplicArmaRepository>(repoJson);
-                // repoMap.forEach((repo) => {
-                //     ReplicArmaRepository.loadFromJson(repo, calcHash);
-                // });
-            }
-        },
-        async saveRepoState() {
-            // TODO
-            // await saveRepos(this.repos);
-        },
-    },
+    loadRepos().then((reposdata: Array<IReplicArmaRepository>) => {
+        repos.value = reposdata;
+        reposdata.forEach((repo: IReplicArmaRepository) => useHashStore().addToQueue(repo));
+    });
+
+    return {
+        currentRepository,
+        currentModset,
+        currentCollection,
+        addModset,
+        addRepo,
+        addCollection,
+        addServer,
+        save,
+        repos,
+        modsetCache,
+    };
 });

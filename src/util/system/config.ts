@@ -1,7 +1,7 @@
 import type { IApplicationSettings } from '@/models/Settings';
 import { ensureAppDir, fileExists, readTextFile, removeFile, writeTextFile } from './fs';
 
-const FILE_NAME = 'config.json';
+const FILE_NAME = 'config.json.gz';
 
 const DEFAULT_CONFIG: IApplicationSettings = {
     language: 'en',

@@ -2,7 +2,7 @@
     <replic-dialog :dialogName="'collectionAdd'">
         <template v-slot:header>
             <span v-t="'collection.add'"></span>
-            <mdicon role="button" @click="dialogStore.toggleDialog('collectionAdd')" name="close" size="35" />
+            <mdicon role="button" name="close" size="35" />
         </template>
         <template v-slot:main>
             <div class="txt">
@@ -18,7 +18,6 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import ReplicDialogVue from './util/ReplicDialog.vue';
-import { useDialogStore } from '@/store/dialog';
 import { useRepoStore } from '@/store/repo';
 import { v4 as uuidv4 } from 'uuid';
 import Toast from './util/Toast';
@@ -28,16 +27,10 @@ import Toast from './util/Toast';
     },
 })
 export default class CollectionAddVue extends Vue {
-    private dialogStore = useDialogStore();
     private collectionName: string | null = null;
     private addCollection() {
         const repoStore = useRepoStore();
         if (this.collectionName === null) return;
-        repoStore.addCollectionToRepo(repoStore.currentRepoId, {
-            id: uuidv4(),
-            name: this.collectionName,
-        });
-        this.dialogStore.toggleDialog('collectionAdd');
         Toast('Added Collection');
     }
 }

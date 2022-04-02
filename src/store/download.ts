@@ -1,67 +1,80 @@
 import type { DownloadItem } from '@/models/Download';
-import type { Modset } from '@/models/Repository';
-import { System } from '@/util/system';
+import type { IReplicArmaRepository, Modset } from '@/models/Repository';
+import { downloadFiles } from '@/util/system/download';
 import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
-import { toRaw } from 'vue';
+import { ref, toRaw } from 'vue';
 import { useHashStore } from './hash';
 import { useRepoStore } from './repo';
+import { useSettingsStore } from './settings';
+import { sep } from '@tauri-apps/api/path';
+export const useDownloadStore = defineStore('download', () => {
+    const current = ref(null as null | DownloadItem);
+    const queue = ref([] as Array<DownloadItem>);
+    const finished = ref([] as Array<DownloadItem>);
+    const speeds = ref([] as Array<number>);
+    const stats = ref(
+        null as null | {
+            avg: number;
+            max: number;
+            cur: number;
+        }
+    );
 
-export const useDownloadStore = defineStore('download', {
-    state: (): {
-        current: null | DownloadItem;
-        queue: Map<string, DownloadItem>;
-        finished: Map<string, DownloadItem>;
-        speeds: number[];
-        stats: null | { avg: number; cur: number; max: number };
-    } => ({
-        current: null,
-        queue: new Map<string, DownloadItem>(),
-        finished: new Map<string, DownloadItem>(),
-        speeds: [],
-        stats: null,
-    }),
-    getters: {},
-    actions: {
-        async addToDownloadQueue(modset: Modset, repoId: string) {
-            const hashStore = useHashStore();
-            const repoStore = useRepoStore();
-            const modsetCacheData = repoStore.modsetCache.get(modset.id);
-            const cacheData = hashStore.cache.get(modset.id);
+    async function addToDownloadQueue(modset: Modset, repoId: string) {
+        const modsetCacheData = useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modset.id);
+        const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === modset.id);
+        if (cacheData === undefined) return;
+        const filesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
+        const totalSize = await ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods) ?? [], filesToDownload);
+        queue.value.push({
+            item: modset,
+            status: 'paused',
+            size: totalSize,
+            received: 0,
+            repoId,
+        });
+        if (current.value === null) {
+            next();
+        }
+    }
+
+    async function next() {
+        if (queue.value.length > 0 && current.value === null) {
+            const downloadItem = queue.value[0];
+            if (downloadItem === undefined) return;
+            current.value = downloadItem;
+            queue.value = queue.value.filter(
+                (queueDownloadItem: DownloadItem) => queueDownloadItem.item.id !== downloadItem.item.id
+            );
+        }
+        if (current.value !== null) {
+            current.value.status = 'downloading';
+            const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === current.value?.item.id);
             if (cacheData === undefined) return;
             const filesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
-            const totalSize = await ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods) ?? [], filesToDownload);
-            this.queue.set(modset.id, {
-                item: modset,
-                status: 'paused',
-                size: totalSize,
-                received: 0,
-                repoId,
-            });
-            if (this.current === null) {
-                this.next();
-            }
-        },
-        async next() {
-            const hashStore = useHashStore();
-            if (this.queue.size > 0 && this.current === null) {
-                const index = Array.from(this.queue.keys())[0];
-                if (index === undefined) return;
-                this.current = this.queue.get(index) as DownloadItem;
-                this.queue.delete(index);
-                const cacheData = hashStore.cache.get(this.current.item.id);
-                if (cacheData === undefined) return;
-                const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
-                this.current.status = 'downloading';
-                System.downloadFiles(this.current.repoId, this.current.item.id, fliesToDownload);
-            } else if (this.current !== null) {
-                this.current.status = 'downloading';
-                const cacheData = hashStore.cache.get(this.current.item.id);
-                if (cacheData === undefined) return;
-                const fliesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
-                await System.downloadFiles(this.current.repoId, this.current.item.id, fliesToDownload);
-                this.finished.set(this.current.item.id, this.current);
-            }
-        },
-    },
+            const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === current.value?.repoId);
+            if (repo === undefined) throw new Error(`Repository with id ${current.value?.repoId} not found`);
+            if (repo.download_server === undefined)
+                throw new Error(`Repository with id ${current.value?.repoId} has no download server`);
+            if (useSettingsStore().settings?.downloadDirectoryPath === null) throw new Error('No download path set');
+            await downloadFiles(
+                repo.type ?? 'a3s',
+                repo.download_server?.url,
+                `${useSettingsStore().settings?.downloadDirectoryPath}${sep}`,
+                filesToDownload
+            );
+            finished.value.push(current.value);
+            current.value = null;
+        }
+    }
+
+    return {
+        current,
+        queue,
+        next,
+        addToDownloadQueue,
+        speeds,
+        stats,
+    };
 });

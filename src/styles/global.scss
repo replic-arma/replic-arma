@@ -363,3 +363,39 @@ input[type="checkbox"][role="switch"] {
   cursor: pointer;
   color: var(--c-text-2);
 }
+
+.replic-dialog {
+  height: 500px;
+  width: 100%;
+  padding: 2rem 3rem;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 10rem;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  &::after {
+      content: '';
+      display: block;
+      background: var(--c-surf-1);
+      z-index: -1;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 2px;
+  }
+  &::before {
+      content: '';
+      display: block;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: -2;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+  }
+}

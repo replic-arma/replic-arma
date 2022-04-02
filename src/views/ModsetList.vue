@@ -1,33 +1,16 @@
 <template>
-    <ul class="modsets">
-        <modset v-for="(modset, i) of modsets" :key="i" :modset="modset" :modsetIndex="modset.id"></modset>
+    <ul class="modsets" v-if="repository !== undefined">
+        <Modset v-for="(modset, i) of repository.modsets" :key="i" :modset="modset" :modsetIndex="modset.id" />
     </ul>
-    <mdicon name="plus" class="add-button" role="button" @click="dialogStore.toggleDialog('modsetAdd')"></mdicon>
-    <modset-add />
+    <mdicon name="plus" class="add-button" role="button"></mdicon>
+    <ModsetAddVue />
 </template>
 
-<script lang="ts">
-import ModsetVue from '@/components/Modset.vue';
-import ModsetAddVue from '@/components/ModsetAdd.vue';
-import { useDialogStore } from '@/store/dialog';
+<script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
-import { mapState } from 'pinia';
-import { Options, Vue } from 'vue-class-component';
-
-@Options({
-    components: {
-        Modset: ModsetVue,
-        ModsetAdd: ModsetAddVue,
-    },
-    computed: {
-        ...mapState(useRepoStore, {
-            modsets: (store) => store.getModsets(store.currentRepoId),
-        }),
-    },
-})
-export default class ModsetListVue extends Vue {
-    private dialogStore = useDialogStore();
-}
+import { computed } from 'vue';
+import Modset from '../components/Modset.vue';
+const repository = computed(() => useRepoStore().currentRepository);
 </script>
 
 <style lang="scss" scoped>

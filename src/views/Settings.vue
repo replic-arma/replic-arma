@@ -3,38 +3,30 @@
         <div class="settings__heading">
             <router-link class="button" to="/"><mdicon name="chevron-left" size="55" /></router-link>
             <h1 v-t="'settings.title'"></h1>
-            <button
-                class="button settings__save button--center"
-                @click="settingsStore.synchData()"
-                v-t="'save'"
-            ></button>
+            <button class="button settings__save button--center" @click="saveSettings()" v-t="'save'"></button>
         </div>
-        <tabs :tabItems="subnaviItems"></tabs>
+        <!-- <TabsVue :tabItems="subnaviItems"></TabsVue> -->
+        <General></General>
         <router-view />
     </div>
 </template>
 
-<script lang="ts">
-import TabsVue, { type TabsItem } from '@/components/util/Tabs.vue';
-import { Options, Vue } from 'vue-class-component';
-import GeneralVue from '@/components/settings/General.vue';
+<script lang="ts" setup>
+import TabsVue from '@/components/util/Tabs.vue';
+import type { TabsItem } from '@/components/util/Tabs.vue';
+import General from '@/components/settings/General.vue';
 import LaunchVue from '@/components/settings/Launch.vue';
 import AboutVue from '@/components/settings/About.vue';
-import { useSettingsStore } from '@/store/settings';
 import { shallowRef } from 'vue';
-@Options({
-    components: {
-        Tabs: TabsVue,
-    },
-})
-export default class SettingsView extends Vue {
-    private subnaviItems: TabsItem[] = [
-        { label: 'General', component: shallowRef(GeneralVue) },
-        { label: 'Launch Options', component: shallowRef(LaunchVue) },
-        { label: 'About', component: shallowRef(AboutVue) },
-    ];
+import { useSettingsStore } from '@/store/settings';
+const subnaviItems: TabsItem[] = [
+    { label: 'General', component: shallowRef(General) },
+    { label: 'Launch Options', component: shallowRef(LaunchVue) },
+    { label: 'About', component: shallowRef(AboutVue) },
+];
 
-    private settingsStore = useSettingsStore();
+function saveSettings() {
+    useSettingsStore().save();
 }
 </script>
 

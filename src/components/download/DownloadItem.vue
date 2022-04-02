@@ -14,52 +14,61 @@
         <span v-else class="download-item__status" v-t="'download-status.' + downloadItem.status"></span>
         <div class="download-item__controls">
             <template v-if="downloadItem.status === 'downloading'">
-                <mdicon @click="pauseDownload" name="pause" />
+                <mdicon @click="pauseDownloadF" name="pause" />
                 <mdicon @click="stopDownload" name="close" />
             </template>
             <mdicon v-else name="download" @click="startDownload" />
         </div>
     </li>
 </template>
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+<script lang="ts" setup>
 import { useDownloadStore } from '@/store/download';
-import type { DownloadItem } from '@/models/Download';
-import { Prop } from 'vue-property-decorator';
-import { mapState } from 'pinia';
-import { System } from '@/util/system';
-
-@Options({
-    components: {},
-    computed: {
-        ...mapState(useDownloadStore, {
-            progress: (store) =>
-                Math.floor((store.current!.received / 1000 / 1000 / (store.current!.size / 1000 / 1000 / 1000)) * 100),
-            size: (store) => Math.floor(store.current!.size / 1000 / 1000 / 1000),
-            received: (store) => Math.floor(store.current!.received / 1000 / 1000),
-            remaining: (store) =>
-                store.stats !== null
-                    ? Number((store.current!.size / 1000 - store.current!.received) / store.stats?.avg / 60).toFixed(2)
-                    : 0,
-        }),
+import { pauseDownload } from '@/util/system/download';
+import { computed } from 'vue';
+defineProps({
+    downloadItem: {
+        type: Object,
+        default: null,
     },
-})
-export default class DownloadItemVue extends Vue {
-    @Prop({ type: Object }) private downloadItem!: DownloadItem;
-    private downloadStore = useDownloadStore();
-    private startDownload = () => {
-        const downloadStore = useDownloadStore();
-        downloadStore.next();
-    };
+});
+const progress = computed(() => {
+    if (useDownloadStore().current === null) return 0;
+    return Number(
+        (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+    ).toFixed(0);
+});
 
-    private stopDownload = () => {
-        this.downloadStore.current = null;
-    };
+const size = computed(() => {
+    if (useDownloadStore().current === null) return 0;
+    return Number(useDownloadStore().current!.size / 10e8).toFixed(2);
+});
 
-    private pauseDownload = () => {
-        (this.downloadStore.current as DownloadItem).status = 'paused';
-        System.pauseDownload();
-    };
+const received = computed(() => {
+    if (useDownloadStore().current == null) {
+        console.log('NULL');
+        return 0;
+    }
+    return Number(useDownloadStore().current!.received / 10e5).toFixed(2);
+});
+
+const remaining = computed(() => {
+    if (useDownloadStore().current === null || useDownloadStore().stats == null) return 0;
+    return (
+        (useDownloadStore().current!.size / 1000 - useDownloadStore().current!.received) / useDownloadStore().stats!.avg
+    );
+});
+
+function startDownload() {
+    useDownloadStore().next();
+}
+
+function stopDownload() {
+    useDownloadStore().current = null;
+}
+
+async function pauseDownloadF() {
+    // useDownloadStore().current!.status = 'paused';
+    await pauseDownload();
 }
 </script>
 <style lang="scss" scoped>

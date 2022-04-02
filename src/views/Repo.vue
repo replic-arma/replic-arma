@@ -1,57 +1,40 @@
 <template>
     <div class="repo-view">
-        <div class="repo-view__heading" v-if="repository">
+        <div class="repo-view__heading">
             <router-link class="button" to="/"><mdicon name="chevron-left" size="55" /></router-link>
-            <h1>{{ repository.name }}</h1>
-            <div class="icon-group">
-                <mdicon name="refresh" size="45" @click="checkRepo" />
-                <router-link class="button" :to="'/reposettings/' + repository.id"
-                    ><mdicon name="cog" size="55"
-                /></router-link>
-            </div>
+            <template v-if="repository">
+                <h1>{{ repository.name }}</h1>
+                <div class="icon-group">
+                    <mdicon name="refresh" size="45" @click="checkRepo" />
+                    <router-link class="button" :to="'/reposettings/' + repository.id"
+                        ><mdicon name="cog" size="55"
+                    /></router-link>
+                </div>
+            </template>
+            <Loader v-else />
         </div>
-        <subnavi :subnaviItems="subnaviItems"></subnavi>
+        <SubnaviVue :subnaviItems="subnaviItems"></SubnaviVue>
         <router-view />
     </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import SubnaviVue from '@/components/util/Subnavi.vue';
+import Loader from '@/components/util/Loader.vue';
 import type { SubnaviItem } from '@/components/util/Subnavi.vue';
-import { Options, Vue } from 'vue-class-component';
 import { useRepoStore } from '../store/repo';
-import { useDialogStore } from '../store/dialog';
-import { mapState } from 'pinia';
-@Options({
-    components: {
-        Subnavi: SubnaviVue,
-    },
-    computed: {
-        ...mapState(useRepoStore, {
-            repository: (store) => store.getRepo(store.currentRepoId),
-        }),
-    },
-})
-export default class RepoView extends Vue {
-    private subnaviItems: SubnaviItem[] = [];
-    private repoStore = useRepoStore();
-    private dialogStore = useDialogStore();
-    private toggleDialog = () => {
-        this.dialogStore.toggleDialog('repoSettings');
-    };
+import { computed } from '@vue/runtime-core';
+import { useHashStore } from '@/store/hash';
 
-    public created(): void {
-        this.subnaviItems = [
-            { label: 'modsets', link: '/repo/' + this.repoStore.currentRepoId + '/modsets' },
-            { label: 'collections', link: '/repo/' + this.repoStore.currentRepoId + '/collections' },
-            { label: 'server.title', link: '/repo/' + this.repoStore.currentRepoId + '/servers' },
-        ];
-    }
-
-    public checkRepo(): void {
-        const repository = this.repoStore.getRepo(this.repoStore.currentRepoId);
-        if (repository !== undefined) repository.calcHash();
-    }
+const repository = computed(() => useRepoStore().currentRepository);
+const subnaviItems: SubnaviItem[] = [
+    { label: 'modsets', link: '/repo/' + repository.value?.id + '/modsets' },
+    { label: 'collections', link: '/repo/' + repository.value?.id + '/collections' },
+    { label: 'server.title', link: '/repo/' + repository.value?.id + '/servers' },
+];
+function checkRepo() {
+    if (repository.value === undefined) return;
+    useHashStore().addToQueue(repository.value);
 }
 </script>
 

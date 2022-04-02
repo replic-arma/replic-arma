@@ -3,50 +3,33 @@
         <div class="repos__heading">
             <h1 v-t="'repositories'"></h1>
             <div class="icon-group">
-                <downloads />
+                <Downloads />
                 <mdicon name="refresh" size="45" v-once @click="reloadRepos" />
                 <router-link class="button" to="/settings"><mdicon name="cog" size="45" /></router-link>
             </div>
         </div>
         <ul class="repos__list">
-            <repo v-for="(repo, i) of repos" :key="i" :repository="repo"></repo>
+            <Loader v-if="repos === null"/>
+            <RepoVue v-for="(repo, i) of repos" :key="i" :repository="repo"></RepoVue>
         </ul>
-        <repo-add />
+        <RepositoryAdd />
     </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+<script lang="ts" setup>
 import RepoVue from '@/components/Repository.vue';
+import RepositoryAdd from '../components/RepositoryAdd.vue';
+import Loader from '@/components/util/Loader.vue';
 import { useRepoStore } from '../store/repo';
-import ReplicDialogVue from '@/components/util/ReplicDialog.vue';
-import { useDialogStore } from '@/store/dialog';
-import DownloadsVue from '@/components/download/Downloads.vue';
-import RepositoryAddVue from '@/components/RepositoryAdd.vue';
 import Toast from '@/components/util/Toast';
-import { mapState } from 'pinia';
-
-@Options({
-    components: {
-        Repo: RepoVue,
-        ReplicDialog: ReplicDialogVue,
-        Downloads: DownloadsVue,
-        RepoAdd: RepositoryAddVue,
-    },
-    computed: {
-        ...mapState(useRepoStore, {
-            repos: (store) => store.getRepos,
-        }),
-    },
-})
-export default class ReposView extends Vue {
-    private dialogStore = useDialogStore();
-    private repoStore = useRepoStore();
-    private reloadRepos = () => {
-        this.repoStore.loadRepositories();
-        Toast('Reloading Repositories');
-    };
-}
+import { loadRepos } from '@/util/system/repos';
+import { computed } from '@vue/runtime-core';
+import Downloads from '../components/download/Downloads.vue';
+const repos = computed(() => useRepoStore().repos);
+function reloadRepos() {
+    loadRepos();
+    Toast('Reloading Repositories');
+};
 </script>
 
 <style lang="scss" scoped>

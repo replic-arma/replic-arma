@@ -14,49 +14,36 @@
         >
     </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import { useDownloadStore } from '@/store/download';
-import { Options, Vue } from 'vue-class-component';
-import { Watch } from 'vue-property-decorator';
-@Options({
-    components: {},
-})
-export default class DownloadProgressVue extends Vue {
-    private downloadStore = useDownloadStore();
-    private get speeds() {
-        return this.downloadStore.speeds;
+import { ref, watch } from 'vue';
+
+const displayedSpeeds = ref([] as Array<number>);
+
+const displayedMax = ref(10);
+
+const stats = ref({
+    avg: 0,
+    max: 0,
+    cur: 0,
+});
+
+watch(useDownloadStore().speeds, (currentValue) => {
+    displayedSpeeds.value = currentValue.slice(-100);
+    displayedMax.value = Math.max(...displayedSpeeds.value);
+
+    if (currentValue.length % 5 === 0) {
+        stats.value = {
+            cur: currentValue[currentValue.length - 1] ?? 0,
+            max: Math.max(...currentValue),
+            avg: Math.floor(currentValue.reduce((prev, cur) => prev + cur, 0) / currentValue.length),
+        };
+        useDownloadStore().stats = stats.value;
     }
+});
 
-    private displayedSpeeds: number[] = [];
-
-    private displayedMax = 10;
-
-    private stats = {
-        avg: 0,
-        max: 0,
-        cur: 0,
-    };
-
-    @Watch('speeds', { deep: true })
-    private recalculate(): void {
-        this.displayedSpeeds = this.speeds.slice(-100);
-        this.displayedMax = Math.max(...this.displayedSpeeds);
-
-        if (this.speeds.length % 5 === 0) {
-            this.stats = {
-                cur: this.speeds[this.speeds.length - 1],
-                max: Math.max(...this.speeds),
-                avg: Math.floor(this.speeds.reduce((prev, cur) => prev + cur, 0) / this.speeds.length),
-            };
-            this.downloadStore.stats = this.stats;
-        }
-
-        // TODO: Remove invisble speeds
-    }
-
-    private formatSpeed(speed: number): string {
-        return `${speed / 1000} MB/s`;
-    }
+function formatSpeed(speed: number): string {
+    return `${speed / 1000} MB/s`;
 }
 </script>
 <style lang="scss" scoped>

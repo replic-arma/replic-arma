@@ -1,14 +1,14 @@
 <template>
-    <div class="general-settings">
-        <replic-path-selector
+    <div class="general-settings" v-if="settingsCopy !== null">
+        <ReplicPathSelectorVue
             :pathSelector="{ label: 'a3exe', name: 'a3exe' }"
             v-model="settingsCopy.gamePath"
-        ></replic-path-selector>
-        <replic-path-selector
+        ></ReplicPathSelectorVue>
+        <ReplicPathSelectorVue
             :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
             :pathSelectorOptions="{ directory: true }"
             v-model="settingsCopy.downloadDirectoryPath"
-        ></replic-path-selector>
+        ></ReplicPathSelectorVue>
         <div class="general-settings__speed">
             <label for="speed" v-t="'download_max_speed'"></label>
             <select class="select" name="speed" v-model="settingsCopy.maxDownloadSpeed">
@@ -35,37 +35,15 @@
             </select>
         </div>
         <div class="general-settings__buttons">
-            <button class="button button--danger" type="button" @click="clearCache()" v-t="'cache_clear'"></button>
-            <button
-                class="button button--danger"
-                type="button"
-                @click="settingsStore.resetSettings()"
-                v-t="'settings.reset'"
-            ></button>
-            <button class="button button--danger" type="button" @click="save()" v-t="'settings.save'"></button>
+            <button class="button button--danger" type="button" v-t="'cache_clear'"></button>
+            <button class="button button--danger" type="button" v-t="'settings.reset'"></button>
         </div>
     </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import { useSettingsStore } from '@/store/settings';
-import { System } from '@/util/system';
-import { Options, Vue } from 'vue-class-component';
-
 import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
-@Options({
-    components: {
-        ReplicPathSelector: ReplicPathSelectorVue,
-    },
-})
-export default class GeneralVue extends Vue {
-    private settingsStore = useSettingsStore();
-    private settingsCopy = this.settingsStore.getSettings;
-    private clearCache = () => System.clearCache();
-    private save() {
-        this.settingsStore.settings = this.settingsCopy;
-        this.settingsStore.synchData();
-    }
-}
+const settingsCopy = useSettingsStore().settings;
 </script>
 <style lang="scss" scoped>
 .general-settings {

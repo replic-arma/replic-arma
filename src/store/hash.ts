@@ -52,10 +52,10 @@ export const useHashStore = defineStore('hash', () => {
             if (currentHashRepo.value === undefined) throw new Error('Queue empty');
             current.value.filesToCheck = currentHashRepo.value.files.length;
             const hashData = await getHashes();
-            const outDatedFiles = await ReplicWorker.getFileChanges(
-                toRaw(currentHashRepo.value.files),
-                hashData.checkedFiles
+            const wantedFiles = toRaw(currentHashRepo.value.files).filter(
+                (file) => !hashData.missingFiles.includes(file.path)
             );
+            const outDatedFiles = await ReplicWorker.getFileChanges(wantedFiles, hashData.checkedFiles);
             cache.value.push({
                 id: currentHashRepo.value.id,
                 checkedFiles: hashData.checkedFiles,

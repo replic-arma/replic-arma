@@ -26,10 +26,8 @@ import type { Modset } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { Options, Vue } from 'vue-class-component';
 import ReplicCheckboxVue from './util/ReplicCheckbox.vue';
-import ReplicDialogVue from './util/ReplicDialog.vue';
 @Options({
     components: {
-        ReplicDialog: ReplicDialogVue,
         ReplicCheckbox: ReplicCheckboxVue,
     },
 })

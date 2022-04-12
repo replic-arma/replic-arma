@@ -17,14 +17,10 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import ReplicDialogVue from './util/ReplicDialog.vue';
 import { useRepoStore } from '@/store/repo';
-import { v4 as uuidv4 } from 'uuid';
 import Toast from './util/Toast';
 @Options({
-    components: {
-        ReplicDialog: ReplicDialogVue,
-    },
+    components: {},
 })
 export default class CollectionAddVue extends Vue {
     private collectionName: string | null = null;

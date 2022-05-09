@@ -8,6 +8,8 @@ import {
     readBinaryFile as tauriReadBinaryFile,
     writeFile as tauriWriteFile,
     writeBinaryFile as tauriWriteBinaryFile,
+    readDir as tauriReadDir,
+    type FileEntry,
 } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
 
@@ -26,6 +28,12 @@ export async function fileExists(relativePath: string) {
     const path = await prependAppDir(relativePath);
 
     return invoke('file_exists', { path });
+}
+
+export async function readDir(relativePath: string): Promise<FileEntry[]> {
+    const path = await prependAppDir(relativePath);
+
+    return tauriReadDir(path, { dir: BaseDirectory.App });
 }
 
 export async function dirExists(relativePath: string): Promise<boolean> {

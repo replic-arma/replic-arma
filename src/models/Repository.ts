@@ -1,9 +1,6 @@
 /* eslint-disable camelcase */
-import { v4 as uuidv4 } from 'uuid';
-import { useRepoStore } from '@/store/repo';
 import type { GameLaunchSettings } from './Settings';
-import { useHashStore } from '@/store/hash';
-import { ReplicWorker } from '@/util/worker';
+
 export interface File {
     path: string;
     size: number;
@@ -87,6 +84,5 @@ export interface IReplicArmaRepository extends Repository {
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
     type?: 'local' | 'a3s' | 'swifty';
-    autoconfig?: string;
     revisionChanged?: boolean;
 }

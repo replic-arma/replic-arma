@@ -14,32 +14,26 @@
         </div>
     </div>
 </template>
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-
-@Options({
-    components: {},
-})
-export default class LaunchVue extends Vue {
-    private settings = {
-        base: {
-            noPause: false,
-            window: false,
-            battleye: false,
-            checkSignatures: false,
-        },
-        performance: {
-            hugepages: false,
-            emptyWorld: false,
-            noLogs: false,
-            noSplash: false,
-        },
-        developer: {
-            filePatching: false,
-            showScriptErrors: false,
-        },
-    };
-}
+<script lang="ts" setup>
+import { ref } from "vue";
+const settings = ref({
+    base: {
+        noPause: false,
+        window: false,
+        battleye: false,
+        checkSignatures: false,
+    },
+    performance: {
+        hugepages: false,
+        emptyWorld: false,
+        noLogs: false,
+        noSplash: false,
+    },
+    developer: {
+        filePatching: false,
+        showScriptErrors: false,
+    },
+});
 </script>
 <style lang="scss" scoped>
 .launch-settings {

@@ -154,7 +154,6 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     );
                 }
             }
-            println!("Test");
         })
         .on_window_event(|event| {
             if let tauri::WindowEvent::Moved(_) = event.event() {

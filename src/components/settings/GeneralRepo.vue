@@ -25,6 +25,7 @@ const repository = useRepoStore().currentRepository;
 function removeRepo(): void {
     useRepoStore().repos =
         useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repository?.id) ?? [];
+    useRepoStore().save();
     Toast('Removed Repository ' + repository?.name);
 }
 </script>

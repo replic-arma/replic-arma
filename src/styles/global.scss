@@ -375,6 +375,7 @@ input[type="checkbox"][role="switch"] {
   margin-left: auto;
   margin-right: auto;
   box-sizing: border-box;
+  z-index: 999;
   &::after {
       content: '';
       display: block;

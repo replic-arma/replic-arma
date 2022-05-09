@@ -1,5 +1,5 @@
 <template>
-    <li class="server">
+    <li class="server" v-if="server !== undefined">
         <div class="server__info">
             <span class="server__host">{{ server.host }}</span>
             <small class="server__name">{{ server.name }}</small>
@@ -17,20 +17,17 @@
         </div>
     </li>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import type { GameServer } from '@/models/Repository';
-import { useRepoStore } from '@/store/repo';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+const props = defineProps({
+    server: {
+        type: Object,
+        default: null,
+    },
+});
 
-@Options({
-    components: {},
-})
-export default class ServerVue extends Vue {
-    @Prop({ type: Object }) private server!: GameServer;
-    private async launchGame() {
-        if (this.server.modset === undefined) throw new Error('Server Modset undefined');
-    }
+function launchGame() {
+    if (props.server.modset === undefined) throw new Error('Server Modset undefined');
 }
 </script>
 <style lang="scss" scoped>

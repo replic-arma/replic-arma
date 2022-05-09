@@ -1,29 +1,24 @@
 <template>
     <div class="collection" v-if="collection !== undefined">
-        <div class="collection__heading" >
+        <div class="collection__heading">
             <mdicon name="chevron-left" size="55" @click="$router.back()" />
             <h1>{{ collection.name }}</h1>
-            <div class="icon-group">
-                <button class="button" v-t="'save'"></button>
-            </div>
         </div>
-        <TabsVue :tabItems="subnaviItems" />
+        <Subnavi :subnaviItems="subnaviItems"></Subnavi>
+        <router-view />
     </div>
 </template>
 
 <script lang="ts" setup>
-import CollectionMods from '@/components/CollectionMods.vue';
-import LaunchVue from '@/components/settings/Launch.vue';
-import TabsVue from '@/components/util/Tabs.vue';
-import type { TabsItem } from '@/components/util/Tabs.vue';
+import type { SubnaviItem } from '@/components/util/Subnavi.vue';
 import { useRepoStore } from '@/store/repo';
-import { computed, shallowRef } from 'vue';
-
-const subnaviItems: TabsItem[] = [
-    { label: 'General', component: shallowRef(CollectionMods) },
-    { label: 'Launch Options', component: shallowRef(LaunchVue) },
+import { useRouteStore } from '@/store/route';
+import Subnavi from '../components/util/Subnavi.vue';
+const collection = useRepoStore().currentCollection;
+const subnaviItems: SubnaviItem[] = [
+    { label: 'Mods', link: `/repo/${useRouteStore().currentRepoID}/collection/${collection!.id}/mods` },
+    { label: 'collections', link: `/repo/${useRouteStore().currentRepoID}/collection/${collection!.id}/settings` },
 ];
-const collection = computed(() => useRepoStore().currentCollection);
 </script>
 
 <style lang="scss" scoped>

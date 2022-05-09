@@ -1,14 +1,14 @@
 <template>
     <ul class="servers">
-        <ServerVue v-for="(server, i) of servers" :key="i" :server="server"></ServerVue>
+        <ServerItem v-for="(server, i) of servers" :key="i" :server="server" />
         <li class="servers__empty" v-if="servers?.length === 0" v-t="'server.empty'"></li>
     </ul>
 </template>
 
 <script lang="ts" setup>
-import ServerVue from '@/components/Server.vue';
 import { useRepoStore } from '@/store/repo';
-const servers = useRepoStore().currentRepository.game_servers;
+import ServerItem from '../components/Server.vue';
+const servers = useRepoStore().currentRepository?.game_servers;
 </script>
 
 <style lang="scss" scoped>

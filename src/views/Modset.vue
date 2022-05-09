@@ -30,7 +30,13 @@
                 <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
             </div>
         </div>
-        <p>Size: {{ size }}GB Files: {{ files }}</p>
+        <pre>
+            Size: {{ size }} 
+            GB Files: {{ files }}
+            Update Size {{ updateSize }}
+            Update Files {{ updateFiles.length }}
+            Files {{ updateFiles }}
+        </pre>
         <ul class="modset__mods">
             <li v-for="(mod, i) of modset?.mods" :key="i">
                 <Tooltip :text="mod.size" style="grid-column: 1">
@@ -51,7 +57,7 @@
 
 <script lang="ts" setup>
 import TooltipVue from '@/components/util/Tooltip.vue';
-import type { File, Modset, ModsetMod } from '@/models/Repository';
+import type { ModsetMod } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
 import type { IHashItem } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
@@ -71,6 +77,32 @@ const size = computed(() => {
             10e8
     ).toFixed(2);
 });
+
+const updateSize = computed(() => {
+    const modsetCache = useRepoStore().modsetCache;
+    const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset?.id);
+    if (modsetCache === null || cacheDataa === null) return 0;
+    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset?.id);
+    const filesToDownload = [...(cacheDataa?.missingFiles as string[]), ...(cacheDataa?.outdatedFiles as string[])];
+    const mods =
+        cacheData?.mods
+            .flatMap((mod: ModsetMod) => mod.files ?? [])
+            .filter((file) => filesToDownload.includes(file.path)) ?? [];
+    return Number(
+        mods.reduce((previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size, 0) /
+            10e8
+    ).toFixed(2);
+});
+
+const updateFiles = computed(() => {
+    const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset?.id);
+    if (cacheDataa === null) return [];
+
+    const filesToDownload = [...(cacheDataa?.missingFiles as string[]), ...(cacheDataa?.outdatedFiles as string[])];
+
+    return filesToDownload;
+});
+
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === modset?.id);
     if (cacheData === undefined) return 'checking';
@@ -80,6 +112,7 @@ const status = computed(() => {
         return 'ready';
     }
 });
+
 const progress = computed(() => {
     if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID) return 0;
     const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
@@ -146,3 +179,5 @@ function outdated(mod: ModsetMod) {
     }
 }
 </style>
+
+

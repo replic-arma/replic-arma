@@ -1,10 +1,10 @@
-import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod } from '@/models/Repository';
+import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod, File } from '@/models/Repository';
 import { saveModsetCache } from '@/util/system/modset_cache';
 import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
 import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw } from 'vue';
 import { useHashStore } from './hash';
 import { useRouteStore } from './route';
 
@@ -93,9 +93,48 @@ export const useRepoStore = defineStore('repo', () => {
         repo.game_servers?.push(server);
     }
 
+    async function checkRevision(repoID: string) {
+        if (repos.value === null) throw new Error('Repositories not loaded yet.');
+
+        const repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
+        if (repo === undefined) throw new Error('Repository not found');
+        if (repo.config_url === undefined) throw new Error('Repository has no autoconfig');
+        const repoData = await getRepoFromURL(`${repo.config_url}autoconfig`);
+        if (repoData.revision !== repo.revision) {
+            let mods: ModsetMod[] = [];
+            if (repoData.files !== undefined) {
+                mods = await ReplicWorker.createModsetFromFiles(repoData.files);
+            }
+            repo.modsets = repoData.modsets.map((modset: Modset) => {
+                const oldModset = repo.modsets.find((oldModset) => oldModset.name === modset.name);
+                return { ...modset, id: oldModset?.id ?? uuidv4() };
+            });
+
+            const allModsModset = repo.modsets.find((modset) => modset.name === 'All Mods');
+            if (allModsModset !== undefined) {
+                allModsModset.mods = mods;
+                repo.modsets.unshift(allModsModset);
+            }
+            modsetCache.value = await ReplicWorker.mapFilesToMods(repoData.files, toRaw(repo.modsets));
+            saveModsetCache(repo.id, modsetCache.value);
+            repos.value = useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repo?.id) ?? [];
+            repos.value?.push({
+                ...repo,
+                id: repo.id,
+                image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
+                type: 'a3s',
+                collections: [],
+            });
+            save();
+        }
+    }
+
     loadRepos().then((reposdata: Array<IReplicArmaRepository>) => {
         repos.value = reposdata;
-        reposdata.forEach((repo: IReplicArmaRepository) => useHashStore().addToQueue(repo));
+        reposdata.forEach((repo: IReplicArmaRepository) => {
+            checkRevision(repo.id);
+            useHashStore().addToQueue(repo);
+        });
     });
 
     return {
@@ -109,5 +148,6 @@ export const useRepoStore = defineStore('repo', () => {
         save,
         repos,
         modsetCache,
+        checkRevision,
     };
 });

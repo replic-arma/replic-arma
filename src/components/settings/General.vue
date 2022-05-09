@@ -35,15 +35,20 @@
             </select>
         </div>
         <div class="general-settings__buttons">
-            <button class="button button--danger" type="button" v-t="'cache_clear'"></button>
+            <button class="button button--danger" type="button" v-t="'cache_clear'" @click="clearCache()"></button>
             <button class="button button--danger" type="button" v-t="'settings.reset'"></button>
         </div>
     </div>
 </template>
 <script lang="ts" setup>
 import { useSettingsStore } from '@/store/settings';
+import { clearModsetCache } from '@/util/system/modset_cache';
 import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
 const settingsCopy = useSettingsStore().settings;
+
+function clearCache () {
+    clearModsetCache();
+}
 </script>
 <style lang="scss" scoped>
 .general-settings {

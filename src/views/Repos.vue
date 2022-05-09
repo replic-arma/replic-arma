@@ -25,10 +25,18 @@ import Toast from '@/components/util/Toast';
 import { loadRepos } from '@/util/system/repos';
 import { computed } from '@vue/runtime-core';
 import Downloads from '../components/download/Downloads.vue';
+import type { IReplicArmaRepository } from '@/models/Repository';
+import { useHashStore } from '@/store/hash';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
-    loadRepos();
-    Toast('Reloading Repositories');
+    const repos = useRepoStore().repos;
+    if(repos !== null) {
+        repos.forEach((repo: IReplicArmaRepository) => {
+            useRepoStore().checkRevision(repo.id);
+            useHashStore().addToQueue(repo);
+        });
+        Toast('Reloading Repositories');
+    }
 };
 </script>
 

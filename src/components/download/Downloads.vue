@@ -11,17 +11,12 @@
             <ul class="download-items">
                 <DownloadItemVue v-if="downloadItem !== null" :downloadItem="downloadItem" />
             </ul>
-            <span class="download-sub-head" v-t="'download-status.queued'"
-                ><span class="download-sub-head__count">({{ queueItems.length }})</span></span
-            >
+            <div class="download-sub-head" v-if="queueItems.length > 0">
+                <span v-t="'download-status.queued'"></span>
+                <span class="download-sub-head__count">({{ queueItems.length }})</span>
+            </div>
             <ul class="download-items">
                 <DownloadItemVue v-for="(item, i) of queueItems" :key="i" :downloadItem="item" />
-            </ul>
-            <span class="download-sub-head" v-if="updateNeededItems.length > 0" v-t="'download-status.outdated'"
-                ><span class="download-sub-head__count">({{ updateNeededItems.length }})</span></span
-            >
-            <ul class="download-items" v-if="updateNeededItems.length > 0">
-                <DownloadItemVue v-for="(item, i) of updateNeededItems" :key="i" :downloadItem="item" />
             </ul>
         </div>
     </Teleport>
@@ -35,7 +30,6 @@ import { useDownloadStore } from '@/store/download';
 
 const downloadItem = useDownloadStore().current;
 const queueItems = useDownloadStore().queue;
-const updateNeededItems: DownloadItem[] = [];
 const isOpen = ref(false);
 </script>
 <style lang="scss" scoped>

@@ -51,7 +51,7 @@
     "allowlist": {
       "all": true,
       "fs": {
-        "scope": ["$APP/*", "$APP\\*"]
+        "scope": ["$APP/", "$APP/*", "$APP\\", "$APP\\*"]
       }
     },
     "windows": [

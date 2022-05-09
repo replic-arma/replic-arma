@@ -4,7 +4,7 @@ import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
 import { computed, ref, toRaw } from 'vue';
 import { ReplicWorker } from '@/util/worker';
-import { checkHashes } from '@/util/system/hashes';
+import { checkHashes, HASHING_PROGRESS } from '@/util/system/hashes';
 import { loadModsetCache } from '@/util/system/modset_cache';
 export interface IHashItem {
     repoId: string;
@@ -83,9 +83,17 @@ export const useHashStore = defineStore('hash', () => {
                 });
             }
             console.info(`Finished hash calc for repo ${currentHashRepo.value.name}`);
+            current.value = null;
             next();
         }
     }
+
+    HASHING_PROGRESS.addEventListener('hash_calculated', () => {
+        const current = useHashStore().current;
+        if (current !== null) {
+            current.checkedFiles += 1;
+        }
+    });
 
     return {
         addToQueue,

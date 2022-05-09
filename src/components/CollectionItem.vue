@@ -1,6 +1,6 @@
 <template>
-    <li class="collection">
-        <div class="collection__info">
+    <li class="collection" v-if="collection !== undefined">
+        <div class="collection__info" >
             <span class="collection__name">{{ collection.name }}</span>
             <small class="collection__description">{{ collection.description }}</small>
         </div>
@@ -14,24 +14,16 @@
         </router-link>
     </li>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import type { Collection } from '@/models/Repository';
-import { useDownloadStore } from '@/store/download';
-import { useRepoStore } from '@/store/repo';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
-
-@Options({
-    components: {},
-})
-export default class CollectionItemVue extends Vue {
-    @Prop({ type: Object }) private collection!: Collection;
-    private downloadStore = useDownloadStore();
-    private repoStore = useRepoStore();
-    private get status() {
-        return 'finished';
-    }
-}
+import { ref } from 'vue';
+defineProps({
+    collection: {
+        type: Object,
+        default: null,
+    },
+});
+const status = ref('ready');
 </script>
 <style lang="scss" scoped>
 .collection {

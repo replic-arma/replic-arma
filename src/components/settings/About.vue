@@ -21,10 +21,10 @@
 import { Options, Vue } from 'vue-class-component';
 import { open } from '@tauri-apps/api/shell';
 @Options({
-    components: { }
+    components: {},
 })
 export default class AboutVue extends Vue {
-    private async openGithub () {
+    private async openGithub() {
         await open('https://github.com/replic-arma');
     }
 }
@@ -38,7 +38,7 @@ export default class AboutVue extends Vue {
     }
     &__headline {
         color: var(--c-text-3);
-        margin-block-end: .5rem;
+        margin-block-end: 0.5rem;
     }
 }
 </style>

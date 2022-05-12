@@ -1,8 +1,10 @@
 use std::{
     fs::{self, File},
     io::{self},
-    path::PathBuf,
+    path::{Path, PathBuf},
     str::FromStr,
+    sync::Arc,
+    time::Duration,
 };
 
 use crate::{
@@ -19,12 +21,14 @@ use anyhow::Result;
 use filetime::FileTime;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 use sha1::{Digest, Sha1};
-use tauri::Window;
+use tauri::{async_runtime::Mutex, Window};
+use tokio::{task, time::sleep};
 use url::Url;
 
 #[tauri::command]
 pub async fn hash_check(
     window: Window,
+    path_prefix: String,
     files: Vec<String>,
     state: tauri::State<'_, ReplicArmaState>,
 ) -> JSResult<(Vec<(String, String, i64)>, Vec<String>)> {
@@ -33,13 +37,25 @@ pub async fn hash_check(
     //let mut hashes: HashMap<String, (String, u128)> = read_t(state.data_dir.join("hashes.json"))?;
     let mut hashes = old_hashes.clone();
 
+    let files: Vec<String> = files
+        .iter()
+        .map(|f| format!("{}{}", path_prefix, f))
+        .collect();
+
     // insert new files
     for file in files.iter() {
         hashes.entry(file.to_string()).or_insert((String::new(), 0));
     }
 
+    let mut not_existing_files = Vec::with_capacity(files.capacity());
+    for file in files.iter() {
+        if !Path::new(&file).is_file() {
+            not_existing_files.push(file.replacen(&path_prefix, "", 1));
+        }
+    }
+
     // calc Hash
-    let (new_hashes_res, errors_res): (Vec<_>, Vec<_>) = hashes
+    let (new_hashes_res, _): (Vec<_>, Vec<_>) = hashes
         .into_iter()
         .par_bridge()
         .filter(|(file_name, _)| files.contains(file_name))
@@ -58,24 +74,24 @@ pub async fn hash_check(
     // partition into hashes and errors
     let new_hashes: Vec<(String, String, i64, u64)> =
         new_hashes_res.into_iter().map(Result::unwrap).collect();
-    let errors: Vec<String> = errors_res
-        .into_iter()
-        .map(|e| e.unwrap_err().to_string())
-        .collect();
+    // let errors: Vec<String> = errors_res
+    //     .into_iter()
+    //     .map(|e| e.unwrap_err().to_string())
+    //     .collect();
 
     // update HashMap
     for hash in &new_hashes {
         old_hashes.insert(hash.0.clone(), (hash.1.clone(), hash.2));
     }
 
-    save_t(state.data_dir.join("hashes.json"), old_hashes.clone())?;
+    save_t(&state.data_dir.join("hashes.json"), old_hashes.clone())?;
 
     let result: Vec<_> = new_hashes
         .into_iter()
-        .map(|kvp| (kvp.0, kvp.1, kvp.2))
+        .map(|kvp| (kvp.0.replacen(&path_prefix, "", 1), kvp.1, kvp.2))
         .collect();
 
-    Ok((result, errors))
+    Ok((result, not_existing_files))
 }
 
 fn check_update(known_hash: (String, (String, i64))) -> Result<(String, String, i64, u64)> {
@@ -106,39 +122,62 @@ pub async fn get_repo(url: String) -> JSResult<Repository> {
 }
 
 #[tauri::command]
+pub async fn pause_download(state: tauri::State<'_, ReplicArmaState>) -> JSResult<()> {
+    if let Some(dl) = (&mut *state.downloading.lock().await).as_mut() {
+        *dl = false;
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn download(
-    repo: Repository,
+    window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
+    repo_type: RepoType,
+    url: String,
     target_path: String,
     file_array: Vec<String>,
 ) -> JSResult<()> {
-    Ok(download_wrapper(repo, target_path, file_array).await?)
+    Ok(download_wrapper(window, state, repo_type, url, target_path, file_array).await?)
 }
 
 pub async fn download_wrapper(
-    repo: Repository,
+    window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
+    repo_type: RepoType,
+    url: String,
     target_path: String,
     file_array: Vec<String>,
 ) -> Result<()> {
     let target_dir = PathBuf::from_str(&target_path)?;
-    download_files(repo, target_dir, file_array).await?;
+    download_files(window, state, repo_type, url, target_dir, file_array).await?;
     Ok(())
 }
 
 async fn download_files(
-    repo: Repository,
+    window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
+    repo_type: RepoType,
+    url: String,
     target_dir: PathBuf,
     file_array: Vec<String>,
 ) -> Result<()> {
-    match repo.repo_typ {
-        RepoType::A3S => download_a3s(repo, target_dir, file_array).await?,
+    match repo_type {
+        RepoType::A3S => download_a3s(window, state, url, target_dir, file_array).await?,
         RepoType::Swifty => todo!(),
     };
 
     Ok(())
 }
 
-async fn download_a3s(repo: Repository, target_dir: PathBuf, files: Vec<String>) -> Result<()> {
-    let connection_info = Url::parse(&repo.download_server.url)?;
+async fn download_a3s(
+    window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
+    url: String,
+    target_dir: PathBuf,
+    files: Vec<String>,
+) -> Result<()> {
+    let connection_info = Url::parse(&url)?;
     //println!("{:?}", files);
     println!("{}", connection_info);
 
@@ -150,20 +189,48 @@ async fn download_a3s(repo: Repository, target_dir: PathBuf, files: Vec<String>)
         up => return Err(anyhow!("Unknown protocol/scheme: {}", up)),
     };
 
+    *state.downloading.lock().await = Some(true);
+
+    let downloading = Arc::new(Mutex::new(true));
+    let written_bytes = Arc::new(Mutex::new(0_usize));
+
+    let dl = downloading.clone();
+    let wb = written_bytes.clone();
+    let win = window.clone();
+    task::spawn(async move {
+        while *dl.lock().await {
+            let bytes = *wb.lock().await;
+            *wb.lock().await = 0;
+            println!("KBytes per sec {}", bytes / 1000);
+            win.emit("download_report", bytes / 1000).unwrap();
+            sleep(Duration::from_millis(1000)).await;
+        }
+    });
+
     // NOT THREADSAFE (I think :P)
     //files.into_iter().for_each(|file| {
     for file in files {
         let url = connection_info.join(&file)?;
-        let target_file = target_dir.join(file);
+        let target_file = target_dir.join(file.clone());
         let mut target_path = target_file.clone();
         target_path.pop();
 
         println!("Downloading: {} to {}", url, target_file.display());
 
         fs::create_dir_all(target_path)?;
-        downloader.download_file(url, &target_file).await?;
-        //});
+
+        downloader
+            .download_file(&state, &written_bytes, url, &target_file)
+            .await?;
+        if (*state.downloading.lock().await).unwrap_or(true) {
+            window.emit("download_finished", file).unwrap();
+        } else {
+            *downloading.lock().await = false;
+            break;
+        }
     }
+
+    *downloading.lock().await = false;
 
     Ok(())
 }

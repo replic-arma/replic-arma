@@ -1,28 +1,14 @@
 <template>
     <ul class="servers">
-       <server v-for="(server, i) of servers" :key="i" :server="server"></server>
-       <li class="servers__empty" v-if="servers.length === 0">{{$t('server.empty')}}</li>
+        <ServerItem v-for="(server, i) of servers" :key="i" :server="server" />
+        <li class="servers__empty" v-if="servers?.length === 0" v-t="'server.empty'"></li>
     </ul>
 </template>
 
-<script lang="ts">
-import ServerVue from '@/components/Server.vue';
-import { GameServer } from '@/models/Repository';
+<script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
-import { Options, Vue } from 'vue-class-component';
-
-@Options({
-    components: {
-        Server: ServerVue
-    }
-})
-export default class ServerListVue extends Vue {
-    private servers!: GameServer[];
-    private repoStore = useRepoStore();
-    public created (): void {
-        this.servers = Array.from(this.repoStore.getRepo(this.repoStore.currentRepoId)?.game_servers?.values() ?? []);
-    }
-}
+import ServerItem from '../components/Server.vue';
+const servers = useRepoStore().currentRepository?.game_servers;
 </script>
 
 <style lang="scss" scoped>
@@ -31,7 +17,7 @@ export default class ServerListVue extends Vue {
     display: grid;
     gap: 1rem;
     list-style-type: none;
-    &__empty{
+    &__empty {
         text-align: center;
     }
 }

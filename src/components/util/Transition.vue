@@ -7,17 +7,17 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-@Options({ components: { } })
+@Options({ components: {} })
 export default class TransitionVue extends Vue {}
 </script>
 <style lang="scss" scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+    transition: opacity 0.125s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0;
+    opacity: 0;
 }
 </style>

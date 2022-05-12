@@ -1,9 +1,9 @@
-import { Modset, ReplicArmaRepository } from './Repository';
+import type { Modset } from './Repository';
 
 export interface DownloadItem {
-    status: 'finished'|'queued'|'paused'|'inProgress';
+    status: 'paused' | 'downloading' | 'queued';
     item: Modset;
     size: number;
-    done: number;
-    total: number;
+    received: number;
+    repoId: string;
 }

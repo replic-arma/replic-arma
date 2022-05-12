@@ -13,35 +13,87 @@ mod swifty;
 mod util;
 
 use std::collections::HashMap;
+use std::fs;
+use std::path::PathBuf;
 
-use crate::commands::repo::download;
-use crate::commands::repo::get_repo;
-use crate::commands::repo::hash_check;
-use crate::commands::util::dir_exists;
-use crate::commands::util::file_exists;
-use crate::commands::util::get_a3_dir;
-use directories::ProjectDirs;
-use tauri::async_runtime::Mutex;
+use crate::commands::{
+    repo::{download, get_repo, hash_check, pause_download},
+    util::{dir_exists, file_exists, get_a3_dir},
+};
+use tauri::{api::path::app_dir, async_runtime::Mutex, Manager};
 use util::methods::load_t;
 
 use state::ReplicArmaState;
 
-fn init_state() -> anyhow::Result<ReplicArmaState> {
-    let proj_dirs = Box::new(
-        ProjectDirs::from("", "", "replic-arma")
-            .unwrap()
-            .data_local_dir()
-            .to_owned(),
-    );
+#[cfg(target_os = "windows")]
+use windows::Win32::{
+    Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, RECT, WPARAM},
+    UI::{
+        Input::KeyboardAndMouse::SetFocus,
+        WindowsAndMessaging::{
+            CallNextHookEx, GetWindowRect, GetWindowThreadProcessId, SetWindowPos,
+            SetWindowsHookExW, CWPSTRUCT, HHOOK, MSG, SWP_NOMOVE, WH_CALLWNDPROC, WH_GETMESSAGE,
+            WM_EXITSIZEMOVE, WM_NCLBUTTONDOWN,
+        },
+    },
+};
 
-    let hashes: HashMap<String, (String, i64)> = load_t(proj_dirs.join("hashes.json"))?;
+fn init_state(app_dir: PathBuf) -> anyhow::Result<ReplicArmaState> {
+    let file_path = app_dir.join("hashes.json");
+    println!(
+        "Using app dir path: {}",
+        file_path.to_str().unwrap_or_default()
+    );
+    let hashes_load_result: anyhow::Result<HashMap<String, (String, i64)>> = load_t(&file_path);
+
+    let hashes = match hashes_load_result {
+        Ok(hashes) => hashes,
+        Err(_) => {
+            if file_path.is_file() {
+                if let Err(err) = fs::remove_file(file_path) {
+                    println!("Error {}", err);
+                }
+            }
+            HashMap::<String, (String, i64)>::new()
+        }
+    };
 
     let state = ReplicArmaState {
-        data_dir: proj_dirs,
+        data_dir: Box::new(app_dir),
         known_hashes: Mutex::new(hashes),
+        downloading: Mutex::new(None),
     };
 
     Ok(state)
+}
+
+#[cfg(target_os = "windows")]
+unsafe extern "system" fn get_msg_callback(code: i32, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
+    let msg = *(l_param.0 as *mut MSG);
+    if msg.message == WM_NCLBUTTONDOWN {
+        SetFocus(msg.hwnd);
+    }
+    CallNextHookEx(HHOOK(0), code, w_param, l_param)
+}
+
+#[cfg(target_os = "windows")]
+unsafe extern "system" fn call_wnd_callback(
+    code: i32,
+    w_param: WPARAM,
+    l_param: LPARAM,
+) -> LRESULT {
+    let cwp = *(l_param.0 as *mut CWPSTRUCT);
+    if cwp.message == WM_EXITSIZEMOVE {
+        let mut rect = RECT::default();
+        if GetWindowRect(cwp.hwnd, &mut rect as *mut RECT).as_bool() {
+            let width = rect.right - rect.left;
+            let height = rect.bottom - rect.top;
+
+            SetWindowPos(cwp.hwnd, HWND(0), 0, 0, width + 1, height + 1, SWP_NOMOVE);
+            SetWindowPos(cwp.hwnd, HWND(0), 0, 0, width, height, SWP_NOMOVE);
+        }
+    }
+    CallNextHookEx(HHOOK(0), code, w_param, l_param)
 }
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
@@ -58,23 +110,66 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // println!("{}", repo.build_date);
     // let swifty = SwiftyRepository::from_repo_json(String::from("https://swifty.projectawesome.net/event/repo.json"));
     //repo.generate_file_map();
+    // let app =
 
     tauri::Builder::default()
-        .manage(init_state()?)
+        .setup(move |app| {
+            let app_dir = app_dir(&app.config()).expect("Couldn't get app dir path!");
+            app.manage(init_state(app_dir.clone()).unwrap_or_else(|_| {
+                println!("Error during init state! Using default state!");
+                ReplicArmaState {
+                    data_dir: Box::new(app_dir),
+                    known_hashes: Mutex::new(HashMap::new()),
+                    downloading: Mutex::new(None),
+                }
+            }));
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             hash_check,
             get_repo,
             download,
+            pause_download,
             file_exists,
             dir_exists,
             get_a3_dir
         ])
+        .on_page_load(|window, _| {
+            #[cfg(target_os = "windows")]
+            if let Ok(hwnd) = window.hwnd() {
+                unsafe {
+                    let hwnd_win = HWND(hwnd as isize);
+                    let thread_id = GetWindowThreadProcessId(hwnd_win, std::ptr::null_mut());
+                    SetWindowsHookExW(
+                        WH_GETMESSAGE,
+                        Some(get_msg_callback),
+                        HINSTANCE::default(),
+                        thread_id,
+                    );
+                    SetWindowsHookExW(
+                        WH_CALLWNDPROC,
+                        Some(call_wnd_callback),
+                        HINSTANCE::default(),
+                        thread_id,
+                    );
+                }
+            }
+        })
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::Moved(_) = event.event() {
+                // let win = event.window();
+                // TODO: call NotifyParentWindowPositionChanged here
+                // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
+                // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
+            }
+        })
         // .build(tauri::generate_context!())
         // .expect("error while running tauri application")
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
     // app.run(|app_handle, e| {
+    //     EventHandl
     //     if let Event::CloseRequested { label, api, .. } = e {
     //         let app_handle = app_handle.clone();
     //         let window = app_handle.get_window(&label).unwrap();
@@ -106,11 +201,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
 
-    use std::{
-        fs::File,
-        path::{Path, PathBuf},
-        str::FromStr,
-    };
+    use std::{path::PathBuf, str::FromStr};
 
     use crate::{
         a3s::A3SRepository,
@@ -173,24 +264,24 @@ mod tests {
         println!("{}", a3s.download_server.url);
     }
 
-    #[test]
-    fn dir_exists_test() {
-        assert!(dir_exists("./src".to_string()).unwrap());
+    #[tokio::test]
+    async fn dir_exists_test() {
+        assert!(dir_exists("./src".to_string()).await.unwrap());
     }
 
-    #[test]
-    fn dir_not_exists_test() {
-        assert!(!dir_exists("./src/1337".to_string()).unwrap());
+    #[tokio::test]
+    async fn dir_not_exists_test() {
+        assert!(!dir_exists("./src/1337".to_string()).await.unwrap());
     }
 
-    #[test]
-    fn file_exists_test() {
-        assert!(file_exists("./src/main.rs".to_string()).unwrap());
+    #[tokio::test]
+    async fn file_exists_test() {
+        assert!(file_exists("./src/main.rs".to_string()).await.unwrap());
     }
 
-    #[test]
-    fn file_not_exists_test() {
-        assert!(!file_exists("./src/main".to_string()).unwrap());
+    #[tokio::test]
+    async fn file_not_exists_test() {
+        assert!(!file_exists("./src/main".to_string()).await.unwrap());
     }
 
     #[tokio::test]
@@ -200,8 +291,9 @@ mod tests {
             .unwrap();
 
         download(
-            a3s.clone(),
-            ".\\test_out\\".to_string(),
+            a3s.repo_typ,
+            a3s.download_server.url.clone(),
+            "L:\\Repos\\rust\\replic-arma\\src-tauri\\test_out".to_string(),
             a3s.files[0..5]
                 .into_iter()
                 .map(|f| f.path.clone())
@@ -213,9 +305,9 @@ mod tests {
         //println!("{}", a3s.download_server.url);
     }
 
-    #[test]
-    fn get_a3_dir_test() {
-        let a3_dir = get_a3_dir().unwrap();
+    #[tokio::test]
+    async fn get_a3_dir_test() {
+        let a3_dir = get_a3_dir().await.unwrap();
         let path = PathBuf::from_str(&a3_dir).unwrap();
         println!("Arma 3 dir: {}", path.display());
 

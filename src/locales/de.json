@@ -1,1 +1,69 @@
-{}
+{
+    "repositories": "Repositories",
+    "repository": {
+        "title": "Repository",
+        "name": "Repository Name",
+        "autoconfig": "Repository Autoconfig",
+        "add": "Add Repository"
+    },
+    "modsets": "Modsets",
+    "modset": {
+        "title": "Modset",
+        "name": "Modset Name",
+        "add": "Add Modset"
+    },
+    "collections": "Collections",
+    "collection": {
+        "title": "Collection",
+        "name": "Collection Name",
+        "add": "Add Collection"
+    },
+    "download-status": {
+        "outdated": "Outdated",
+        "queued": "Update Pending",
+        "paused": "Paused",
+        "downloading": "Downloading",
+        "ready": "Ready to play",
+        "play": "Play",
+        "checking": "Checking",
+        "unknown": "Unknown"
+    },
+    "server": {
+        "title": "Server",
+        "empty": "No Server available"
+    },
+    "submit": "Submit",
+    "ready": "Ready to play",
+    "updating": "Updating",
+    "select": "Select",
+    "a3exe": "Arma 3 Exe",
+    "mod_directory": "Mod Directory",
+    "language": "Language",
+    "download_max_speed": "Max Download Speed",
+    "cache_clear": "Clear Cache",
+    "settings": {
+        "theme": "Theme",
+        "title": "Settings",
+        "developer": "Developer",
+        "reset": "Reset Settings",
+        "base": "General",
+        "noPause": "No Pause",
+        "window": "Windowed",
+        "battleye": "Enable Battleye",
+        "checkSignatures": "Check Signatures",
+        "performance": "Performance",
+        "hugepages": "Huge Pages",
+        "emptyWorld": "Default World Empty",
+        "noLogs": "No Logs",
+        "noSplash": "No Splash Screen",
+        "filePatching": "File Patching",
+        "showScriptErrors": "Show Script Errors",
+        "custom_parameter": "Custom Parameters",
+        "theme_option": {
+            "light": "Light",
+            "dark": "Dark"
+        }
+    },
+    "remove": "Remove",
+    "save": "Save"
+}

@@ -1,67 +1,58 @@
 <template>
-    <replic-dialog :dialogName="'collectionAdd'">
-        <template v-slot:header>
-            <span>{{$t('collection.add')}}</span>
-            <mdicon role="button" @click="dialogStore.toggleDialog('collectionAdd')" name="close" size="35" />
-        </template>
-        <template v-slot:main>
-            <div class="txt">
-                <label for="collectionName">{{$t('collection.name')}}</label>
-                <div class="txt__input-wrapper">
-                    <input class="txt__input" type="text" name="collectionName" v-model="collectionName" />
-                </div>
+    <mdicon name="plus" class="add-button" role="button" @click="isOpen = true"></mdicon>
+    <Teleport v-if="isOpen" to="#modal-target">
+        <div class="replic-dialog">
+            <div class="replic-dialog__heading">
+                <span v-t="'collection.add'"></span>
+                <mdicon role="button" @click="isOpen = false" name="close" size="35" />
             </div>
-            <button class="button" @click="addCollection">{{$t('collection.add')}}</button>
-        </template>
-    </replic-dialog>
+            <div class="replic-dialog__content">
+                <div class="txt">
+                    <label for="collectionName" v-t="'collection.name'"></label>
+                    <div class="txt__input-wrapper">
+                        <input class="txt__input" type="text" name="collectionName" v-model="collectionName" />
+                    </div>
+                </div>
+                <button class="button" v-once @click="addCollection" v-t="'collection.add'"></button>
+            </div>
+        </div>
+    </Teleport>
 </template>
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import ReplicDialogVue from './util/ReplicDialog.vue';
-import { useDialogStore } from '@/store/dialog';
+<script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
-import { v4 as uuidv4 } from 'uuid';
+import { useRouteStore } from '@/store/route';
+import { ref } from 'vue';
 import Toast from './util/Toast';
-@Options({
-    components: {
-        ReplicDialog: ReplicDialogVue
-    }
-})
-export default class CollectionAddVue extends Vue {
-    private dialogStore = useDialogStore();
-    private collectionName: string|undefined;
-    private addCollection () {
-        const repoStore = useRepoStore();
-        if (this.collectionName === undefined) return;
-        repoStore.addCollectionToRepo(repoStore.currentRepoId,
-            {
-                id: uuidv4(),
-                name: this.collectionName
-            }
-        );
-        this.dialogStore.toggleDialog('collectionAdd');
-        Toast('Added Collection');
-    }
+const collectionName = ref('');
+const isOpen = ref(false);
+function addCollection() {
+    if (collectionName.value === null) return;
+    useRepoStore()
+        .addCollection(useRouteStore().currentRepoID ?? '', { name: collectionName.value })
+        .then(() => {
+            useRepoStore().save();
+            isOpen.value = false;
+        });
+    Toast('Added Collection');
 }
 </script>
 <style lang="scss" scoped>
 .replic-dialog {
-  height: fit-content;
-  width: 75%;
-  &::v-deep &__heading {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    font-size: 20pt;
-    margin-block-end: 2rem;
-    span:not(:first-child) {
-        cursor: pointer;
+    height: fit-content;
+    width: 75%;
+    &__heading {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        font-size: 20pt;
+        margin-block-end: 2rem;
+        span:not(:first-child) {
+            cursor: pointer;
+        }
     }
-  }
-  &::v-deep &__content {
-      display: grid;
-      row-gap: 1rem;
-  }
+    &__content {
+        display: grid;
+        row-gap: 1rem;
+    }
 }
-
 </style>

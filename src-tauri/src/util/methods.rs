@@ -1,13 +1,12 @@
 use std::{
     fs::{self, File, OpenOptions},
-    path::PathBuf,
+    path::Path,
 };
 
 use anyhow::Result;
-
 use serde::{de::DeserializeOwned, Serialize};
 
-pub fn load_t<T>(path: PathBuf) -> Result<T>
+pub fn load_t<T>(path: &Path) -> Result<T>
 where
     T: Serialize + DeserializeOwned + Default,
 {
@@ -21,7 +20,7 @@ where
     }
 }
 
-pub fn save_t<T>(path: PathBuf, data: T) -> Result<()>
+pub fn save_t<T>(path: &Path, data: T) -> Result<()>
 where
     T: Serialize,
 {

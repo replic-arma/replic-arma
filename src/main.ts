@@ -8,7 +8,10 @@ import { createPinia } from 'pinia';
 import TransitionVue from './components/util/Transition.vue';
 import LoaderVue from './components/util/Loader.vue';
 import TooltipVue from './components/util/Tooltip.vue';
-import { System } from './util/system';
+import { useRepoStore } from './store/repo';
+import { useSettingsStore } from './store/settings';
+import { useDownloadStore } from './store/download';
+import { useHashStore } from './store/hash';
 
 const app = createApp(App);
 app.component('rtransition', TransitionVue);
@@ -17,9 +20,12 @@ app.component('Tooltip', TooltipVue);
 app.use(router);
 app.use(createPinia());
 app.use(mdiVue, {
-    icons: mdijs
+    icons: mdijs,
 });
 app.mount('#app');
+
+useRepoStore();
+useSettingsStore();
+useHashStore();
+useDownloadStore();
 app.use(i18n);
-System.init();
-i18n.global.locale = 'de';

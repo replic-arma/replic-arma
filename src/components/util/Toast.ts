@@ -18,34 +18,26 @@ const createToast = (text: string) => {
 
 const addToast = (toast: HTMLOutputElement) => {
     if (Toaster === undefined) return;
-    const { matches: motionOK } = window.matchMedia(
-        '(prefers-reduced-motion: no-preference)'
-    );
+    const { matches: motionOK } = window.matchMedia('(prefers-reduced-motion: no-preference)');
 
-    Toaster.children.length && motionOK
-        ? flipToast(toast)
-        : Toaster.appendChild(toast);
+    Toaster.children.length && motionOK ? flipToast(toast) : Toaster.appendChild(toast);
 };
 
-const Toast = (text: any) => {
+const Toast = (text: string): Promise<void> | undefined => {
     if (Toaster === undefined) return;
     const toast = createToast(text);
     addToast(toast);
 
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise<void>(async (resolve, reject) => {
-        await Promise.allSettled(
-            toast.getAnimations().map(animation =>
-                animation.finished
-            )
-        );
+    return new Promise<void>(async (resolve) => {
+        await Promise.allSettled(toast.getAnimations().map((animation) => animation.finished));
         Toaster.removeChild(toast);
         resolve();
     });
 };
 
 // https://aerotwist.com/blog/flip-your-animations/
-const flipToast = (toast: any) => {
+const flipToast = (toast: HTMLOutputElement) => {
     if (Toaster === undefined) return;
     // FIRST
     const first = Toaster.offsetHeight;
@@ -60,12 +52,9 @@ const flipToast = (toast: any) => {
     const invert = last - first;
 
     // PLAY
-    const animation = Toaster.animate([
-        { transform: `translateY(${invert}px)` },
-        { transform: 'translateY(0)' }
-    ], {
+    const animation = Toaster.animate([{ transform: `translateY(${invert}px)` }, { transform: 'translateY(0)' }], {
         duration: 150,
-        easing: 'ease-out'
+        easing: 'ease-out',
     });
 
     animation.startTime = document.timeline.currentTime;

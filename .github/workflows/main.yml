@@ -38,6 +38,7 @@ jobs:
 
       - name: build fe
         run: |
+          npm run ci
           npm run build
 
       - uses: JonasKruckenberg/tauri-build@v0.1.2-beta.9

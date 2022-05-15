@@ -138,21 +138,11 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
                 undefined
             );
 
-            const crateDir = await glob(`./**/Cargo.toml`).then(([manifest]) => join(process.cwd(), dirname(manifest)));
-            const metaRaw = await execCmd('cargo', ['metadata', '--no-deps', '--format-version', '1'], {
-                cwd: crateDir,
-            });
-            const meta = JSON.parse(metaRaw);
-            const targetDir = meta.target_directory;
-
-            const profile = 'release';
-            const bundleDir = join(targetDir, profile, 'bundle');
-
             const macOSExts = ['app', 'app.tar.gz', 'app.tar.gz.sig', 'dmg'];
             const linuxExts = ['AppImage', 'AppImage.tar.gz', 'AppImage.tar.gz.sig', 'deb'];
             const windowsExts = ['msi', 'msi.zip', 'msi.zip.sig'];
 
-            const artifactsLookupPattern = `${bundleDir}/*/!(linuxdeploy)*.{${[
+            const artifactsLookupPattern = `./src-tauri/target/release/*/*/!(linuxdeploy)*.{${[
                 ...macOSExts,
                 linuxExts,
                 windowsExts,
@@ -160,8 +150,14 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
 
             core.debug(`Looking for artifacts using this pattern: ${artifactsLookupPattern}`);
 
-            const artifacts = await glob(artifactsLookupPattern, { absolute: true, filesOnly: false });
+            const artifacts1 = await glob(artifactsLookupPattern, { absolute: true, filesOnly: false });
 
+            const artifactsLookupPattern2 = `./src-tauri/target/release/*.exe`;
+
+            core.debug(`Looking for artifacts using this pattern: ${artifactsLookupPattern2}`);
+
+            const artifacts2 = await glob(artifactsLookupPattern2, { absolute: true, filesOnly: false });
+            const artifacts = [...artifacts1, ...artifacts2];
             let i = 0;
             for (const artifact of artifacts) {
                 if (artifact.endsWith('.app') && !artifacts.some((a) => a.endsWith('.app.tar.gz'))) {
@@ -175,6 +171,25 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
                 i++;
             }
             core.setOutput('artifacts', JSON.stringify(artifacts));
+
+            async function execCmd(
+                cmd: string,
+                args: string[],
+                options: Omit<ExecOptionsWithStringEncoding, 'encoding'> = {}
+            ) {
+                return new Promise((resolve, reject) => {
+                    exec(`${cmd} ${args.join(' ')}`, { ...options, encoding: 'utf-8' }, (error, stdout, stderr) => {
+                        if (error) {
+                            console.error(
+                                `Failed to execute cmd ${cmd} with args: ${args.join(' ')}. reason: ${error}`
+                            );
+                            reject(stderr);
+                        } else {
+                            resolve(stdout);
+                        }
+                    });
+                });
+            }
         },
     };
 }

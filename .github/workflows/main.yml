@@ -52,6 +52,10 @@ jobs:
     needs: build-binaries
     runs-on: ubuntu-latest
     steps:
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
       - uses: actions/checkout@v2
       # Download the previously uploaded artifacts
       - uses: actions/download-artifact@v3
@@ -60,10 +64,15 @@ jobs:
           name: artifacts
           path: artifacts
       # And create a release with the artifacts attached
+      - name: Generate release tag
+        id: tag
+        run: |
+          echo "::set-output name=release_tag::Build_$(date +"%Y.%m.%d_%H-%M")"
       - name: 'create release'
         uses: softprops/action-gh-release@master
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
           draft: false
           files: ./artifacts/**/*

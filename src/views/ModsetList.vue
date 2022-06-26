@@ -2,12 +2,13 @@
     <ul class="modsets" v-if="repository !== undefined">
         <Modset v-for="(modset, i) of repository.modsets" :key="i" :modset="modset" :modsetIndex="modset.id" />
     </ul>
-    <mdicon name="plus" class="add-button" role="button"></mdicon>
+    <ModsetAdd></ModsetAdd>
 </template>
 
 <script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
 import Modset from '../components/Modset.vue';
+import ModsetAdd from '../components/ModsetAdd.vue';
 const repository = useRepoStore().currentRepository;
 </script>
 

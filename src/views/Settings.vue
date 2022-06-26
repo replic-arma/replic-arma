@@ -14,7 +14,6 @@
 <script lang="ts" setup>
 import TabsVue from '@/components/util/Tabs.vue';
 import type { TabsItem } from '@/components/util/Tabs.vue';
-import General from '@/components/settings/General.vue';
 import LaunchVue from '@/components/settings/Launch.vue';
 import AboutVue from '@/components/settings/About.vue';
 import { shallowRef } from 'vue';

@@ -5,13 +5,7 @@
             <small class="modset__description">{{ modset.description }}</small>
         </div>
         <span class="repo__status" :class="`status--${status}`">
-            <template v-if="status === 'checking'">
-                <mdicon name="loading" spin />
-            </template>
-            <span v-t="'download-status.' + status"></span>
-            <template v-if="status === 'checking'">
-                <span>...{{ progress }}%</span>
-            </template>
+            <Status :status="status" :progress="progress"></Status>
         </span>
         <div class="button modset__play">
             <span>Play</span>
@@ -27,6 +21,8 @@ import { useHashStore } from '@/store/hash';
 import type { IHashItem } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
 import { computed } from 'vue';
+import { useDownloadStore } from '@/store/download';
+import Status from './util/Status.vue';
 const props = defineProps({
     modset: {
         type: Object,
@@ -36,6 +32,8 @@ const props = defineProps({
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.modset.id);
     if (cacheData === undefined) return 'checking';
+    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === props.modset.id)
+        return 'downloading';
     if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
         return 'outdated';
     } else {
@@ -43,9 +41,18 @@ const status = computed(() => {
     }
 });
 const progress = computed(() => {
-    if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID) return 0;
-    const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
-    return Math.floor((checkedFiles / filesToCheck) * 100);
+    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === props.modset.id) {
+        return Number(
+            Number(
+                (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+            ).toFixed(0)
+        );
+    } else {
+        if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID)
+            return 0;
+        const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
+        return Math.floor((checkedFiles / filesToCheck) * 100);
+    }
 });
 </script>
 <style lang="scss" scoped>

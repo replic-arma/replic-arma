@@ -5,7 +5,9 @@
             <div class="replic-dialog__heading">
                 <mdicon role="button" name="close" size="40" @click="isOpen = false" />
                 <h1>Downloads</h1>
-                <DownloadProgess />
+                <keep-alive>
+                    <DownloadProgess />
+                </keep-alive>
             </div>
 
             <ul class="download-items">

@@ -1,48 +1,38 @@
 <template>
     <div class="replic-path-selector">
-        <label :for="pathSelector.name">{{ pathSelector.label }}</label>
+        <label :for="pathSelector.name" v-t="pathSelector.label"></label>
         <div class="replic-path-selector__input-wrapper">
             <input type="text" :id="pathSelector.name" class="replic-path-selector__input" v-model="model" />
-            <button class="replic-path-selector__button" @click="openDialog">
+            <button class="replic-path-selector__button" @click="openDialog()">
                 <span v-t="'select'"></span>
             </button>
         </div>
     </div>
 </template>
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+<script lang="ts" setup>
 import { open, type OpenDialogOptions } from '@tauri-apps/api/dialog';
-import { useSettingsStore } from '@/store/settings';
-export interface PathSelectorModel {
-    label: string;
-    name: string;
+import { ref, watch, defineEmits } from 'vue';
+interface Props {
+    pathSelectorOptions: OpenDialogOptions;
+    pathSelector: {
+        label: string;
+        name: string;
+    }
+    modelValue: string;
 }
-@Options({
-    emits: ['update:modelValue'],
-    components: {},
-})
-export default class ReplicPathSelectorVue extends Vue {
-    @Prop({ type: Object }) private pathSelector!: PathSelectorModel;
-    @Prop({ type: Object }) private pathSelectorOptions: OpenDialogOptions = {};
+const props = defineProps<Props>();
+const emit = defineEmits(['update:modelValue']);
+const model = ref(props.modelValue);
 
-    @Prop({ type: [String], required: true }) private modelValue!: string | null;
+watch(model, async (newModel, oldModel) => {
+    emit('update:modelValue', newModel);
+});
 
-    private get model() {
-        return this.modelValue;
-    }
-
-    private set model(val) {
-        this.$emit('update:modelValue', val);
-    }
-
-    private settingsStore = useSettingsStore();
-    public openDialog(): void {
-        open(this.pathSelectorOptions).then((filepath) => {
-            if (filepath === null) return;
-            this.model = filepath as string;
-        });
-    }
+function openDialog(): void {
+    open(props.pathSelectorOptions ?? {}).then((filepath) => {
+        if (filepath === null) return;
+        model.value = filepath as string;
+    });
 }
 </script>
 

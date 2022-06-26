@@ -1,32 +1,45 @@
 <template>
-    <replic-dialog :dialogName="'modsetAdd'">
-        <template v-slot:header>
-            <span v-t="'modset.add'"></span>
-            <mdicon role="button" name="close" size="35" />
-        </template>
-        <template v-slot:main>
-            <div class="txt">
-                <label for="modsetName" v-t="'modset.name'"></label>
-                <div class="txt__input-wrapper">
-                    <input class="txt__input" type="text" name="modsetName" />
-                </div>
+    <div class="add-button" @click="isOpen = true">
+        <mdicon name="plus" role="button"></mdicon>
+        <span v-t="'modset.add'"></span>
+    </div>
+    <Teleport v-if="isOpen" to="#modal-target">
+        <div class="replic-dialog">
+            <div class="replic-dialog__heading">
+                <span v-t="'repository.add'"></span>
+                <mdicon role="button" @click="isOpen = false" name="close" size="35" />
             </div>
-            <button class="button" v-t="'submit'"></button>
-        </template>
-    </replic-dialog>
+            <div class="replic-dialog__content">
+                <loader v-if="loading" />
+                <div class="txt">
+                    <label for="repoName" v-t="'repository.autoconfig'"></label>
+                    <div class="txt__input-wrapper">
+                        <input
+                            class="txt__input"
+                            type="text"
+                            name="repoName"
+                            v-model="autoConfigModel"
+                            :disabled="loading"
+                        />
+                    </div>
+                </div>
+                <button class="button" @click="addModset" :disabled="loading" v-t="'submit'"></button>
+            </div>
+        </div>
+    </Teleport>
 </template>
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import ReplicDialogVue from './util/ReplicDialog.vue';
-import { useRepoStore } from '@/store/repo';
-
-@Options({
-    components: {
-        ReplicDialog: ReplicDialogVue,
-    },
-})
-export default class ModsetAddVue extends Vue {
-    private repoStore = useRepoStore();
+<script lang="ts" setup>
+import { ref } from "vue";
+import { useRepoStore } from "@/store/repo";
+import { useRouteStore } from "@/store/route";
+const routeStore = useRouteStore();
+const autoConfigModel = ref('');
+const isOpen = ref(false);
+const loading = ref(false);
+const errorMsg = ref('');
+const repoStore = useRepoStore();
+function addModset() {
+    loading.value = true;
 }
 </script>
 <style lang="scss" scoped>

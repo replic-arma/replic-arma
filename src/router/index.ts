@@ -36,16 +36,6 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/repo/:repoId/collection/:collectionId',
         component: () => import('../views/Collection.vue'),
-        children: [
-            {
-                path: 'mods',
-                component: () => import('../views/CollectionMods.vue'),
-            },
-            {
-                path: 'servers',
-                component: () => import('../views/ServerList.vue'),
-            },
-        ],
     },
     {
         path: '/reposettings/:repoId',

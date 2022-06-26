@@ -13,25 +13,19 @@
         >
     </div>
 </template>
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
-
-@Options({
-    emits: ['update:modelValue'],
-    components: {},
-})
-export default class ReplicCheckboxVue extends Vue {
-    @Prop({ type: String }) private label!: string;
-    @Prop({ type: Boolean, required: true }) private modelValue!: boolean | null;
-    private get model() {
-        return this.modelValue;
-    }
-
-    private set model(val) {
-        this.$emit('update:modelValue', val);
-    }
+<script lang="ts" setup>
+import { ref, watch, defineEmits } from 'vue';
+interface Props {
+    label: string;
+    modelValue: boolean;
 }
+const props = defineProps<Props>();
+const emit = defineEmits(['update:modelValue']);
+const model = ref(props.modelValue);
+
+watch(model, async (newModel, oldModel) => {
+    emit('update:modelValue', newModel);
+});
 </script>
 
 <style lang="scss">

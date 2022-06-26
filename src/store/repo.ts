@@ -49,9 +49,7 @@ export const useRepoStore = defineStore('repo', () => {
         repo.modsets = repo.modsets.map((modset: Modset) => {
             return { ...modset, id: uuidv4() };
         });
-        modsetCache.value = await ReplicWorker.mapFilesToMods(repo.files, repo.modsets);
         const repoId = uuidv4();
-        saveModsetCache(repoId, modsetCache.value);
         repos.value?.push({
             ...repo,
             id: repoId,
@@ -59,6 +57,7 @@ export const useRepoStore = defineStore('repo', () => {
             type: 'a3s',
             collections: [],
         });
+        updateModsetCache(repoId);
         save();
         useHashStore().addToQueue(repo as IReplicArmaRepository);
     }
@@ -101,6 +100,7 @@ export const useRepoStore = defineStore('repo', () => {
         if (repo.config_url === undefined) throw new Error('Repository has no autoconfig');
         const repoData = await getRepoFromURL(`${repo.config_url}autoconfig`);
         if (repoData.revision !== repo.revision) {
+            console.log(`Update for Repo ${repoData.name} detected`);
             let mods: ModsetMod[] = [];
             if (repoData.files !== undefined) {
                 mods = await ReplicWorker.createModsetFromFiles(repoData.files);
@@ -115,18 +115,27 @@ export const useRepoStore = defineStore('repo', () => {
                 allModsModset.mods = mods;
                 repo.modsets.unshift(allModsModset);
             }
-            modsetCache.value = await ReplicWorker.mapFilesToMods(repoData.files, toRaw(repo.modsets));
-            saveModsetCache(repo.id, modsetCache.value);
             repos.value = useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repo?.id) ?? [];
             repos.value?.push({
                 ...repo,
                 id: repo.id,
                 image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
                 type: 'a3s',
+                revision: repoData.revision,
                 collections: [],
             });
+            updateModsetCache(repoID);
             save();
         }
+    }
+
+    async function updateModsetCache(repoID: string) {
+        if (repos.value === null) throw new Error('Repositories not loaded yet.');
+        const repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
+        if (repo === undefined) throw new Error('Repository not found');
+        const calculatedModsetCache = await ReplicWorker.mapFilesToMods(toRaw(repo.files), toRaw(repo.modsets));
+        useRepoStore().modsetCache = [...calculatedModsetCache, ...(useRepoStore().modsetCache ?? [])];
+        saveModsetCache(repo.id, calculatedModsetCache);
     }
 
     loadRepos().then((reposdata: Array<IReplicArmaRepository>) => {
@@ -149,5 +158,6 @@ export const useRepoStore = defineStore('repo', () => {
         repos,
         modsetCache,
         checkRevision,
+        updateModsetCache,
     };
 });

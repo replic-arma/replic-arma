@@ -50,7 +50,17 @@
       "all": true,
       "fs": {
         "scope": ["$APP/", "$APP/*", "$APP\\", "$APP\\*"]
-      }
+      },
+      "shell": {
+        "open": true,
+        "scope": [
+          {
+            "name": "run-game",
+            "cmd": "cmd",
+            "args": ["/C", "start", "", { "validator": "\\S+" }, { "validator": "\\S+" }]
+          }
+        ]
+      },
     },
     "windows": [
       {

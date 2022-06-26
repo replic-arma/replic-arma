@@ -1,5 +1,8 @@
 <template>
-    <mdicon name="plus" class="add-button" role="button" @click="isOpen = true"></mdicon>
+    <div class="add-button" @click="isOpen = true">
+        <mdicon name="plus" role="button"></mdicon>
+        <span v-t="'repository.add'"></span>
+    </div>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
@@ -25,32 +28,27 @@
         </div>
     </Teleport>
 </template>
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { useRepoStore } from '@/store/repo';
-import Toast from './util/Toast';
-@Options({})
-export default class RepositoryAddVue extends Vue {
-    private autoConfigModel = '';
-    private isOpen = false;
-    private loading = false;
-    private errorMsg = '';
-    private addRepo() {
-        this.loading = true;
-        const repoStore = useRepoStore();
-        repoStore
-            .addRepo(this.autoConfigModel)
-            .then(() => {
-                this.isOpen = false;
-                this.loading = false;
-                Toast('Added Repository');
-            })
-            .catch((error) => {
-                console.log(error);
-                this.loading = false;
-                this.errorMsg = error;
-            });
-    }
+<script lang="ts" setup>
+import { ref } from "vue";
+import { useRepoStore } from "@/store/repo";
+const autoConfigModel = ref('');
+const isOpen = ref(false);
+const loading = ref(false);
+const errorMsg = ref('');
+const repoStore = useRepoStore();
+function addRepo() {
+    loading.value = true;
+    repoStore
+        .addRepo(autoConfigModel.value)
+        .then(() => {
+            isOpen.value = false;
+            loading.value = false;
+        })
+        .catch((error) => {
+            console.log(error);
+            loading.value = false;
+            errorMsg.value = error;
+        });
 }
 </script>
 <style lang="scss" scoped>

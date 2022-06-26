@@ -352,11 +352,10 @@ input[type="checkbox"][role="switch"] {
 }
 
 .add-button {
-  display: grid;
+  display: flex;
   background: var(--c-surf-3);
   border-radius: 2rem;
-  inline-size: var(--space-xl);
-  block-size: var(--space-xl);
+  inline-size: 10rem;
   justify-content: center;
   align-content: center;
   margin: auto;

@@ -1,8 +1,5 @@
 <template>
-    <div class="add-button" @click="isOpen = true">
-        <mdicon name="plus" role="button"></mdicon>
-        <span v-t="'collection.add'"></span>
-    </div>
+<mdicon name="dots-vertical" @click="isOpen = true"></mdicon>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
@@ -22,10 +19,19 @@
     </Teleport>
 </template>
 <script lang="ts" setup>
+import type { IReplicArmaRepository } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
 import { ref } from 'vue';
-import Toast from './util/Toast';
+import Toast from '../util/Toast';
+const repository = useRepoStore().currentRepository;
+function removeRepo(): void {
+    useRepoStore().repos =
+        useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repository?.id) ?? [];
+    useRepoStore().save();
+    Toast('Removed Repository ' + repository?.name);
+}
+
 const collectionName = ref('');
 const isOpen = ref(false);
 function addCollection() {

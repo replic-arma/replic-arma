@@ -66,10 +66,22 @@ export const useHashStore = defineStore('hash', () => {
                 ...(await loadModsetCache(currentHashRepo.value.id)),
                 ...(useRepoStore().modsetCache ?? []),
             ];
+            const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
+            let currentHashRepoModsetCache = toRaw(
+                useRepoStore().modsetCache?.filter((cacheModset: Modset) => neededModsets.includes(cacheModset.id))
+            );
+            if (currentHashRepoModsetCache === undefined || currentHashRepoModsetCache.length === 0) {
+                console.log(`No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
+                await useRepoStore().updateModsetCache(currentHashRepo.value.id);
+                currentHashRepoModsetCache = toRaw(
+                    useRepoStore().modsetCache?.filter((cacheModset: Modset) => neededModsets.includes(cacheModset.id))
+                );
+            }
+            if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
             const cached = toRaw(cache.value.find((cacheValue) => cacheValue.id === currentHashRepo.value?.id));
             for (const modset of currentHashRepo.value.modsets) {
                 const modsetCache = toRaw(
-                    useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modset.id)
+                    currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id)
                 );
                 if (cached?.checkedFiles === undefined || modsetCache === undefined) throw new Error('cache empty!');
                 const modsetFiles = modsetCache.mods?.flatMap((mod: ModsetMod) => mod.files);

@@ -7,12 +7,11 @@
             <h1>Settings</h1>
         </div>
         <!-- <TabsVue :tabItems="subnaviItems"></TabsVue> -->
-        <GeneralRepoVue></GeneralRepoVue>
+        <RepoSettings></RepoSettings>
     </div>
 </template>
 
 <script lang="ts" setup>
-import GeneralRepoVue from '@/components/settings/GeneralRepo.vue';
 import LaunchVue from '@/components/settings/Launch.vue';
 import TabsVue from '@/components/util/Tabs.vue';
 import type { TabsItem } from '@/components/util/Tabs.vue';
@@ -21,10 +20,7 @@ import { useRouteStore } from '@/store/route';
 import { shallowRef } from 'vue';
 
 const repository = useRepoStore().currentRepository;
-const subnaviItems: TabsItem[] = [
-    { label: 'General', component: shallowRef(GeneralRepoVue) },
-    { label: 'Launch Options', component: shallowRef(LaunchVue) },
-];
+const subnaviItems: TabsItem[] = [];
 
 </script>
 

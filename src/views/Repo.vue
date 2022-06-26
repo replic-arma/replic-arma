@@ -6,9 +6,7 @@
                 <h1>{{ repository.name }}</h1>
                 <div class="icon-group">
                     <mdicon name="refresh" size="45" @click="checkRepo" />
-                    <router-link class="button" :to="'/reposettings/' + repository.id"
-                        ><mdicon name="cog" size="55"
-                    /></router-link>
+                    <RepoSettings></RepoSettings>
                 </div>
             </template>
             <Loader v-else />
@@ -29,6 +27,7 @@ import type { SubnaviItem } from '@/components/util/Subnavi.vue';
 import { useRepoStore } from '../store/repo';
 import { computed } from '@vue/runtime-core';
 import { useHashStore } from '@/store/hash';
+import RepoSettings from '../components/settings/RepoSettings.vue';
 
 const repository = computed(() => useRepoStore().currentRepository);
 const subnaviItems: SubnaviItem[] = [
@@ -41,7 +40,7 @@ function checkRepo() {
     useHashStore().addToQueue(repository.value);
 }
 function formatDate(timestamp: number) {
-    const s = new Date(timestamp / 1000000).toLocaleDateString("de-de");
+    const s = new Date(timestamp / 1000000).toLocaleDateString('de-de');
     return s;
 }
 </script>

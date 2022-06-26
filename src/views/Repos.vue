@@ -5,7 +5,7 @@
             <div class="icon-group">
                 <Downloads />
                 <mdicon name="refresh" size="45" v-once @click="reloadRepos" />
-                <router-link class="button" to="/settings"><mdicon name="cog" size="45" /></router-link>
+                <ApplicationSettings></ApplicationSettings>
             </div>
         </div>
         <ul class="repos__list">
@@ -27,6 +27,7 @@ import { computed } from '@vue/runtime-core';
 import Downloads from '../components/download/Downloads.vue';
 import type { IReplicArmaRepository } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
+import ApplicationSettings from '../components/settings/ApplicationSettings.vue';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
     const repos = useRepoStore().repos;

@@ -138,7 +138,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             #[cfg(target_os = "windows")]
             if let Ok(hwnd) = window.hwnd() {
                 unsafe {
-                    let hwnd_win = HWND(hwnd as isize);
+                    let hwnd_win = HWND(hwnd.0 as isize);
                     let thread_id = GetWindowThreadProcessId(hwnd_win, std::ptr::null_mut());
                     SetWindowsHookExW(
                         WH_GETMESSAGE,

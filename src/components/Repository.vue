@@ -1,16 +1,12 @@
 <template>
     <li class="repo">
         <img class="repo__img" v-once :src="repository.image" />
-        <span class="repo__name" v-once>{{ repository.name }}</span>
-        <span class="repo__status" :class="`status--${status}`">
-            <template v-if="status === 'checking'">
-                <mdicon name="loading" spin />
-            </template>
-            <span v-t="'download-status.' + status"></span>
-            <template v-if="status === 'checking' && progress !== 0">
-                <span>...{{ progress }}%</span>
-            </template>
-        </span>
+        <div class="repo__name-wrapper">
+            <span class="repo__name" v-once>{{ repository.name }}</span>
+            <span class="repo__status">
+                <Status :status="status" :progress="progress"></Status>
+            </span>
+        </div>
         <div class="repo__modset">
             <select v-model="currentModsetId">
                 <option v-once v-for="(modset, i) of repository.modsets" :key="i" :value="modset.id">
@@ -18,7 +14,7 @@
                 </option>
             </select>
         </div>
-        <div class="repo__play">
+        <div class="repo__play" @click="play()">
             <span>Play</span>
             <mdicon name="play" size="35" />
         </div>
@@ -31,6 +27,8 @@
 import { useHashStore } from '@/store/hash';
 import type { IHashItem } from '@/store/hash';
 import { computed, onMounted, ref } from 'vue';
+import Status from './util/Status.vue';
+import { launchModset } from '@/util/system/game';
 const props = defineProps({
     repository: {
         type: Object,
@@ -57,16 +55,18 @@ onMounted(() => {
     if (props.repository.modsets.length === 0) return '';
     currentModsetId.value = props.repository.modsets[0].id ?? '';
 });
-
+function play() {
+    launchModset(currentModsetId.value);
+}
 const currentModsetId = ref('');
 </script>
 <style lang="scss" scoped>
 .repo {
-    block-size: 5rem;
+    block-size: 6rem;
     inline-size: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 4rem 1fr 1fr 1fr 1fr 10%;
+    grid-template-columns: 4rem 3fr 2fr 1fr 10%;
     padding-inline-start: var(--space-sm);
     align-items: center;
     justify-content: center;
@@ -78,9 +78,9 @@ const currentModsetId = ref('');
         box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }
 
-    &:hover > &__play,
-    &:hover > &__modset {
-        visibility: visible;
+    &__name-wrapper {
+        display: flex;
+        flex-direction: column;
     }
 
     &__img {
@@ -89,11 +89,11 @@ const currentModsetId = ref('');
 
     &__name {
         font-weight: bold;
-        font-size: 15pt;
+        font-size: 18pt;
     }
 
     &__status {
-        text-align: center;
+        text-align: left;
     }
 
     &__open {
@@ -129,23 +129,23 @@ const currentModsetId = ref('');
     }
 
     &__play {
-        visibility: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         border-radius: 5rem;
         margin-inline-start: 1rem;
+
         & > span:first-child {
             color: var(--c-surf-2);
         }
+
         &:hover {
             transition: all 0.1s ease-in;
             background-color: var(--c-surf-3);
         }
     }
     &__modset {
-        visibility: hidden;
         position: relative;
         select {
             background: #f2f2f2;

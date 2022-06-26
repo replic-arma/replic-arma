@@ -26,8 +26,6 @@
                         <span v-if="status === 'downloading'" class="spinner spinner-spin" />
                     </button>
                 </template>
-
-                <!-- <mdicon @click="toggleDialog" name="cog" size="55" /> -->
             </div>
         </div>
         <pre>

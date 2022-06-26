@@ -53,6 +53,7 @@ export interface Collection {
     modsets?: Array<string>;
     dlc?: Array<string>;
     localMods?: Array<ModsetMod>;
+    launchOptions?: GameLaunchSettings;
 }
 
 export class JSONMap<K extends string | number, V> extends Map<K, V> {
@@ -85,4 +86,5 @@ export interface IReplicArmaRepository extends Repository {
     settings?: GameLaunchSettings;
     type?: 'local' | 'a3s' | 'swifty';
     revisionChanged?: boolean;
+    launchOptions?: GameLaunchSettings;
 }

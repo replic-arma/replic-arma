@@ -11,7 +11,7 @@
                     <template v-if="status === 'ready'">
                         <button class="button">
                             <span>Play</span>
-                            <mdicon name="play" @click="play()"/>
+                            <mdicon name="play" @click="play()" />
                         </button>
                     </template>
                     <template v-if="status === 'checking' || (status === 'updating' && progress !== 0)">
@@ -42,24 +42,23 @@
         </pre> -->
         <ul class="modset__mods">
             <li v-for="(mod, i) of modset?.mods" :key="i">
-                <Tooltip :text="mod.size" style="grid-column: 1">
-                    <div class="modset__mod">
-                        {{ mod.name }}
-                        <template v-if="outdated(mod)">
-                            <mdicon name="close" />
-                        </template>
-                        <template v-else>
-                            <mdicon name="check" />
-                        </template>
-                    </div>
-                </Tooltip>
+                <!-- <Tooltip :text="mod.size" style="grid-column: 1"> -->
+                <div class="modset__mod">
+                    {{ mod.name }}
+                    <template v-if="outdated(mod)">
+                        <mdicon name="close" />
+                    </template>
+                    <template v-else>
+                        <mdicon name="check" />
+                    </template>
+                </div>
+                <!-- </Tooltip> -->
             </li>
         </ul>
     </div>
 </template>
 
 <script lang="ts" setup>
-import TooltipVue from '@/components/util/Tooltip.vue';
 import type { ModsetMod } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
 import type { IHashItem } from '@/store/hash';
@@ -189,5 +188,3 @@ function outdated(mod: ModsetMod) {
     }
 }
 </style>
-
-

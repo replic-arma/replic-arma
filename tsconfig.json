@@ -17,7 +17,8 @@
     "experimentalDecorators": true,
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "references": [
     {

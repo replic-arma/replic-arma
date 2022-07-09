@@ -5,40 +5,40 @@
         </li>
     </ul>
 </template>
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { Prop, Watch } from 'vue-property-decorator';
+<script lang="ts" setup>
+import { nextTick, watch } from '@vue/runtime-core';
+import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+
 export interface SubnaviItem {
     label: string;
     link: string;
 }
+const props = defineProps({
+    subnaviItems: {
+        type: Array,
+        default: null,
+    },
+});
+watch(useRoute(), () => {
+    nextTick(() => routeChanged());
+});
 
-@Options({
-    components: {},
-})
-export default class SubnaviVue extends Vue {
-    @Prop({ type: Array }) private subnaviItems!: SubnaviItem[];
+onMounted(() => {
+    routeChanged();
+});
 
-    public created(): void {
-        this.onRouteChanged();
-    }
+function routeChanged() {
+    const anchor = document.querySelector('.router-link-active') as HTMLAnchorElement;
+    if (anchor === null) return;
+    const el = anchor.parentElement as HTMLLIElement;
 
-    @Watch('$route')
-    private onRouteChanged() {
-        this.$nextTick(() => {
-            const anchor = this.$el.querySelector('.router-link-active') as HTMLAnchorElement;
-            if (anchor === null) return;
-            const el = anchor.parentElement as HTMLLIElement;
-
-            const bb = el.getBoundingClientRect();
-            const parentBB = this.$el.getBoundingClientRect();
-
-            const left = bb.left - parentBB.left;
-            const width = bb.width;
-            (this.$el as HTMLUListElement).style.setProperty('--subnavi-left', `${left}px`);
-            (this.$el as HTMLUListElement).style.setProperty('--subnavi-width', `${width}px`);
-        });
-    }
+    const bb = el.getBoundingClientRect();
+    const parentBB = el.parentElement!.getBoundingClientRect();
+    const left = bb.left - parentBB.left;
+    const width = bb.width;
+    (el.parentElement as HTMLUListElement).style.setProperty('--subnavi-left', `${left}px`);
+    (el.parentElement as HTMLUListElement).style.setProperty('--subnavi-width', `${width}px`);
 }
 </script>
 <style lang="scss" scoped>

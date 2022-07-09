@@ -16,7 +16,8 @@
     ],
     "experimentalDecorators": true,
     "strictNullChecks": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true
   },
   "references": [
     {

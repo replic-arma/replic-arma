@@ -3,7 +3,7 @@
         <template v-if="status === 'outdated'">
             <mdicon name="warning" />
         </template>
-                <template v-if="status === 'checking' || status === 'downloading'">
+        <template v-if="status === 'checking' || status === 'downloading'">
             <mdicon name="loading" spin />
         </template>
         <span v-t="'download-status.' + status"></span>

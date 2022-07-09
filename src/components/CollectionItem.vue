@@ -1,6 +1,6 @@
 <template>
     <li class="collection" v-if="collection !== undefined">
-        <div class="collection__info" >
+        <div class="collection__info">
             <span class="collection__name">{{ collection.name }}</span>
             <small class="collection__description">{{ collection.description }}</small>
         </div>

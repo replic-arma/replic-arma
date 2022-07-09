@@ -1,39 +1,43 @@
 <template>
     <div class="grad-tooltip">
         <slot />
-        <span v-if="text.length > 0" ref="tooltip" class="grad-tooltip__text" role="tooltip" v-html="text"></span>
+        <span
+            v-if="text.length > 0"
+            :ref="e => positionElement(e as HTMLSpanElement|null)"
+            class="grad-tooltip__text"
+            role="tooltip"
+            v-html="text"
+        ></span>
     </div>
 </template>
 
-<script lang="ts">
-import { Prop } from 'vue-property-decorator';
-import { Options, Vue } from 'vue-class-component';
-@Options({})
-export default class TooltipVue extends Vue {
-    @Prop({ default: '' }) private text!: string;
-    /**
-     * @description Adjusts position of tooltip to make sure it doesn't clip over the left side of the screen
-     * @author DerZade
-     */
-    public mounted(): void {
-        // TODO: Clipping is only calculated on first render. Window resize is not considered
-        const tooltip = this.$refs.tooltip as HTMLSpanElement;
-        if (!tooltip) return;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const { x: parentX } = tooltip.parentElement!.getBoundingClientRect();
-        const left = parentX + tooltip.offsetLeft;
-        const right = left + tooltip.offsetWidth;
-        if (left < 8) {
-            tooltip.style.top = 'initial';
-            tooltip.style.left = 'calc(100% + .25rem)';
-            tooltip.style.transformOrigin = 'center left';
-            return;
-        }
-        if (right > window.innerWidth - 8) {
-            tooltip.style.top = 'initial';
-            tooltip.style.right = 'calc(100% + .25rem)';
-            tooltip.style.transformOrigin = 'center right';
-        }
+<script lang="ts" setup>
+import { ref } from 'vue';
+const props = defineProps({
+    text: {
+        type: String,
+        default: null,
+    },
+});
+
+function positionElement(element: HTMLSpanElement | null): void {
+    // TODO: Clipping is only calculated on first render. Window resize is not considered
+    const tooltip = element as HTMLSpanElement;
+    if (!tooltip) return;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { x: parentX } = tooltip.parentElement!.getBoundingClientRect();
+    const left = parentX + tooltip.offsetLeft;
+    const right = left + tooltip.offsetWidth;
+    if (left < 8) {
+        tooltip.style.top = 'initial';
+        tooltip.style.left = 'calc(100% + .25rem)';
+        tooltip.style.transformOrigin = 'center left';
+        return;
+    }
+    if (right > window.innerWidth - 8) {
+        tooltip.style.top = 'initial';
+        tooltip.style.right = 'calc(100% + .25rem)';
+        tooltip.style.transformOrigin = 'center right';
     }
 }
 </script>

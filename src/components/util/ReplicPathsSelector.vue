@@ -17,7 +17,7 @@ interface Props {
     pathSelector: {
         label: string;
         name: string;
-    }
+    };
     modelValue: string;
 }
 const props = defineProps<Props>();

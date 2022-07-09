@@ -12,8 +12,6 @@
 
 <script lang="ts" setup>
 import LaunchVue from '@/components/settings/Launch.vue';
-import AboutVue from '@/components/settings/About.vue';
-import { shallowRef } from 'vue';
 import { useSettingsStore } from '@/store/settings';
 
 function saveSettings() {

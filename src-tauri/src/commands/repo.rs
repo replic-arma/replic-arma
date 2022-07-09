@@ -122,11 +122,11 @@ pub async fn get_repo(url: String) -> JSResult<Repository> {
 }
 
 #[tauri::command]
-pub async fn pause_download(state: tauri::State<'_, ReplicArmaState>) -> JSResult<()> {
+pub async fn pause_download(state: tauri::State<'_, ReplicArmaState>) -> JSResult<String> {
     if let Some(dl) = (&mut *state.downloading.lock().await).as_mut() {
         *dl = false;
     }
-    Ok(())
+    Ok("pause_sent".to_owned())
 }
 
 #[tauri::command]
@@ -137,8 +137,14 @@ pub async fn download(
     url: String,
     target_path: String,
     file_array: Vec<String>,
-) -> JSResult<()> {
-    Ok(download_wrapper(window, state, repo_type, url, target_path, file_array).await?)
+) -> JSResult<String> {
+    let dl_completed =
+        download_wrapper(window, state, repo_type, url, target_path, file_array).await?;
+    if dl_completed {
+        Ok("completed".into())
+    } else {
+        Ok("paused".into())
+    }
 }
 
 pub async fn download_wrapper(
@@ -148,10 +154,9 @@ pub async fn download_wrapper(
     url: String,
     target_path: String,
     file_array: Vec<String>,
-) -> Result<()> {
+) -> Result<bool> {
     let target_dir = PathBuf::from_str(&target_path)?;
-    download_files(window, state, repo_type, url, target_dir, file_array).await?;
-    Ok(())
+    download_files(window, state, repo_type, url, target_dir, file_array).await
 }
 
 async fn download_files(
@@ -161,13 +166,11 @@ async fn download_files(
     url: String,
     target_dir: PathBuf,
     file_array: Vec<String>,
-) -> Result<()> {
-    match repo_type {
-        RepoType::A3S => download_a3s(window, state, url, target_dir, file_array).await?,
+) -> Result<bool> {
+    return match repo_type {
+        RepoType::A3S => download_a3s(window, state, url, target_dir, file_array).await,
         RepoType::Swifty => todo!(),
     };
-
-    Ok(())
 }
 
 async fn download_a3s(
@@ -176,7 +179,7 @@ async fn download_a3s(
     url: String,
     target_dir: PathBuf,
     files: Vec<String>,
-) -> Result<()> {
+) -> Result<bool> {
     let connection_info = Url::parse(&url)?;
     //println!("{:?}", files);
     println!("{}", connection_info);
@@ -209,6 +212,7 @@ async fn download_a3s(
 
     // NOT THREADSAFE (I think :P)
     //files.into_iter().for_each(|file| {
+
     for file in files {
         let url = connection_info.join(&file)?;
         let target_file = target_dir.join(file.clone());
@@ -225,12 +229,17 @@ async fn download_a3s(
         if (*state.downloading.lock().await).unwrap_or(true) {
             window.emit("download_finished", file).unwrap();
         } else {
-            *downloading.lock().await = false;
+            *downloading.lock().await = false; // Should be already false???
             break;
         }
     }
 
+    let mut dl_completed = false;
+    if *downloading.lock().await {
+        dl_completed = true;
+    }
+
     *downloading.lock().await = false;
 
-    Ok(())
+    Ok(dl_completed)
 }

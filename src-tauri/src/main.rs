@@ -290,17 +290,17 @@ mod tests {
             .await
             .unwrap();
 
-        download(
-            a3s.repo_typ,
-            a3s.download_server.url.clone(),
-            "L:\\Repos\\rust\\replic-arma\\src-tauri\\test_out".to_string(),
-            a3s.files[0..5]
-                .into_iter()
-                .map(|f| f.path.clone())
-                .collect(),
-        )
-        .await
-        .unwrap();
+        // download(
+        //     a3s.repo_typ,
+        //     a3s.download_server.url.clone(),
+        //     "L:\\Repos\\rust\\replic-arma\\src-tauri\\test_out".to_string(),
+        //     a3s.files[0..5]
+        //         .into_iter()
+        //         .map(|f| f.path.clone())
+        //         .collect(),
+        // )
+        // .await
+        // .unwrap();
 
         //println!("{}", a3s.download_server.url);
     }

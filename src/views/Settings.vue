@@ -5,24 +5,16 @@
             <h1 v-t="'settings.title'"></h1>
             <button class="button settings__save button--center" @click="saveSettings()" v-t="'save'"></button>
         </div>
-        <!-- <TabsVue :tabItems="subnaviItems"></TabsVue> -->
         <General></General>
         <router-view />
     </div>
 </template>
 
 <script lang="ts" setup>
-import TabsVue from '@/components/util/Tabs.vue';
-import type { TabsItem } from '@/components/util/Tabs.vue';
 import LaunchVue from '@/components/settings/Launch.vue';
 import AboutVue from '@/components/settings/About.vue';
 import { shallowRef } from 'vue';
 import { useSettingsStore } from '@/store/settings';
-const subnaviItems: TabsItem[] = [
-    { label: 'General', component: shallowRef(General) },
-    { label: 'Launch Options', component: shallowRef(LaunchVue) },
-    { label: 'About', component: shallowRef(AboutVue) },
-];
 
 function saveSettings() {
     useSettingsStore().save();

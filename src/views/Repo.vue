@@ -11,10 +11,6 @@
             </template>
             <Loader v-else />
         </div>
-        <template v-if="repository">
-            <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small> <br />
-            <small v-once>Revision: {{ repository.revision }}</small>
-        </template>
         <SubnaviVue :subnaviItems="subnaviItems"></SubnaviVue>
         <router-view />
     </div>
@@ -38,10 +34,6 @@ const subnaviItems: SubnaviItem[] = [
 function checkRepo() {
     if (repository.value === undefined) return;
     useHashStore().addToQueue(repository.value);
-}
-function formatDate(timestamp: number) {
-    const s = new Date(timestamp / 1000000).toLocaleDateString('de-de');
-    return s;
 }
 </script>
 

@@ -4,7 +4,8 @@
         "title": "Repository",
         "name": "Repository Name",
         "autoconfig": "Repository Autoconfig",
-        "add": "Add Repository"
+        "add": "Add Repository",
+        "settings": "Repository Settings"
     },
     "modsets": "Modsets",
     "modset": {
@@ -65,5 +66,6 @@
         }
     },
     "remove": "Remove",
-    "save": "Save"
+    "save": "Save",
+    "play": "Play"
 }

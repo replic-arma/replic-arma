@@ -6,21 +6,17 @@
             /></router-link>
             <h1>Settings</h1>
         </div>
-        <!-- <TabsVue :tabItems="subnaviItems"></TabsVue> -->
         <RepoSettings></RepoSettings>
     </div>
 </template>
 
 <script lang="ts" setup>
 import LaunchVue from '@/components/settings/Launch.vue';
-import TabsVue from '@/components/util/Tabs.vue';
-import type { TabsItem } from '@/components/util/Tabs.vue';
 import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
 import { shallowRef } from 'vue';
 
 const repository = useRepoStore().currentRepository;
-const subnaviItems: TabsItem[] = [];
 
 </script>
 

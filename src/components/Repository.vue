@@ -1,11 +1,9 @@
 <template>
     <li class="repo">
         <img class="repo__img" v-once :src="repository.image" />
-        <div class="repo__name-wrapper">
-            <span class="repo__name" v-once>{{ repository.name }}</span>
-            <span class="repo__status">
-                <Status :status="status" :progress="progress"></Status>
-            </span>
+        <span class="repo__name" v-once>{{ repository.name }}</span>
+        <div class="repo__status">
+            <Status :status="status" :progress="progress"></Status>
         </div>
         <div class="repo__modset">
             <select v-model="currentModsetId">
@@ -15,7 +13,7 @@
             </select>
         </div>
         <div class="repo__play" @click="play()">
-            <span>Play</span>
+            <span v-t="'play'"></span>
             <mdicon name="play" size="35" />
         </div>
         <router-link v-once :to="'/repo/' + repository.id + '/modsets'" class="repo__open button">
@@ -62,11 +60,11 @@ const currentModsetId = ref('');
 </script>
 <style lang="scss" scoped>
 .repo {
-    block-size: 6rem;
+    block-size: 5rem;
     inline-size: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 4rem 3fr 2fr 1fr 10%;
+    grid-template-columns: 4rem 1fr 0.5fr 1fr 0.5fr 10%;
     padding-inline-start: var(--space-sm);
     align-items: center;
     justify-content: center;
@@ -76,11 +74,6 @@ const currentModsetId = ref('');
     overflow: hidden;
     &:hover {
         box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
-    }
-
-    &__name-wrapper {
-        display: flex;
-        flex-direction: column;
     }
 
     &__img {

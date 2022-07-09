@@ -51,7 +51,7 @@
                             @click="clearCache()"
                         ></button>
                         <button class="button button--danger" type="button" v-t="'settings.reset'"></button>
-                        <button class="button button--primary" type="button" v-t="'settings.save'" @click="saveSettings()"></button>
+                        <button class="button button--primary" type="button" v-t="'save'" @click="saveSettings()"></button>
                     </div>
                 </div>
             </div>

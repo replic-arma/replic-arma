@@ -1,19 +1,18 @@
 <template>
-<mdicon name="dots-vertical" @click="isOpen = true"></mdicon>
+<mdicon name="dots-vertical" @click="isOpen = true" size="55"></mdicon>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
-                <span v-t="'collection.add'"></span>
+                <span v-t="'settings.title'"></span>
                 <mdicon role="button" @click="isOpen = false" name="close" size="35" />
             </div>
             <div class="replic-dialog__content">
-                <div class="txt">
-                    <label for="collectionName" v-t="'collection.name'"></label>
-                    <div class="txt__input-wrapper">
-                        <input class="txt__input" type="text" name="collectionName" v-model="collectionName" />
-                    </div>
-                </div>
-                <button class="button" v-once @click="addCollection" v-t="'collection.add'"></button>
+                <template v-if="repository">
+                    <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small>
+                    <small v-once>Revision: {{ repository.revision }}</small>
+                </template>
+                <Launch></Launch>
+                <button class="button button--danger" v-once @click="removeRepo()" v-t="'remove'"></button>
             </div>
         </div>
     </Teleport>
@@ -21,28 +20,23 @@
 <script lang="ts" setup>
 import type { IReplicArmaRepository } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
-import { useRouteStore } from '@/store/route';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import Toast from '../util/Toast';
+import Launch from './Launch.vue';
 const repository = useRepoStore().currentRepository;
+const router = useRouter();
 function removeRepo(): void {
     useRepoStore().repos =
         useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repository?.id) ?? [];
     useRepoStore().save();
     Toast('Removed Repository ' + repository?.name);
+    router.push('/');
 }
 
-const collectionName = ref('');
 const isOpen = ref(false);
-function addCollection() {
-    if (collectionName.value === null) return;
-    useRepoStore()
-        .addCollection(useRouteStore().currentRepoID ?? '', { name: collectionName.value })
-        .then(() => {
-            useRepoStore().save();
-            isOpen.value = false;
-        });
-    Toast('Added Collection');
+function formatDate(timestamp: string) {
+    return new Date(Number(timestamp) / 1000000).toLocaleDateString('de-de');
 }
 </script>
 <style lang="scss" scoped>

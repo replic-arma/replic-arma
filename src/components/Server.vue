@@ -12,7 +12,7 @@
         >
         <span class="server__modset">{{ server.modset !== undefined ? server.modset : '-' }}</span>
         <div class="server__play" @click="launchGame()">
-            <span>Play</span>
+            <span v-t="'play'"></span>
             <mdicon name="play" size="35" />
         </div>
     </li>

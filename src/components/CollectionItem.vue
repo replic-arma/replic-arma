@@ -6,7 +6,7 @@
         </div>
         <span class="repo__status" :class="`status--${status}`" v-t="'download-status.' + status"></span>
         <div class="collection__play">
-            <span>Play</span>
+            <span v-t="'play'"></span>
             <mdicon name="play" size="35" />
         </div>
         <router-link :to="'./collection/' + collection.id" class="collection__open button">

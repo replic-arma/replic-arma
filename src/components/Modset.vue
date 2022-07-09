@@ -7,8 +7,8 @@
         <span class="repo__status" :class="`status--${status}`">
             <Status :status="status" :progress="progress"></Status>
         </span>
-        <div class="button modset__play">
-            <span>Play</span>
+        <div class="button modset__play" @click="play()">
+            <span v-t="'play'"></span>
             <mdicon name="play" size="35" />
         </div>
         <router-link :to="'./modset/' + modset.id" class="modset__open button">
@@ -23,6 +23,7 @@ import { useRouteStore } from '@/store/route';
 import { computed } from 'vue';
 import { useDownloadStore } from '@/store/download';
 import Status from './util/Status.vue';
+import { launchModset } from '@/util/system/game';
 const props = defineProps({
     modset: {
         type: Object,
@@ -54,6 +55,10 @@ const progress = computed(() => {
         return Math.floor((checkedFiles / filesToCheck) * 100);
     }
 });
+function play() {
+    if (props.modset === undefined) return;
+    launchModset(props.modset.id);
+}
 </script>
 <style lang="scss" scoped>
 .modset {

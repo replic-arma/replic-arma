@@ -4,19 +4,20 @@
         "title": "Repository",
         "name": "Repository Name",
         "autoconfig": "Repository Autoconfig",
-        "add": "Add Repository"
+        "add": "Add Repository",
+        "settings": "Repository Einstellungen"
     },
     "modsets": "Modsets",
     "modset": {
         "title": "Modset",
         "name": "Modset Name",
-        "add": "Add Modset"
+        "add": "Modset Hinzufügen"
     },
     "collections": "Collections",
     "collection": {
         "title": "Collection",
         "name": "Collection Name",
-        "add": "Add Collection"
+        "add": "Collection Hinzufügen"
     },
     "download-status": {
         "outdated": "Outdated",
@@ -30,17 +31,17 @@
     },
     "server": {
         "title": "Server",
-        "empty": "No Server available"
+        "empty": "Kein Server verfügbar"
     },
-    "submit": "Submit",
+    "submit": "Speichern",
     "ready": "Ready to play",
     "updating": "Updating",
-    "select": "Select",
+    "select": "Auswählen",
     "a3exe": "Arma 3 Exe",
     "mod_directory": "Mod Directory",
-    "language": "Language",
+    "language": "Sprache",
     "download_max_speed": "Max Download Speed",
-    "cache_clear": "Clear Cache",
+    "cache_clear": "Lösche Cache",
     "settings": {
         "theme": "Theme",
         "title": "Settings",
@@ -64,6 +65,7 @@
             "dark": "Dark"
         }
     },
-    "remove": "Remove",
-    "save": "Save"
+    "remove": "Entfernen",
+    "save": "Speichern",
+    "play": "Spielen"
 }

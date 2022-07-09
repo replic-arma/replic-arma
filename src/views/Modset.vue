@@ -8,7 +8,12 @@
                     <template v-if="status === 'checking' || status === 'updating'">
                         <mdicon name="loading" spin />
                     </template>
-                    <span v-t="'download-status.' + status"></span>
+                    <template v-if="status === 'ready'">
+                        <button class="button">
+                            <span>Play</span>
+                            <mdicon name="play" @click="play()"/>
+                        </button>
+                    </template>
                     <template v-if="status === 'checking' || (status === 'updating' && progress !== 0)">
                         <span>...{{ progress }}%</span>
                     </template>
@@ -28,13 +33,13 @@
                 </template>
             </div>
         </div>
-        <pre>
+        <!-- <pre>
             Size: {{ size }} 
             GB Files: {{ files }}
             Update Size {{ updateSize }}
             Update Files {{ updateFiles.length }}
             Files {{ updateFiles }}
-        </pre>
+        </pre> -->
         <ul class="modset__mods">
             <li v-for="(mod, i) of modset?.mods" :key="i">
                 <Tooltip :text="mod.size" style="grid-column: 1">
@@ -62,6 +67,8 @@ import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
 import { computed, ref } from 'vue';
 import { useDownloadStore } from '@/store/download';
+import { launchModset } from '@/util/system/game';
+import { unrefElement } from '@vueuse/core';
 const modset = useRepoStore().currentModset;
 const files = ref(0);
 const size = computed(() => {
@@ -75,6 +82,11 @@ const size = computed(() => {
             10e8
     ).toFixed(2);
 });
+
+function play() {
+    if (modset === undefined) return;
+    launchModset(modset.id);
+}
 
 const updateSize = computed(() => {
     const modsetCache = useRepoStore().modsetCache;

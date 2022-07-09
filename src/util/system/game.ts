@@ -5,7 +5,14 @@ import { sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
 
 export async function launchCollection(collection: Collection) {
-    // await launchGame();
+    let mods: string[] = [];
+    collection.modsets?.forEach((modsetId: string) => {
+        const modset = useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modsetId);
+        if (modset !== undefined) {
+            mods = [...modset.mods.flatMap((mod: ModsetMod) => mod.name ?? []), ...mods];
+        }
+    });
+    await launchGame(mods, collection.dlc);
 }
 
 export async function launchModset(modsetId: string) {
@@ -14,23 +21,29 @@ export async function launchModset(modsetId: string) {
     await launchGame(currentModset.mods.flatMap((mod: ModsetMod) => mod.name ?? []) ?? []);
 }
 
-export async function launchGame(mods: string[], gameServer: GameServer | null = null): Promise<void> {
+export async function launchGame(
+    mods: string[],
+    dlc: string[] = [],
+    gameServer: GameServer | null = null
+): Promise<void> {
     const settings = useSettingsStore().settings;
     if (settings === null) throw new Error('No settings, cannot launch the game');
     if (settings.gamePath === null) throw new Error('Game Executable not set, cannot launch the game');
     if (settings.downloadDirectoryPath === null) throw new Error('Mod Directoy not set, cannot launch the game');
-    const launchOptions = getModString(mods) + getConnectionString(gameServer);
+    // console.log(getModDlcString(mods, dlc));
+    const launchOptions = getModDlcString(mods, dlc) + getConnectionString(gameServer);
     await spawnProcess(settings.gamePath, launchOptions, {});
 }
 
-function getModString(mods: string[]) {
+function getModDlcString(mods: string[], dlc: string[]) {
     const settings = useSettingsStore().settings;
     if (settings === null) throw new Error('No settings, cannot launch the game');
-    return `-mod=${mods
-        .map((mod) => {
+    return `-mod=${[
+        ...mods.map((mod) => {
             return settings.downloadDirectoryPath + sep + mod;
-        })
-        .join(';')};`;
+        }),
+        ...dlc,
+    ].join(';')};`;
 }
 
 function getConnectionString(gameServer: GameServer | null = null) {
@@ -39,7 +52,6 @@ function getConnectionString(gameServer: GameServer | null = null) {
 }
 
 async function spawnProcess(path: string, args: string, spawnOptions: SpawnOptions) {
-    console.log(['/C', 'start', '', path, args]);
     const command = new Command('run-game', ['/C', 'start', '', path, args], spawnOptions);
     command.on('close', (data) => {
         console.log(`command finished with code ${data.code} and signal ${data.signal}`);

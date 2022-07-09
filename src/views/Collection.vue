@@ -4,7 +4,7 @@
             <mdicon name="chevron-left" size="55" @click="$router.back()" />
             <h1>{{ collection.name }}</h1>
             <div class="icon-group">
-                <button class="button" v-t="'play'"></button>
+                <button class="button" v-t="'play'" @click="play()"></button>
                 <button class="button" v-t="'save'" @click="saveCollection()"></button>
             </div>
         </div>
@@ -26,9 +26,9 @@
                     </li>
                 </ul>
             </div>
-            <div class="collection-mods__local-mods">
+            <!-- <div class="collection-mods__local-mods">
                 <span>Local Mods</span>
-            </div>
+            </div> -->
         </div>
     </div>
 </template>
@@ -41,21 +41,14 @@ import { useRouteStore } from '@/store/route';
 import { ref, toRaw } from 'vue';
 import Subnavi from '../components/util/Subnavi.vue';
 import ReplicCheckbox from '../components/util/ReplicCheckbox.vue';
+import Toast from '@/components/util/Toast';
+import { launchCollection } from '@/util/system/game';
 const collection = useRepoStore().currentCollection;
 const modsets = ref([] as Modset[]);
 const dlc = ref({
-    aow: 'Art of War',
-    apex: 'Apex',
     contact: 'Contact',
     csla: 'CSLA Iron Curtain',
-    gm: 'Global Mobilization - Cold War Germany',
-    helicopters: 'Helicopters',
-    jets: 'Jets',
-    karts: 'Karts',
-    'laws-of-war': 'Laws of War',
-    marksmen: 'Marksmen',
-    'tac-ops': 'Tac Ops',
-    tanks: 'Tanks',
+    GM: 'Global Mobilization - Cold War Germany',
     vn: 'S.O.G. Prairie Fire',
     ws: 'Western Sahara',
 });
@@ -63,18 +56,9 @@ const dlc = ref({
 const modsetMap = ref({} as { [key: string]: boolean });
 
 const dlcMap = ref({
-    aow: false,
-    apex: false,
     contact: false,
     csla: false,
-    gm: false,
-    helicopters: false,
-    jets: false,
-    karts: false,
-    'laws-of-war': false,
-    marksmen: false,
-    'tac-ops': false,
-    tanks: false,
+    GM: false,
     vn: false,
     ws: false,
 } as { [key: string]: boolean });
@@ -109,8 +93,13 @@ function saveCollection() {
         collection.modsets = modsets;
         collection.dlc = dlc;
     }
-
     useRepoStore().save();
+    Toast('Saved Collection');
+}
+
+function play() {
+    if (collection === undefined) return;
+    launchCollection(collection);
 }
 </script>
 
@@ -143,7 +132,7 @@ function saveCollection() {
 
 .collection-mods {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
     .item-group {
         padding: 0;

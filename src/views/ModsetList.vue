@@ -2,7 +2,7 @@
     <ul class="modsets" v-if="repository !== undefined">
         <Modset v-for="(modset, i) of repository.modsets" :key="i" :modset="modset" :modsetIndex="modset.id" />
     </ul>
-    <ModsetAdd></ModsetAdd>
+    <!-- <ModsetAdd></ModsetAdd>s -->
 </template>
 
 <script lang="ts" setup>

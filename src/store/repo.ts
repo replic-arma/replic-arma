@@ -1,5 +1,5 @@
 import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod, File } from '@/models/Repository';
-import { saveModsetCache } from '@/util/system/modset_cache';
+import { clearModsetCache, saveModsetCache } from '@/util/system/modset_cache';
 import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
 import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
@@ -50,16 +50,17 @@ export const useRepoStore = defineStore('repo', () => {
             return { ...modset, id: uuidv4() };
         });
         const repoId = uuidv4();
-        repos.value?.push({
+        const repoC = {
             ...repo,
             id: repoId,
             image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
             type: 'a3s',
             collections: [],
-        });
-        updateModsetCache(repoId);
-        save();
-        useHashStore().addToQueue(repo as IReplicArmaRepository);
+        };
+        repos.value?.push(repoC as IReplicArmaRepository);
+        await updateModsetCache(repoId);
+        await save();
+        await useHashStore().addToQueue(repoC as IReplicArmaRepository);
     }
 
     async function addModset(repoID: string, options: Omit<Modset, 'id'>) {
@@ -124,8 +125,9 @@ export const useRepoStore = defineStore('repo', () => {
                 revision: repoData.revision,
                 collections: [],
             });
-            updateModsetCache(repoID);
-            save();
+            await clearModsetCache();
+            await updateModsetCache(repoID);
+            await save();
         }
     }
 
@@ -140,9 +142,9 @@ export const useRepoStore = defineStore('repo', () => {
 
     loadRepos().then((reposdata: Array<IReplicArmaRepository>) => {
         repos.value = reposdata;
-        reposdata.forEach((repo: IReplicArmaRepository) => {
-            checkRevision(repo.id);
-            useHashStore().addToQueue(repo);
+        reposdata.forEach(async (repo: IReplicArmaRepository) => {
+            await checkRevision(repo.id);
+            await useHashStore().addToQueue(repo);
         });
     });
 

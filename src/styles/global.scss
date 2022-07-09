@@ -132,6 +132,7 @@ button.button {
   line-height: 1.1;
   transition: 150ms all ease-in-out;
   align-self: start;
+  inline-size: fit-content;
   
   &:hover {
     background-color: scale-color($btnColor, $lightness: -20%);

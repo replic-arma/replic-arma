@@ -31,7 +31,6 @@ export const useRepoStore = defineStore('repo', () => {
 
     function save() {
         if (repos.value === null) throw new Error('Repositories not loaded yet.');
-        console.log('Saving repositories');
         return saveRepos(repos.value);
     }
 

@@ -14,6 +14,7 @@ export interface ModsetMod {
     files?: File[];
     outdatedFiles?: [];
     missingFiles?: [];
+    size?: number;
 }
 
 export interface Modset {

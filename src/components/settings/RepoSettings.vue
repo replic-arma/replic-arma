@@ -1,5 +1,5 @@
 <template>
-    <mdicon name="dots-vertical" @click="isOpen = true" size="55"></mdicon>
+    <mdicon name="dots-vertical" role="button" @click="isOpen = true" size="55"></mdicon>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">

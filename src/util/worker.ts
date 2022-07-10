@@ -25,6 +25,10 @@ export const ReplicWorker = {
                         name: mod.name,
                         mod_type: 'mod',
                         files: modMap.get(mod.name) ?? [],
+                        size: (modMap.get(mod.name) ?? []).reduce(
+                            (previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size,
+                            0
+                        ),
                     });
                 });
                 modset.mods = mods;
@@ -52,7 +56,7 @@ export const ReplicWorker = {
                 return {
                     name: modName,
                     mod_type: 'mod',
-                    files: [],
+                    files: modMap.get(modName),
                 };
             });
         });
@@ -92,5 +96,5 @@ export const ReplicWorker = {
                 .map((file) => file.path);
         });
         return workerFn(wantedFiles, fileList);
-    },
+    }
 };

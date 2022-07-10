@@ -1,5 +1,5 @@
 <template>
-    <mdicon name="download" size="45" @click="isOpen = true" />
+    <mdicon name="download" role="button" size="45" @click="isOpen = true" />
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">

@@ -2,8 +2,8 @@ name: 'publish'
 
 on:
   push:
-    branches:
-      - release
+    tags:        
+      - '**'  
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -68,7 +68,7 @@ jobs:
       - name: Generate release tag
         id: tag
         run: |
-          echo "::set-output name=release_tag::Build_$(date +"%Y.%m.%d_%H-%M")"
+          "echo \"release_tag=${GITHUB_REF#refs/tags/}\" >> $GITHUB_ENV"
       - name: 'create release'
         uses: softprops/action-gh-release@master
         env:

@@ -417,3 +417,7 @@ input[type="checkbox"][role="switch"] {
         background: none;
     }
 }
+
+span[role=button] {
+  cursor: pointer;
+}

@@ -44,18 +44,17 @@
         </pre> -->
         <ul class="modset__mods">
             <li v-for="(mod, i) of modset?.mods" :key="i">
-                <!-- <Tooltip :text="mod.size" style="grid-column: 1"> -->
-                <div class="modset__mod">
-                    {{ mod.name }}
-                    {{mod}}
-                    <template v-if="outdated(mod)">
-                        <mdicon name="close" />
-                    </template>
-                    <template v-else>
-                        <mdicon name="check" />
-                    </template>
-                </div>
-                <!-- </Tooltip> -->
+                <Tooltip :text="getModSize(mod.name)" style="grid-column: 1">
+                    <div class="modset__mod">
+                        {{ mod.name }}
+                        <template v-if="outdated(mod)">
+                            <mdicon name="close" />
+                        </template>
+                        <template v-else>
+                            <mdicon name="check" />
+                        </template>
+                    </div>
+                </Tooltip>
             </li>
         </ul>
     </div>
@@ -84,6 +83,17 @@ const size = computed(() => {
             10e8
     ).toFixed(2);
 });
+
+function getModSize(modName: string) {
+    const modsetCache = useRepoStore().modsetCache;
+    if (modsetCache === null) return '0';
+    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset?.id);
+    const mod = cacheData?.mods.find((mod: ModsetMod) => mod.name === modName);
+    if (mod !== undefined) {
+        return mod.size !== undefined ? Number(mod.size / 10e5).toFixed(2) + 'MB' : '0';
+    }
+    return '0';
+}
 
 function play() {
     if (modset === undefined) return;

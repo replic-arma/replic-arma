@@ -60,7 +60,7 @@
             "args": ["/C", "start", "", { "validator": "\\S+" }, { "validator": "\\S+" }]
           }
         ]
-      },
+      }
     },
     "windows": [
       {

@@ -1,7 +1,26 @@
-import type { IApplicationSettings } from '@/models/Settings';
+import type { GameLaunchSettings, IApplicationSettings } from '@/models/Settings';
 import { ensureAppDir, fileExists, readTextFile, removeFile, writeTextFile } from './fs';
 
 const FILE_NAME = 'config.json.gz';
+export const DEFAULT_LAUNCH_CONFIG: GameLaunchSettings = {
+    noPause: false,
+    window: false,
+    showScriptErrors: false,
+    noSplash: false,
+    name: '',
+    checkSignatures: false,
+    filePatching: false,
+    maxMem: 0,
+    cpuCount: 0,
+    malloc: '',
+    exThreads: 0,
+    enableHT: false,
+    hugepages: false,
+    emptyWorld: false,
+    noLogs: false,
+    customParameter: '',
+    battleye: false,
+};
 
 const DEFAULT_CONFIG: IApplicationSettings = {
     language: 'en',
@@ -9,7 +28,9 @@ const DEFAULT_CONFIG: IApplicationSettings = {
     downloadDirectoryPath: '',
     theme: 'light',
     maxDownloadSpeed: 0,
+    launchOptions: DEFAULT_LAUNCH_CONFIG,
 };
+
 
 export async function loadConfig(): Promise<IApplicationSettings> {
     const exists = await fileExists(FILE_NAME);

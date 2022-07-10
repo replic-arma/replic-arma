@@ -12,7 +12,7 @@ export async function downloadFiles(
     downloadServerUrl: string,
     targetPath: string,
     files: string[]
-): Promise<void> {
+): Promise<string> {
     return await invoke('download', {
         repoType: repoType.toUpperCase(),
         url: downloadServerUrl,

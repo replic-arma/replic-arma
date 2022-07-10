@@ -9,7 +9,6 @@
                     <DownloadProgess />
                 </keep-alive>
             </div>
-
             <ul class="download-items">
                 <DownloadItemVue v-if="downloadItem !== null" :downloadItem="downloadItem" />
             </ul>
@@ -27,11 +26,11 @@
 import DownloadItemVue from './DownloadItem.vue';
 import DownloadProgess from './DownloadProgess.vue';
 import type { DownloadItem } from '@/models/Download';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useDownloadStore } from '@/store/download';
 
-const downloadItem = useDownloadStore().current;
-const queueItems = useDownloadStore().queue;
+const downloadItem = computed(() => useDownloadStore().current);
+const queueItems = computed(() => useDownloadStore().queue);
 const isOpen = ref(false);
 </script>
 <style lang="scss" scoped>

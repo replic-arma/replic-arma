@@ -1,12 +1,18 @@
 <template>
     <div class="repo-view">
         <div class="repo-view__heading">
-            <router-link class="button" to="/"><mdicon name="chevron-left" size="55" /></router-link>
+            <Tooltip text="Go Back">
+                <router-link class="button" to="/"><mdicon name="chevron-left" size="55" /></router-link>
+            </Tooltip>
             <template v-if="repository">
                 <h1>{{ repository.name }}</h1>
                 <div class="icon-group">
-                    <mdicon name="refresh" size="45" @click="checkRepo" />
-                    <RepoSettings></RepoSettings>
+                    <Tooltip text="Refresh Repository">
+                        <mdicon name="refresh" size="45" @click="checkRepo()" />
+                    </Tooltip>
+                    <Tooltip text="Settings">
+                        <RepoSettings></RepoSettings>
+                    </Tooltip>
                 </div>
             </template>
             <Loader v-else />
@@ -57,6 +63,7 @@ function checkRepo() {
             align-items: center;
             justify-content: center;
             color: var(--c-text-3);
+            cursor: pointer;
             .mdi {
                 display: inline-flex;
                 justify-content: center;

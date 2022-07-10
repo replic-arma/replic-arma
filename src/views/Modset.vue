@@ -1,7 +1,9 @@
 <template>
     <div class="modset" v-if="modset !== undefined">
         <div class="modset__heading">
-            <mdicon name="chevron-left" size="55" @click="$router.back()" />
+            <Tooltip text="Go Back">
+                <mdicon name="chevron-left" size="55" @click="$router.back()" />
+            </Tooltip>
             <h1>{{ modset?.name }}</h1>
             <div class="icon-group">
                 <span class="repo__status" :class="`status--${status}`">
@@ -45,6 +47,7 @@
                 <!-- <Tooltip :text="mod.size" style="grid-column: 1"> -->
                 <div class="modset__mod">
                     {{ mod.name }}
+                    {{mod}}
                     <template v-if="outdated(mod)">
                         <mdicon name="close" />
                     </template>

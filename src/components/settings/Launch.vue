@@ -15,7 +15,13 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { ref } from "vue";
+import type { GameLaunchSettings } from "@/models/Settings";
+import { useRepoStore } from "@/store/repo";
+import { onBeforeUnmount, ref, watch } from "vue";
+interface Props {
+    modelValue: GameLaunchSettings;
+}
+
 const settings = ref({
     base: {
         noPause: false,
@@ -33,6 +39,17 @@ const settings = ref({
         filePatching: false,
         showScriptErrors: false,
     },
+});
+const props = defineProps<Props>();
+const emit = defineEmits(['update:modelValue']);
+const model = ref(props.modelValue);
+
+watch(model, async (newModel, oldModel) => {
+    emit('update:modelValue', newModel);
+});
+
+onBeforeUnmount(async () => {
+    await useRepoStore().save();
 });
 </script>
 <style lang="scss" scoped>

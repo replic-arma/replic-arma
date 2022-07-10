@@ -1,4 +1,5 @@
 import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod, File } from '@/models/Repository';
+import { DEFAULT_LAUNCH_CONFIG } from '@/util/system/config';
 import { clearModsetCache, saveModsetCache } from '@/util/system/modset_cache';
 import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
 import { ReplicWorker } from '@/util/worker';
@@ -30,7 +31,7 @@ export const useRepoStore = defineStore('repo', () => {
 
     function save() {
         if (repos.value === null) throw new Error('Repositories not loaded yet.');
-
+        console.log('Saving repositories');
         return saveRepos(repos.value);
     }
 
@@ -56,6 +57,7 @@ export const useRepoStore = defineStore('repo', () => {
             image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
             type: 'a3s',
             collections: [],
+            launchOptions: DEFAULT_LAUNCH_CONFIG,
         };
         repos.value?.push(repoC as IReplicArmaRepository);
         await updateModsetCache(repoId);
@@ -137,7 +139,7 @@ export const useRepoStore = defineStore('repo', () => {
         if (repo === undefined) throw new Error('Repository not found');
         const calculatedModsetCache = await ReplicWorker.mapFilesToMods(toRaw(repo.files), toRaw(repo.modsets));
         useRepoStore().modsetCache = [...calculatedModsetCache, ...(useRepoStore().modsetCache ?? [])];
-        saveModsetCache(repo.id, calculatedModsetCache);
+        await saveModsetCache(repo.id, calculatedModsetCache);
     }
 
     loadRepos().then((reposdata: Array<IReplicArmaRepository>) => {

@@ -64,7 +64,7 @@ export const useDownloadStore = defineStore('download', () => {
                 `${useSettingsStore().settings?.downloadDirectoryPath}${sep}`,
                 filesToDownload
             );
-            if (res !== null) {
+            if (res !== 'paused') {
                 finished.value.push(current.value);
                 current.value = null;
                 next();

@@ -40,18 +40,16 @@
     </li>
 </template>
 <script lang="ts" setup>
+import type { DownloadItem } from '@/models/Download';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 import { pauseDownload } from '@/util/system/download';
 import { computed } from 'vue';
-
-const props = defineProps({
-    downloadItem: {
-        type: Object,
-        default: null,
-    },
-});
+interface Props {
+    downloadItem: DownloadItem;
+}
+const props = defineProps<Props>();
 
 const progress = computed(() => {
     if (useDownloadStore().current === null) return 0;
@@ -94,12 +92,21 @@ const cacheData = computed(() => {
 });
 
 function startDownload() {
-    useDownloadStore().next();
+    if (props.downloadItem.status === 'paused') {
+        useDownloadStore().next();
+    }
 }
 
 async function stopDownload() {
-    useDownloadStore().current = null;
-    await pauseDownload();
+    if (props.downloadItem.status === 'paused') {
+        useDownloadStore().current = null;
+        await pauseDownload();
+    } else {
+        useDownloadStore().queue =
+            useDownloadStore().queue.filter(
+                (downloadItem: DownloadItem) => downloadItem.item.id !== props.downloadItem.item.id
+            ) ?? [];
+    }
 }
 
 async function pauseDownloadF() {
@@ -122,7 +129,8 @@ async function pauseDownloadF() {
     border-radius: 1rem;
     overflow: hidden;
 
-    &#{&}--downloading, &#{&}--paused {
+    &#{&}--downloading,
+    &#{&}--paused {
         .download-item__status {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;

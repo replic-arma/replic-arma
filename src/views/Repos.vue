@@ -3,9 +3,15 @@
         <div class="repos__heading">
             <h1 v-t="'repositories'"></h1>
             <div class="icon-group">
-                <Downloads />
-                <mdicon name="refresh" size="45" v-once @click="reloadRepos" />
-                <ApplicationSettings></ApplicationSettings>
+                <Tooltip text="Downloads">
+                    <Downloads />
+                </Tooltip>
+                <Tooltip text="Reload Repositories">
+                    <mdicon name="refresh" size="45" v-once @click="reloadRepos" />
+                </Tooltip>
+                <Tooltip text="Settings">
+                    <ApplicationSettings></ApplicationSettings>
+                </Tooltip>
             </div>
         </div>
         <ul class="repos__list">
@@ -28,13 +34,14 @@ import Downloads from '../components/download/Downloads.vue';
 import type { IReplicArmaRepository } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
 import ApplicationSettings from '../components/settings/ApplicationSettings.vue';
+import Tooltip from '../components/util/Tooltip.vue';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
     const repos = useRepoStore().repos;
     if(repos !== null) {
-        repos.forEach((repo: IReplicArmaRepository) => {
-            useRepoStore().checkRevision(repo.id);
-            useHashStore().addToQueue(repo);
+        repos.forEach(async (repo: IReplicArmaRepository) => {
+            await useRepoStore().checkRevision(repo.id);
+            await useHashStore().addToQueue(repo);
         });
         Toast('Reloading Repositories');
     }

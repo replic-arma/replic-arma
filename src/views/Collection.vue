@@ -1,7 +1,9 @@
 <template>
     <div class="collection" v-if="collection !== undefined">
         <div class="collection__heading">
-            <mdicon name="chevron-left" size="55" @click="$router.back()" />
+            <Tooltip text="Go Back">
+                <mdicon name="chevron-left" size="55" @click="$router.back()" />
+            </Tooltip>
             <h1>{{ collection.name }}</h1>
             <div class="icon-group">
                 <button class="button" v-t="'play'" @click="play()"></button>

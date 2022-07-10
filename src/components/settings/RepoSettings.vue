@@ -1,5 +1,5 @@
 <template>
-<mdicon name="dots-vertical" @click="isOpen = true" size="55"></mdicon>
+    <mdicon name="dots-vertical" @click="isOpen = true" size="55"></mdicon>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
@@ -7,12 +7,31 @@
                 <mdicon role="button" @click="isOpen = false" name="close" size="35" />
             </div>
             <div class="replic-dialog__content">
-                <template v-if="repository">
-                    <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small>
-                    <small v-once>Revision: {{ repository.revision }}</small>
-                </template>
-                <Launch></Launch>
-                <button class="button button--danger" v-once @click="removeRepo()" v-t="'remove'"></button>
+                <Tabs>
+                    <Tab title="General">
+                        <div class="general-settings">
+                            <template v-if="repository">
+                                <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small>
+                                <small v-once>Revision: {{ repository.revision }}</small>
+                                <div class="replic-input">
+                                    <label>Autoconfig</label>
+                                    <div class="replic-input__input-wrapper">
+                                        <input
+                                            type="text"
+                                            class="replic-input__input"
+                                            v-model="repository.config_url"
+                                            disabled
+                                        />
+                                    </div>
+                                </div>
+                            </template>
+                            <button class="button button--danger" v-once @click="removeRepo()" v-t="'remove'"></button>
+                        </div>
+                    </Tab>
+                    <Tab title="Launch Options" v-if="repository">
+                        <Launch v-model="repository.launchOptions"></Launch>
+                    </Tab>
+                </Tabs>
             </div>
         </div>
     </Teleport>
@@ -24,6 +43,9 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Toast from '../util/Toast';
 import Launch from './Launch.vue';
+import Tab from '../util/Tab.vue';
+import Tabs from '../util/Tabs.vue';
+import type { GameLaunchSettings } from '@/models/Settings';
 const repository = useRepoStore().currentRepository;
 const router = useRouter();
 function removeRepo(): void {
@@ -57,5 +79,10 @@ function formatDate(timestamp: string) {
         display: grid;
         row-gap: 1rem;
     }
+}
+
+.general-settings {
+    display: flex;
+    flex-direction: column;
 }
 </style>

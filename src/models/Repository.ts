@@ -86,5 +86,5 @@ export interface IReplicArmaRepository extends Repository {
     settings?: GameLaunchSettings;
     type?: 'local' | 'a3s' | 'swifty';
     revisionChanged?: boolean;
-    launchOptions?: GameLaunchSettings;
+    launchOptions: GameLaunchSettings;
 }

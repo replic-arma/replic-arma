@@ -4,7 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import tauriPlugin from './vite-plugin-tauri';
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [vue(), tauriPlugin({build: {debug: true}})],
+    plugins: [vue(), tauriPlugin()],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url)),

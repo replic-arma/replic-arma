@@ -16,9 +16,13 @@ jobs:
         platform: [windows-latest, ubuntu-latest]
         include:
           - platform: windows-latest
-          - release_file: ./src-tauri/target/release/ReplicArma.exe
+            release_file_executable: ./src-tauri/target/release/ReplicArma.exe
+            release_file_installer: ./src-tauri/target/release/bundle/msi/*.msi
+            release_file_updater: ./src-tauri/target/release/bundle/msi/*.msi.zip
           - platform: ubuntu-latest
-          - release_file: ./src-tauri/target/release/replic-arma
+            release_file: ./src-tauri/target/release/replic-arma
+            release_file_installer: ./src-tauri/target/release/bundle/appimage/*.AppImage
+            release_file_updater: ./src-tauri/target/release/bundle/appimage/*.tar.gz
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -45,8 +49,20 @@ jobs:
           npm ci
           npm run build
 
-      - name: Upload asset
+      - name: Upload asset (executable)
         uses: shogo82148/actions-upload-release-asset@v1
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ matrix.release_file }}
+          asset_path: ${{ matrix.release_file_executable }}
+
+      - name: Upload asset (installer)
+        uses: shogo82148/actions-upload-release-asset@v1
+        with: 
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ matrix.release_file_installer }}
+
+      - name: Upload asset (updater)
+        uses: shogo82148/actions-upload-release-asset@v1
+        with: 
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ matrix.release_file_updater }}

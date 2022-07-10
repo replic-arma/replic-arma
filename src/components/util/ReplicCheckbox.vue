@@ -1,13 +1,7 @@
 <template>
     <div class="replic-checkbox">
         <label class="replic-checkbox__thumb" :for="'check-' + label"><mdicon v-if="model" name="check" /></label>
-        <input
-            class="replic-checkbox__check"
-            type="checkbox"
-            :id="'check-' + label"
-            v-model="model"
-            @change="handleInput"
-        />
+        <input class="replic-checkbox__check" type="checkbox" :id="'check-' + label" v-model="model" />
         <label class="replic-checkbox__label" :for="'check-' + label"
             ><span>{{ label }}</span></label
         >

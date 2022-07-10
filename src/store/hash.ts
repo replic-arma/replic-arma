@@ -35,7 +35,7 @@ export const useHashStore = defineStore('hash', () => {
         if (settings === null) throw Error('Settings null');
         if (currentHashRepo.value === undefined) throw new Error('Queue empty');
         const reponse = await checkHashes(
-            `${settings.downloadDirectoryPath ?? ''}\\`,
+            `${currentHashRepo.value.downloadDirectoryPath ?? ''}\\`,
             currentHashRepo.value.files.map((file: File) => file.path)
         );
         return {

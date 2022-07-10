@@ -27,12 +27,11 @@ import type { IHashItem } from '@/store/hash';
 import { computed, onMounted, ref } from 'vue';
 import Status from './util/Status.vue';
 import { launchModset } from '@/util/system/game';
-const props = defineProps({
-    repository: {
-        type: Object,
-        default: null,
-    },
-});
+import type { IReplicArmaRepository } from '@/models/Repository';
+interface Props {
+    repository: IReplicArmaRepository;
+}
+const props = defineProps<Props>();
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === currentModsetId.value);
     if (cacheData === undefined) return 'checking';
@@ -54,7 +53,7 @@ onMounted(() => {
     currentModsetId.value = props.repository.modsets[0].id ?? '';
 });
 function play() {
-    launchModset(currentModsetId.value);
+    launchModset(currentModsetId.value, props.repository.id);
 }
 const currentModsetId = ref('');
 </script>

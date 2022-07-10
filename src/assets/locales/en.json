@@ -63,7 +63,9 @@
         "theme_option": {
             "light": "Light",
             "dark": "Dark"
-        }
+        },
+        "name": "Profile",
+        "malloc": "Malloc"
     },
     "remove": "Remove",
     "save": "Save",

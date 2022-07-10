@@ -101,7 +101,7 @@ function saveCollection() {
 
 function play() {
     if (collection === undefined) return;
-    launchCollection(collection);
+    launchCollection(collection, useRouteStore().currentRepoID ?? '');
 }
 </script>
 

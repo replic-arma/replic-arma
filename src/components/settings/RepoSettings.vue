@@ -11,8 +11,8 @@
                     <Tab title="General">
                         <div class="general-settings">
                             <template v-if="repository">
-                                <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small>
-                                <small v-once>Revision: {{ repository.revision }}</small>
+                                <!-- <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small>
+                                <small v-once>Revision: {{ repository.revision }}</small> -->
                                 <div class="replic-input">
                                     <label>Autoconfig</label>
                                     <div class="replic-input__input-wrapper">
@@ -24,12 +24,19 @@
                                         />
                                     </div>
                                 </div>
+                                <ReplicPathsSelector
+                                    :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
+                                    :pathSelectorOptions="{ directory: true }"
+                                    v-model="repository.downloadDirectoryPath"
+                                ></ReplicPathsSelector>
                             </template>
                             <button class="button button--danger" v-once @click="removeRepo()" v-t="'remove'"></button>
+                            <button class="button" v-once @click="save()" v-t="'save'"></button>
                         </div>
                     </Tab>
                     <Tab title="Launch Options" v-if="repository">
                         <Launch v-model="repository.launchOptions"></Launch>
+                        <button class="button" v-once @click="save()" v-t="'save'"></button>
                     </Tab>
                 </Tabs>
             </div>
@@ -46,6 +53,7 @@ import Launch from './Launch.vue';
 import Tab from '../util/Tab.vue';
 import Tabs from '../util/Tabs.vue';
 import type { GameLaunchSettings } from '@/models/Settings';
+import ReplicPathsSelector from '../util/ReplicPathsSelector.vue';
 const repository = useRepoStore().currentRepository;
 const router = useRouter();
 function removeRepo(): void {
@@ -54,6 +62,11 @@ function removeRepo(): void {
     useRepoStore().save();
     Toast('Removed Repository ' + repository?.name);
     router.push('/');
+}
+
+function save() {
+    useRepoStore().save();
+    Toast('Saved Settings');
 }
 
 const isOpen = ref(false);
@@ -84,5 +97,6 @@ function formatDate(timestamp: string) {
 .general-settings {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
 }
 </style>

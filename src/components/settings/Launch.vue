@@ -1,10 +1,91 @@
 <template>
     <div class="launch-settings">
-        <div class="launch-settings__fieldset" v-for="(category, i) of Object.keys(settings)" :key="i">
-            <span v-t="'settings.' + category"></span>
+        <div class="launch-settings__fieldset">
+            <span v-t="'settings.base'"></span>
             <ul>
-                <li v-for="(setting, i) of Object.keys(settings[category])" :key="i">
-                    <input type="checkbox" role="switch" :name="setting" /><span v-t="'settings.' + setting"></span>
+                <li>
+                    <input type="checkbox" role="switch" name="noPause" v-model="model.noPause" /><span
+                        v-t="'settings.noPause'"
+                    ></span>
+                </li>
+                <li>
+                    <input type="checkbox" role="switch" name="window" v-model="model.window" /><span
+                        v-t="'settings.window'"
+                    ></span>
+                </li>
+                <li>
+                    <input type="checkbox" role="switch" name="checkSignatures" v-model="model.checkSignatures" /><span
+                        v-t="'settings.checkSignatures'"
+                    ></span>
+                </li>
+                <li>
+                    <input type="string" role="switch" name="name" v-model="model.name" /><span
+                        v-t="'settings.name'"
+                    ></span>
+                </li>
+            </ul>
+        </div>
+        <div class="launch-settings__fieldset">
+            <span v-t="'settings.performance'"></span>
+            <ul>
+                <li>
+                    <input type="checkbox" role="switch" name="hugepages" v-model="model.hugepages" /><span
+                        v-t="'settings.hugepages'"
+                    ></span>
+                </li>
+                <li>
+                    <input type="checkbox" role="switch" name="emptyWorld" v-model="model.emptyWorld" /><span
+                        v-t="'settings.emptyWorld'"
+                    ></span>
+                </li>
+                <li>
+                    <input type="checkbox" role="switch" name="noLogs" v-model="model.noLogs" /><span
+                        v-t="'settings.noLogs'"
+                    ></span>
+                </li>
+                <li>
+                    <input type="checkbox" role="switch" name="noSplash" v-model="model.noSplash" /><span
+                        v-t="'settings.noSplash'"
+                    ></span>
+                </li>
+                <li>
+                    <input type="checkbox" role="switch" name="emptyWorld" v-model="model.emptyWorld" /><span
+                        v-t="'settings.emptyWorld'"
+                    ></span>
+                </li>
+                <!-- <li>
+                    <input type="string" name="maxMem" v-model="model.maxMem" /><span v-t="'settings.maxMem'"></span>
+                </li>
+                <li>
+                    <input type="string" name="cpuCount" v-model="model.cpuCount" /><span
+                        v-t="'settings.cpuCount'"
+                    ></span>
+                </li>
+                <li>
+                    <input type="string" name="exThreads" v-model="model.exThreads" /><span
+                        v-t="'settings.exThreads'"
+                    ></span>
+                </li> -->
+                <li>
+                    <input type="string" name="malloc" v-model="model.malloc" /><span v-t="'settings.malloc'"></span>
+                </li>
+            </ul>
+        </div>
+        <div class="launch-settings__fieldset">
+            <span v-t="'settings.developer'"></span>
+            <ul>
+                <li>
+                    <input type="checkbox" role="switch" name="filePatching" v-model="model.filePatching" /><span
+                        v-t="'settings.filePatching'"
+                    ></span>
+                </li>
+                <li>
+                    <input
+                        type="checkbox"
+                        role="switch"
+                        name="showScriptErrors"
+                        v-model="model.showScriptErrors"
+                    /><span v-t="'settings.showScriptErrors'"></span>
                 </li>
             </ul>
         </div>
@@ -15,9 +96,9 @@
     </div>
 </template>
 <script lang="ts" setup>
-import type { GameLaunchSettings } from "@/models/Settings";
-import { useRepoStore } from "@/store/repo";
-import { onBeforeUnmount, ref, watch } from "vue";
+import type { GameLaunchSettings } from '@/models/Settings';
+import { useRepoStore } from '@/store/repo';
+import { onBeforeUnmount, ref, watch } from 'vue';
 interface Props {
     modelValue: GameLaunchSettings;
 }
@@ -48,9 +129,7 @@ watch(model, async (newModel, oldModel) => {
     emit('update:modelValue', newModel);
 });
 
-onBeforeUnmount(async () => {
-    await useRepoStore().save();
-});
+function handleChange(val);
 </script>
 <style lang="scss" scoped>
 .launch-settings {

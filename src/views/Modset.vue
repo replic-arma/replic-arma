@@ -86,7 +86,7 @@ function getModSize(modName: string) {
 
 function play() {
     if (modset === undefined) return;
-    launchModset(modset.id);
+    launchModset(modset.id, useRouteStore().currentRepoID ?? '');
 }
 
 const updateSize = computed(() => {

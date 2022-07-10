@@ -36,15 +36,14 @@ import { useHashStore } from '@/store/hash';
 import ApplicationSettings from '../components/settings/ApplicationSettings.vue';
 import Tooltip from '../components/util/Tooltip.vue';
 import { useDownloadStore } from '@/store/download';
+import { useI18n } from 'vue-i18n';
+import { useSessionStorage } from '@vueuse/core';
+import { useSettingsStore } from '@/store/settings';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
     const repos = useRepoStore().repos;
     if (repos !== null) {
-        repos.forEach(async (repo: IReplicArmaRepository) => {
-            await useRepoStore().checkRevision(repo.id);
-            await useHashStore().addToQueue(repo);
-        });
-        Toast('Reloading Repositories');
+        useRepoStore().recalcRepositoryStatus();
     }
 }
 
@@ -54,6 +53,7 @@ const progress = computed(() => {
         (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
     ).toFixed(0);
 });
+useSettingsStore().applyLocale();
 </script>
 
 <style lang="scss" scoped>

@@ -1,3 +1,4 @@
+import Toast from '@/components/util/Toast';
 import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod, File } from '@/models/Repository';
 import { DEFAULT_LAUNCH_CONFIG } from '@/util/system/config';
 import { clearModsetCache, saveModsetCache } from '@/util/system/modset_cache';
@@ -8,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ref, computed, toRaw } from 'vue';
 import { useHashStore } from './hash';
 import { useRouteStore } from './route';
+import { useSettingsStore } from './settings';
 
 export const useRepoStore = defineStore('repo', () => {
     const repos = ref(null as null | Array<IReplicArmaRepository>);
@@ -50,13 +52,14 @@ export const useRepoStore = defineStore('repo', () => {
             return { ...modset, id: uuidv4() };
         });
         const repoId = uuidv4();
-        const repoC = {
+        const repoC: IReplicArmaRepository = {
             ...repo,
             id: repoId,
             image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
             type: 'a3s',
             collections: [],
-            launchOptions: DEFAULT_LAUNCH_CONFIG,
+            launchOptions: useSettingsStore().settings?.launchOptions ?? DEFAULT_LAUNCH_CONFIG,
+            downloadDirectoryPath: useSettingsStore().settings?.downloadDirectoryPath ?? '',
         };
         repos.value?.push(repoC as IReplicArmaRepository);
         await updateModsetCache(repoId);
@@ -125,6 +128,7 @@ export const useRepoStore = defineStore('repo', () => {
                 type: 'a3s',
                 revision: repoData.revision,
                 collections: [],
+                downloadDirectoryPath: repo.downloadDirectoryPath,
             });
             await clearModsetCache();
             await updateModsetCache(repoID);
@@ -148,6 +152,16 @@ export const useRepoStore = defineStore('repo', () => {
             await useHashStore().addToQueue(repo);
         });
     });
+    
+    function recalcRepositoryStatus() {
+        if (repos.value === null) throw new Error('No Repositories found');
+        useHashStore().cache = [];
+        repos.value.forEach(async (repo: IReplicArmaRepository) => {
+            await useRepoStore().checkRevision(repo.id);
+            await useHashStore().addToQueue(repo);
+        });
+        Toast('Reloading Repositories');
+    }
 
     return {
         currentRepository,
@@ -162,5 +176,6 @@ export const useRepoStore = defineStore('repo', () => {
         modsetCache,
         checkRevision,
         updateModsetCache,
+        recalcRepositoryStatus,
     };
 });

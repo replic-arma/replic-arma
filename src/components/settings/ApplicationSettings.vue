@@ -63,7 +63,8 @@
                         </div>
                     </Tab>
                     <Tab title="Launch Options">
-                        <!-- <Launch></Launch> -->
+                        <!-- <Launch v-if="settingsCopy" v-model="settingsCopy.launchOptions"></Launch> -->
+                        <!-- <button class="button" v-once @click="saveSettings()" v-t="'save'"></button> -->
                     </Tab>
                 </Tabs>
             </div>
@@ -78,15 +79,21 @@ import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
 import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
 import Launch from './Launch.vue';
+import Toast from '../util/Toast';
 const settingsCopy = computed(() => {
     return useSettingsStore().settings;
 });
 function saveSettings() {
     useSettingsStore().settings = settingsCopy.value;
     useSettingsStore().save();
+    Toast('Saved Settings');
 }
 function clearCache() {
     clearModsetCache();
+}
+async function resetSettings() {
+    await useSettingsStore().reset();
+    Toast('Reset Settings');
 }
 const isOpen = ref(false);
 </script>

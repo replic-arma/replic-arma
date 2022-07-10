@@ -57,16 +57,17 @@ export const useDownloadStore = defineStore('download', () => {
             if (repo === undefined) throw new Error(`Repository with id ${current.value?.repoId} not found`);
             if (repo.download_server === undefined)
                 throw new Error(`Repository with id ${current.value?.repoId} has no download server`);
-            if (useSettingsStore().settings?.downloadDirectoryPath === null) throw new Error('No download path set');
+            if (repo.downloadDirectoryPath === null) throw new Error('No download path set');
             const res = await downloadFiles(
                 repo.type ?? 'a3s',
                 repo.download_server?.url,
-                `${useSettingsStore().settings?.downloadDirectoryPath}${sep}`,
+                `${repo.downloadDirectoryPath}${sep}`,
                 filesToDownload
             );
             if (res !== 'paused') {
                 finished.value.push(current.value);
                 current.value = null;
+                await useRepoStore().recalcRepositoryStatus();
                 next();
             }
         }

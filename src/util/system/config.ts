@@ -49,7 +49,7 @@ export async function saveConfig(contents: IApplicationSettings): Promise<void> 
 export async function resetConfig(): Promise<IApplicationSettings> {
     const exists = await fileExists(FILE_NAME);
 
-    if (!exists) {
+    if (exists) {
         removeFile(FILE_NAME);
     }
 

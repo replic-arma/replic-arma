@@ -57,7 +57,7 @@ const progress = computed(() => {
 });
 function play() {
     if (props.modset === undefined) return;
-    launchModset(props.modset.id);
+    launchModset(props.modset.id, useRouteStore().currentRepoID ?? '');
 }
 </script>
 <style lang="scss" scoped>

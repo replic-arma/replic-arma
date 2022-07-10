@@ -13,15 +13,15 @@
         "name": "Modset Name",
         "add": "Modset Hinzufügen"
     },
-    "collections": "Collections",
+    "collections": "Kollektionen",
     "collection": {
-        "title": "Collection",
-        "name": "Collection Name",
-        "add": "Collection Hinzufügen"
+        "title": "Kollektion",
+        "name": "Kollektions Name",
+        "add": "Kollektion Hinzufügen"
     },
     "download-status": {
-        "outdated": "Outdated",
-        "queued": "Update Pending",
+        "outdated": "Update verfügbar",
+        "queued": "Update Ausstehend",
         "paused": "Paused",
         "downloading": "Downloading",
         "ready": "Ready to play",
@@ -34,7 +34,7 @@
         "empty": "Kein Server verfügbar"
     },
     "submit": "Speichern",
-    "ready": "Ready to play",
+    "ready": "Bereit zum spielen",
     "updating": "Updating",
     "select": "Auswählen",
     "a3exe": "Arma 3 Exe",
@@ -63,7 +63,9 @@
         "theme_option": {
             "light": "Light",
             "dark": "Dark"
-        }
+        },
+        "name": "Profil",
+        "malloc": "Malloc"
     },
     "remove": "Entfernen",
     "save": "Speichern",

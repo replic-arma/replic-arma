@@ -1,13 +1,6 @@
 <template>
     <div class="grad-tooltip">
-        <slot />
-        <span
-            v-if="text.length > 0"
-            :ref="e => positionElement(e as HTMLSpanElement|null)"
-            class="grad-tooltip__text"
-            role="tooltip"
-            v-html="text"
-        ></span>
+        <span :tooltip="text" :position="position"><slot /></span>
     </div>
 </template>
 
@@ -18,66 +11,162 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    position: {
+        type: String,
+        default: 'bottom',
+    },
 });
-
-function positionElement(element: HTMLSpanElement | null): void {
-    // TODO: Clipping is only calculated on first render. Window resize is not considered
-    const tooltip = element as HTMLSpanElement;
-    if (!tooltip) return;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { x: parentX } = tooltip.parentElement!.getBoundingClientRect();
-    const left = parentX + tooltip.offsetLeft;
-    const right = left + tooltip.offsetWidth;
-    if (left < 8) {
-        tooltip.style.top = 'initial';
-        tooltip.style.left = 'calc(100% + .25rem)';
-        tooltip.style.transformOrigin = 'center left';
-        return;
-    }
-    if (right > window.innerWidth - 8) {
-        tooltip.style.top = 'initial';
-        tooltip.style.right = 'calc(100% + .25rem)';
-        tooltip.style.transformOrigin = 'center right';
-    }
-}
 </script>
 
 <style lang="scss" scoped>
-.grad-tooltip {
+[tooltip] {
+    // used for slot editing
+    & > * {
+        display: inline-block;
+    }
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    &__text {
-        visibility: hidden;
-        font-family: 'Source Sans Pro', sans-serif;
+    &:before,
+    &:after {
         text-transform: none;
-        color: rgba(255, 255, 255, 0);
-        white-space: nowrap;
-        background-color: rgba(black, 0);
-        border-radius: 0.25rem;
-        position: absolute;
-        letter-spacing: 0.04em;
-        z-index: 2;
-        padding: 0.25rem 0.5rem;
-        line-height: 0.9rem;
-        font-size: 0.9rem;
-        transition: transform 0.15s ease-out;
-        transform-origin: bottom center;
+        font-size: 0.5em;
+        line-height: 1;
+        user-select: none;
         pointer-events: none;
-        transform: scale(0.9);
-        font-weight: 500;
-        top: -1.65rem;
+        position: absolute;
+        display: none;
+        opacity: 0;
     }
-    &:hover #{&}__text {
-        color: rgba(255, 255, 255, 1);
-        transform: scale(1);
-        background-color: rgba(black, 0.85);
+    &:before {
+        content: '';
+        border: 5px solid transparent; /* opinion 4 */
+        z-index: 1001; /* absurdity 1 */
     }
-    &:hover > &__text,
-    &:focus > &__text,
-    &:focus-within > &__text {
-        visibility: visible;
+    &:after {
+        content: attr(tooltip); /* magic! */
+
+        /* most of the rest of this is opinion */
+        font-family: Helvetica, sans-serif;
+        text-align: center;
+
+        /* 
+    Let the content set the size of the tooltips 
+    but this will also keep them from being obnoxious
+    */
+        min-width: 3em;
+        max-width: 21em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0.5rem;
+        border-radius: 0.3rem;
+        box-shadow: 0 1em 2em -0.5em rgba(0, 0, 0, 0.35);
+        background: black;
+        color: #fff;
+        z-index: 1000; /* absurdity 2 */
+    }
+    &:hover:before,
+    &:hover:after {
+        display: block;
+    }
+    /* position: TOP */
+    &:not([position]):before,
+    &[position^='top']:before {
+        bottom: 100%;
+        border-bottom-width: 0;
+        border-top-color: black;
+    }
+    &:not([position]):after,
+    &[position^='top']::after {
+        bottom: calc(100% + 5px);
+    }
+
+    &:not([position])::before,
+    &:not([position])::after,
+    &[position^='top']::before,
+    &[position^='top']::after {
+        left: 50%;
+        transform: translate(-50%, -0.5em);
+    }
+
+    /* position: BOTTOM */
+    &[position^='bottom']::before {
+        top: 105%;
+        border-top-width: 0;
+        border-bottom-color: black;
+    }
+    &[position^='bottom']::after {
+        top: calc(105% + 5px);
+    }
+    &[position^='bottom']::before,
+    &[position^='bottom']::after {
+        left: 50%;
+        transform: translate(-50%, 0.5em);
+    }
+
+    /* position: LEFT */
+    &[position^='left']::before {
+        top: 50%;
+        border-right-width: 0;
+        border-left-color: black;
+        left: calc(0em - 5px);
+        transform: translate(-0.5em, -50%);
+    }
+    &[position^='left']::after {
+        top: 50%;
+        right: calc(100% + 5px);
+        transform: translate(-0.5em, -50%);
+    }
+
+    /* position: RIGHT */
+    &[position^='right']::before {
+        top: 50%;
+        border-left-width: 0;
+        border-right-color: black;
+        right: calc(0em - 5px);
+        transform: translate(0.5em, -50%);
+    }
+    &[position^='right']::after {
+        top: 50%;
+        left: calc(100% + 5px);
+        transform: translate(0.5em, -50%);
+    }
+
+    /* FX All The Things */
+    &:not([position]):hover::before,
+    &:not([position]):hover::after,
+    &[position^='top']:hover::before,
+    &[position^='top']:hover::after,
+    &[position^='bottom']:hover::before,
+    &[position^='bottom']:hover::after {
+        animation: tooltips-vert 300ms ease-out forwards;
+    }
+
+    &[position^='left']:hover::before,
+    &[position^='left']:hover::after,
+    &[position^='right']:hover::before,
+    &[position^='right']:hover::after {
+        animation: tooltips-horz 300ms ease-out forwards;
+    }
+}
+
+/* don't show empty tooltips */
+[tooltip='']::before,
+[tooltip='']::after {
+    display: none !important;
+}
+
+/* KEYFRAMES */
+@keyframes tooltips-vert {
+    to {
+        opacity: 0.9;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes tooltips-horz {
+    to {
+        opacity: 0.9;
+        transform: translate(0, -50%);
     }
 }
 </style>

@@ -3,7 +3,7 @@
         <div class="repos__heading">
             <h1 v-t="'repositories'"></h1>
             <div class="icon-group">
-                <Tooltip text="Downloads">
+                <Tooltip text="Downloads" position="bottom">
                     <Downloads />
                 </Tooltip>
                 <Tooltip text="Reload Repositories">
@@ -15,7 +15,7 @@
             </div>
         </div>
         <ul class="repos__list">
-            <Loader v-if="repos === null"/>
+            <Loader v-if="repos === null" />
             <RepoVue v-for="(repo, i) of repos" :key="i" :repository="repo"></RepoVue>
         </ul>
         <RepositoryAdd />
@@ -35,17 +35,25 @@ import type { IReplicArmaRepository } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
 import ApplicationSettings from '../components/settings/ApplicationSettings.vue';
 import Tooltip from '../components/util/Tooltip.vue';
+import { useDownloadStore } from '@/store/download';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
     const repos = useRepoStore().repos;
-    if(repos !== null) {
+    if (repos !== null) {
         repos.forEach(async (repo: IReplicArmaRepository) => {
             await useRepoStore().checkRevision(repo.id);
             await useHashStore().addToQueue(repo);
         });
         Toast('Reloading Repositories');
     }
-};
+}
+
+const progress = computed(() => {
+    if (useDownloadStore().current === null) return 0;
+    return Number(
+        (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+    ).toFixed(0);
+});
 </script>
 
 <style lang="scss" scoped>

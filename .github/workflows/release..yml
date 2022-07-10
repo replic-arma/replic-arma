@@ -20,7 +20,7 @@ jobs:
             release_file_installer: ./src-tauri/target/release/bundle/msi/*.msi
             release_file_updater: ./src-tauri/target/release/bundle/msi/*.msi.zip
           - platform: ubuntu-latest
-            release_file: ./src-tauri/target/release/replic-arma
+            release_file_executable: ./src-tauri/target/release/replic-arma
             release_file_installer: ./src-tauri/target/release/bundle/appimage/*.AppImage
             release_file_updater: ./src-tauri/target/release/bundle/appimage/*.tar.gz
 

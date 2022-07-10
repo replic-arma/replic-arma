@@ -6,31 +6,19 @@
             </Tooltip>
             <h1>{{ modset?.name }}</h1>
             <div class="icon-group">
-                <span class="repo__status" :class="`status--${status}`">
-                    <template v-if="status === 'checking' || status === 'updating'">
-                        <mdicon name="loading" spin />
-                    </template>
-                    <template v-if="status === 'ready'">
-                        <button class="button">
-                            <span>Play</span>
-                            <mdicon name="play" @click="play()" />
-                        </button>
-                    </template>
-                    <template v-if="status === 'checking' || (status === 'updating' && progress !== 0)">
-                        <span>...{{ progress }}%</span>
-                    </template>
-                </span>
+                <template v-if="status === 'downloading'">
+                    <Status :status="status" :progress="progress"></Status>
+                </template>
                 <template v-if="status === 'outdated'">
                     <button class="button" @click="download()">
-                        <mdicon name="download" />
+                        <mdicon name="download"></mdicon>
                         Download
                     </button>
                 </template>
-                <template v-if="status === 'downloading'">
-                    <button class="button">
-                        <mdicon name="download" @click="download()" />
-                        <mdicon name="play" />
-                        <span v-if="status === 'downloading'" class="spinner spinner-spin" />
+                <template v-if="status === 'ready'">
+                    <button class="button" @click="play()">
+                        Play
+                        <mdicon name="play"></mdicon>
                     </button>
                 </template>
             </div>
@@ -70,6 +58,7 @@ import { computed, ref } from 'vue';
 import { useDownloadStore } from '@/store/download';
 import { launchModset } from '@/util/system/game';
 import { unrefElement } from '@vueuse/core';
+import Status from '../components/util/Status.vue';
 const modset = useRepoStore().currentModset;
 const files = ref(0);
 const size = computed(() => {
@@ -128,6 +117,7 @@ const updateFiles = computed(() => {
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === modset?.id);
     if (cacheData === undefined) return 'checking';
+    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modset!.id) return 'downloading';
     if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
         return 'outdated';
     } else {
@@ -136,9 +126,21 @@ const status = computed(() => {
 });
 
 const progress = computed(() => {
-    if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID) return 0;
-    const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
-    return Math.floor((checkedFiles / filesToCheck) * 100);
+    if (
+        useDownloadStore().current !== null &&
+        useDownloadStore().current?.item.id === useRepoStore().currentModset?.id
+    ) {
+        return Number(
+            Number(
+                (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+            ).toFixed(0)
+        );
+    } else {
+        if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID)
+            return 0;
+        const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
+        return Math.floor((checkedFiles / filesToCheck) * 100);
+    }
 });
 function download() {
     if (modset === undefined) return;

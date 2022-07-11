@@ -59,6 +59,28 @@
     --space-lg:  2rem;
     --space-xl:  3rem;
     --space-xxl: 6rem;
+
+/* ===== Scrollbar CSS ===== */
+  /* Firefox */
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: #555555 #a09f9f;
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 15px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #a09f9f;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #555555;
+    border-radius: 27px;
+    border: 0px none #ffffff;
+  }
 }
 
 * {
@@ -368,7 +390,7 @@ input[type="checkbox"][role="switch"] {
   height: 500px;
   width: 100%;
   padding: 2rem 3rem;
-  position: fixed;
+  position: absolute;
   left: 0;
   right: 0;
   top: 10rem;

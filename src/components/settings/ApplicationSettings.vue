@@ -101,6 +101,7 @@ const isOpen = ref(false);
 .general-settings {
     display: flex;
     flex-direction: column;
+    position: relative;
     gap: 1.5rem;
     grid-template-columns: 1fr;
     &__speed {

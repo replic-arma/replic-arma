@@ -24,8 +24,8 @@
             </div>
         </div>
         <!-- <pre>
-            Size: {{ size }} 
-            GB Files: {{ files }}
+            Size: {{ size }} GB 
+            Files: {{ files }}
             Update Size {{ updateSize }}
             Update Files {{ updateFiles.length }}
             Files {{ updateFiles }}

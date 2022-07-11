@@ -63,8 +63,8 @@
                         </div>
                     </Tab>
                     <Tab title="Launch Options">
-                        <!-- <Launch v-if="settingsCopy" v-model="settingsCopy.launchOptions"></Launch> -->
-                        <!-- <button class="button" v-once @click="saveSettings()" v-t="'save'"></button> -->
+                        <Launch v-if="settingsCopy" v-model="settingsCopy.launchOptions"></Launch>
+                        <button class="button" v-once @click="saveSettings()" v-t="'save'"></button>
                     </Tab>
                 </Tabs>
             </div>

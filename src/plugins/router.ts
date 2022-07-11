@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import ReposView from '../views/Repos.vue';
 import { useRouteStore } from '@/store/route';
 
 const routes: Array<RouteRecordRaw> = [

@@ -1,6 +1,6 @@
 <template>
-    <!-- <rtransition /> -->
-    <router-view></router-view>
+    <rtransition />
+    <!-- <router-view></router-view> -->
 </template>
 
 <style lang="scss">

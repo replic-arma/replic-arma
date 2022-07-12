@@ -12,7 +12,7 @@ import { useRepoStore } from './store/repo';
 import { useSettingsStore } from './store/settings';
 import { useDownloadStore } from './store/download';
 import { useHashStore } from './store/hash';
-
+import Notifications from '@kyvg/vue3-notification';
 const app = createApp(App);
 app.component('rtransition', TransitionVue);
 app.component('loader', LoaderVue);
@@ -22,8 +22,8 @@ app.use(createPinia());
 app.use(mdiVue, {
     icons: mdijs,
 });
+app.use(Notifications);
 app.mount('#app');
-
 useRepoStore();
 useSettingsStore();
 useHashStore();

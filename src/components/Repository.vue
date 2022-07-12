@@ -28,6 +28,7 @@ import { computed, onMounted, ref } from 'vue';
 import Status from './util/Status.vue';
 import { launchModset } from '@/util/system/game';
 import type { IReplicArmaRepository } from '@/models/Repository';
+import { useDownloadStore } from '@/store/download';
 interface Props {
     repository: IReplicArmaRepository;
 }
@@ -35,6 +36,8 @@ const props = defineProps<Props>();
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === currentModsetId.value);
     if (cacheData === undefined) return 'checking';
+    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === currentModsetId.value)
+        return 'downloading';
     if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
         return 'outdated';
     } else {
@@ -43,9 +46,17 @@ const status = computed(() => {
 });
 
 const progress = computed(() => {
-    if (useHashStore().current === null || useHashStore().current?.repoId !== props.repository.id) return 0;
-    const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
-    return Math.floor((checkedFiles / filesToCheck) * 100);
+    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === currentModsetId.value) {
+        return Number(
+            Number(
+                (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+            ).toFixed(0)
+        );
+    } else {
+        if (useHashStore().current === null || useHashStore().current?.repoId !== props.repository.id) return 0;
+        const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
+        return Math.floor((checkedFiles / filesToCheck) * 100);
+    }
 });
 
 onMounted(() => {

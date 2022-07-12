@@ -48,25 +48,33 @@ import type { IReplicArmaRepository } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import Toast from '../util/Toast';
 import Launch from './Launch.vue';
 import Tab from '../util/Tab.vue';
 import Tabs from '../util/Tabs.vue';
 import type { GameLaunchSettings } from '@/models/Settings';
 import ReplicPathsSelector from '../util/ReplicPathsSelector.vue';
+import { notify } from '@kyvg/vue3-notification';
 const repository = useRepoStore().currentRepository;
 const router = useRouter();
 function removeRepo(): void {
     useRepoStore().repos =
         useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repository?.id) ?? [];
     useRepoStore().save();
-    Toast('Removed Repository ' + repository?.name);
+    notify({
+        title: 'Removed Repository',
+        text: `Repository ${repository?.name} has been removed`,
+        type: 'success',
+    });
     router.push('/');
 }
 
-function save() {
-    useRepoStore().save();
-    Toast('Saved Settings');
+async function save() {
+    await useRepoStore().save();
+    notify({
+        title: 'Saved Settings',
+        text: 'Changes have been saved to your disk',
+        type: 'success',
+    });
 }
 
 const isOpen = ref(false);

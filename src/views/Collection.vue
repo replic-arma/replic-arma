@@ -45,6 +45,7 @@ import Subnavi from '../components/util/Subnavi.vue';
 import ReplicCheckbox from '../components/util/ReplicCheckbox.vue';
 import Toast from '@/components/util/Toast';
 import { launchCollection } from '@/util/system/game';
+import { notify } from '@kyvg/vue3-notification';
 const collection = useRepoStore().currentCollection;
 const modsets = ref([] as Modset[]);
 const dlc = ref({
@@ -76,7 +77,7 @@ for (const [k, v] of Object.entries(dlcMap.value)) {
     }
 }
 
-function saveCollection() {
+async function saveCollection() {
     const modsets = [];
     const dlc = [];
     if (collection !== undefined && collection?.dlc === undefined) collection.dlc = [];
@@ -95,8 +96,12 @@ function saveCollection() {
         collection.modsets = modsets;
         collection.dlc = dlc;
     }
-    useRepoStore().save();
-    Toast('Saved Collection');
+    await useRepoStore().save();
+    notify({
+        title: 'Saved Collection',
+        text: `Saved Collection ${collection?.name}`,
+        type: 'success',
+    });
 }
 
 function play() {

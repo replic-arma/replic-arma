@@ -10,6 +10,7 @@ import { ref, computed, toRaw } from 'vue';
 import { useHashStore } from './hash';
 import { useRouteStore } from './route';
 import { useSettingsStore } from './settings';
+import { notify } from '@kyvg/vue3-notification';
 
 export const useRepoStore = defineStore('repo', () => {
     const repos = ref(null as null | Array<IReplicArmaRepository>);
@@ -152,7 +153,7 @@ export const useRepoStore = defineStore('repo', () => {
             await useHashStore().addToQueue(repo);
         });
     });
-    
+
     function recalcRepositoryStatus() {
         if (repos.value === null) throw new Error('No Repositories found');
         useHashStore().cache = [];
@@ -160,7 +161,11 @@ export const useRepoStore = defineStore('repo', () => {
             await useRepoStore().checkRevision(repo.id);
             await useHashStore().addToQueue(repo);
         });
-        Toast('Reloading Repositories');
+        notify({
+            title: 'Reloading Repositories',
+            text: 'Checking for Updates and recalculating the status',
+            type: 'success',
+        });
     }
 
     return {

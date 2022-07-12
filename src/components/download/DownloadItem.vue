@@ -92,13 +92,13 @@ const cacheData = computed(() => {
 });
 
 function startDownload() {
-    if (props.downloadItem.status === 'paused') {
+    if (props.downloadItem.status === 'paused' || props.downloadItem.status === 'queued') {
         useDownloadStore().next();
     }
 }
 
 async function stopDownload() {
-    if (props.downloadItem.status === 'paused') {
+    if (props.downloadItem.item.id === useDownloadStore().current?.item.id) {
         useDownloadStore().current = null;
         await pauseDownload();
     } else {

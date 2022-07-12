@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@actions/core": "^1.8.2",
+    "@kyvg/vue3-notification": "^2.3.4",
     "@tauri-apps/api": "^1.0.1",
     "@vueuse/core": "^8.0.0",
     "mdi-vue": "^3.0.12",

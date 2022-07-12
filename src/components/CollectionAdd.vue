@@ -24,8 +24,8 @@
 <script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
+import { notify } from '@kyvg/vue3-notification';
 import { ref } from 'vue';
-import Toast from './util/Toast';
 const collectionName = ref('');
 const isOpen = ref(false);
 function addCollection() {
@@ -36,7 +36,12 @@ function addCollection() {
             useRepoStore().save();
             isOpen.value = false;
         });
-    Toast('Added Collection');
+
+    notify({
+        title: 'Added Collection',
+        text: `Added new Collection ${collectionName.value}`,
+        type: 'success',
+    });
 }
 </script>
 <style lang="scss" scoped>

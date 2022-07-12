@@ -79,21 +79,34 @@ import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
 import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
 import Launch from './Launch.vue';
-import Toast from '../util/Toast';
+import { notify } from '@kyvg/vue3-notification';
 const settingsCopy = computed(() => {
     return useSettingsStore().settings;
 });
 function saveSettings() {
     useSettingsStore().settings = settingsCopy.value;
     useSettingsStore().save();
-    Toast('Saved Settings');
+    notify({
+        title: 'Saved Settings',
+        text: 'Changes have been saved to your disk',
+        type: 'success',
+    });
 }
-function clearCache() {
-    clearModsetCache();
+async function clearCache() {
+    await clearModsetCache();
+    notify({
+        title: 'Cleared Modset cache',
+        text: 'Cleared old Modset cache',
+        type: 'success',
+    });
 }
 async function resetSettings() {
     await useSettingsStore().reset();
-    Toast('Reset Settings');
+    notify({
+        title: 'Reset Settings',
+        text: 'Settings have been reset to default',
+        type: 'success',
+    });
 }
 const isOpen = ref(false);
 </script>

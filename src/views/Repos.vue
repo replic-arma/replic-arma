@@ -27,8 +27,6 @@ import RepoVue from '@/components/Repository.vue';
 import RepositoryAdd from '../components/RepositoryAdd.vue';
 import Loader from '@/components/util/Loader.vue';
 import { useRepoStore } from '../store/repo';
-import Toast from '@/components/util/Toast';
-import { loadRepos } from '@/util/system/repos';
 import { computed } from '@vue/runtime-core';
 import Downloads from '../components/download/Downloads.vue';
 import type { IReplicArmaRepository } from '@/models/Repository';
@@ -36,8 +34,6 @@ import { useHashStore } from '@/store/hash';
 import ApplicationSettings from '../components/settings/ApplicationSettings.vue';
 import Tooltip from '../components/util/Tooltip.vue';
 import { useDownloadStore } from '@/store/download';
-import { useI18n } from 'vue-i18n';
-import { useSessionStorage } from '@vueuse/core';
 import { useSettingsStore } from '@/store/settings';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {

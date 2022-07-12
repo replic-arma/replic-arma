@@ -125,6 +125,12 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     downloading: Mutex::new(None),
                 }
             }));
+            let handle = app.handle();
+            tauri_plugin_deep_link::register("replicarma", move |request| {
+                dbg!(&request);
+                handle.emit_all("scheme-request-received", request).unwrap();
+            })
+            .unwrap();
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -164,15 +170,6 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
                 // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
             }
-        })
-        .setup(|app| {
-            let handle = app.handle();
-            tauri_plugin_deep_link::register("replicarma", move |request| {
-                dbg!(&request);
-                handle.emit_all("scheme-request-received", request).unwrap();
-            })
-            .unwrap();
-            Ok(())
         })
         // .build(tauri::generate_context!())
         // .expect("error while running tauri application")

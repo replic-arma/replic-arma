@@ -72,6 +72,7 @@ dependencies = [
  "hyper",
  "hyper-tls",
  "jaded",
+ "once_cell",
  "path-slash",
  "rayon",
  "serde",
@@ -79,6 +80,7 @@ dependencies = [
  "sha-1",
  "tauri",
  "tauri-build",
+ "tauri-plugin-deep-link",
  "threadpool",
  "tokio",
  "url",
@@ -1478,6 +1480,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "interprocess"
+version = "1.1.1"
+source = "git+https://github.com/kotauskas/interprocess?rev=e9bd7c1eaadb73497e26842ec70faea7e554e8e9#e9bd7c1eaadb73497e26842ec70faea7e554e8e9"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "rustc_version 0.4.0",
+ "to_method",
+ "winapi",
+]
+
+[[package]]
 name = "itoa"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1951,9 +1965,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.12.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7709cef83f0c1f58f666e746a08b21e0085f7440fa6a29cc194d68aac97a4225"
+checksum = "18a6dbe30758c9f83eb00cbea4ac95966305f5a7772f3f42ebfc7fc7eddbd8e1"
 
 [[package]]
 name = "opaque-debug"
@@ -3181,6 +3195,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-deep-link"
+version = "0.0.0"
+source = "git+https://github.com/FabianLars/tauri-plugin-deep-link?rev=3c5f001f5d4feedfe92693202af3986adab71740#3c5f001f5d4feedfe92693202af3986adab71740"
+dependencies = [
+ "dirs-next",
+ "interprocess",
+ "log",
+ "once_cell",
+ "tauri-utils",
+ "winreg",
+]
+
+[[package]]
 name = "tauri-runtime"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3348,6 +3375,12 @@ name = "tinyvec_macros"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
+
+[[package]]
+name = "to_method"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7c4ceeeca15c8384bbc3e011dbd8fccb7f068a440b752b7d9b32ceb0ca0e2e8"
 
 [[package]]
 name = "tokio"

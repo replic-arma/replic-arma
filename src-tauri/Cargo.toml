@@ -41,6 +41,8 @@ futures = "0.3.19"
 hyper = { version = "0.14", features = ["full"] }
 hyper-tls = "0.5.0"
 filetime = "0.2.15"
+tauri-plugin-deep-link = { git = "https://github.com/FabianLars/tauri-plugin-deep-link", rev = "3c5f001f5d4feedfe92693202af3986adab71740" }
+once_cell = "1.13"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.10.1"

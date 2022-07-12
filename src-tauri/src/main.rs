@@ -112,6 +112,8 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     //repo.generate_file_map();
     // let app =
 
+    tauri_plugin_deep_link::prepare("replic-arma");
+
     tauri::Builder::default()
         .setup(move |app| {
             let app_dir = app_dir(&app.config()).expect("Couldn't get app dir path!");
@@ -162,6 +164,15 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
                 // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
             }
+        })
+        .setup(|app| {
+            let handle = app.handle();
+            tauri_plugin_deep_link::register("replicarma", move |request| {
+                dbg!(&request);
+                handle.emit_all("scheme-request-received", request).unwrap();
+            })
+            .unwrap();
+            Ok(())
         })
         // .build(tauri::generate_context!())
         // .expect("error while running tauri application")

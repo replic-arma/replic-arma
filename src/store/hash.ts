@@ -11,13 +11,16 @@ export interface IHashItem {
     filesToCheck: number;
     checkedFiles: number;
 }
-
+export interface ICacheItem {
+    id: string;
+    checkedFiles: string[][];
+    outdatedFiles: string[];
+    missingFiles: string[];
+}
 export const useHashStore = defineStore('hash', () => {
     const current = ref(null as null | IHashItem);
     const queue = ref([] as Array<IHashItem>);
-    const cache = ref(
-        [] as Array<{ id: string; checkedFiles: string[][]; outdatedFiles: string[]; missingFiles: string[] }>
-    );
+    const cache = ref([] as Array<ICacheItem>);
     async function addToQueue(repo: IReplicArmaRepository) {
         console.info(`Repository ${repo.name} has been queued`);
         queue.value.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
@@ -33,7 +36,7 @@ export const useHashStore = defineStore('hash', () => {
     async function getHashes() {
         const settings = useSettingsStore().settings;
         if (settings === null) throw Error('Settings null');
-        if (currentHashRepo.value === undefined) throw new Error('Queue empty');
+        if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (getHashes)');
         const reponse = await checkHashes(
             `${currentHashRepo.value.downloadDirectoryPath ?? ''}\\`,
             currentHashRepo.value.files.map((file: File) => file.path)
@@ -49,7 +52,7 @@ export const useHashStore = defineStore('hash', () => {
             const firstElement = queue.value.splice(0, 1)[0];
             if (firstElement === undefined) throw new Error('Queue empty');
             current.value = firstElement;
-            if (currentHashRepo.value === undefined) throw new Error('Queue empty');
+            if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (next)');
             current.value.filesToCheck = currentHashRepo.value.files.length;
             const hashData = await getHashes();
             const wantedFiles = toRaw(currentHashRepo.value.files).filter(

@@ -7,9 +7,10 @@
 
 <script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
+import { computed } from 'vue';
 import Modset from '../components/Modset.vue';
 import ModsetAdd from '../components/ModsetAdd.vue';
-const repository = useRepoStore().currentRepository;
+const repository = computed(() => useRepoStore().currentRepository);
 </script>
 
 <style lang="scss" scoped>

@@ -7,7 +7,7 @@
                     <Downloads />
                 </Tooltip>
                 <Tooltip text="Reload Repositories">
-                    <mdicon name="refresh" size="45" v-once @click="reloadRepos" />
+                    <mdicon name="refresh" size="35" v-once @click="reloadRepos" />
                 </Tooltip>
                 <Tooltip text="Settings">
                     <ApplicationSettings></ApplicationSettings>
@@ -35,11 +35,17 @@ import ApplicationSettings from '../components/settings/ApplicationSettings.vue'
 import Tooltip from '../components/util/Tooltip.vue';
 import { useDownloadStore } from '@/store/download';
 import { useSettingsStore } from '@/store/settings';
+import { notify } from '@kyvg/vue3-notification';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
     const repos = useRepoStore().repos;
     if (repos !== null) {
-        useRepoStore().recalcRepositoryStatus();
+        useRepoStore().recalcRepositories();
+        notify({
+            title: 'Reloading Repository',
+            text: 'Checking for Updates and recalculating the status',
+            type: 'success',
+        });
     }
 }
 
@@ -64,7 +70,7 @@ useSettingsStore().applyLocale();
         display: grid;
         grid-template-columns: 1fr auto auto;
         font-weight: bold;
-        font-size: 22pt;
+        font-size: 14pt;
         align-items: center;
         justify-content: center;
 

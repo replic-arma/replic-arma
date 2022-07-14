@@ -23,8 +23,8 @@ export async function saveModsetCache(repositoryID: string, contents: Array<Mods
     return writeBinaryFile(fileName, data);
 }
 
-export async function clearModsetCache() {
-    const fileName = `.cache.json`;
+export async function clearModsetCache(repoId: string|null = null) {
+    const fileName = repoId === null ? `.cache.json` : `${repoId}.cache.json`;
 
     await ensureAppDir();
 

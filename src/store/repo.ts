@@ -1,4 +1,3 @@
-import Toast from '@/components/util/Toast';
 import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod, File } from '@/models/Repository';
 import { DEFAULT_LAUNCH_CONFIG } from '@/util/system/config';
 import { clearModsetCache, saveModsetCache } from '@/util/system/modset_cache';
@@ -7,7 +6,7 @@ import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 import { ref, computed, toRaw } from 'vue';
-import { useHashStore } from './hash';
+import { useHashStore, type ICacheItem } from './hash';
 import { useRouteStore } from './route';
 import { useSettingsStore } from './settings';
 import { notify } from '@kyvg/vue3-notification';
@@ -101,7 +100,7 @@ export const useRepoStore = defineStore('repo', () => {
     async function checkRevision(repoID: string) {
         if (repos.value === null) throw new Error('Repositories not loaded yet.');
 
-        const repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
+        let repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
         if (repo === undefined) throw new Error('Repository not found');
         if (repo.config_url === undefined) throw new Error('Repository has no autoconfig');
         const repoData = await getRepoFromURL(`${repo.config_url}autoconfig`);
@@ -111,27 +110,45 @@ export const useRepoStore = defineStore('repo', () => {
             if (repoData.files !== undefined) {
                 mods = await ReplicWorker.createModsetFromFiles(repoData.files);
             }
+            const allModsModset = repo.modsets.find((modset) => modset.name === 'All Mods');
             repo.modsets = repoData.modsets.map((modset: Modset) => {
-                const oldModset = repo.modsets.find((oldModset) => oldModset.name === modset.name);
+                const oldModset = repo!.modsets.find(
+                    (oldModset) => oldModset.name === modset.name && oldModset.name !== 'All Mods'
+                );
                 return { ...modset, id: oldModset?.id ?? uuidv4() };
             });
+            const modSetIds = repo.modsets.map((modset: Modset) => modset.id);
+            repo.collections = repo.collections.map((collection: Collection) => {
+                collection.modsets = collection.modsets?.filter((modsetId: string) => modSetIds.includes(modsetId));
+                return collection;
+            });
 
-            const allModsModset = repo.modsets.find((modset) => modset.name === 'All Mods');
             if (allModsModset !== undefined) {
                 allModsModset.mods = mods;
                 repo.modsets.unshift(allModsModset);
+            } else {
+                repo.modsets.unshift({
+                    id: uuidv4(),
+                    name: 'All Mods',
+                    description: 'Contains all Mods from the Repository',
+                    mods,
+                });
             }
-            repos.value = useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repo?.id) ?? [];
-            repos.value?.push({
+            repo = {
                 ...repo,
                 id: repo.id,
                 image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
-                type: 'a3s',
+                type: repo.type,
                 revision: repoData.revision,
-                collections: [],
+                collections: repo.collections,
                 downloadDirectoryPath: repo.downloadDirectoryPath,
+            };
+            repos.value.forEach((repoS: IReplicArmaRepository) =>{
+                if (repoS.id === repo?.id) {
+                    repoS = repo;
+                }
             });
-            await clearModsetCache();
+            await clearModsetCache(repoID);
             await updateModsetCache(repoID);
             await save();
         }
@@ -154,18 +171,18 @@ export const useRepoStore = defineStore('repo', () => {
         });
     });
 
-    function recalcRepositoryStatus() {
+    async function recalcRepositories() {
         if (repos.value === null) throw new Error('No Repositories found');
         useHashStore().cache = [];
         repos.value.forEach(async (repo: IReplicArmaRepository) => {
-            await useRepoStore().checkRevision(repo.id);
-            await useHashStore().addToQueue(repo);
+            await recalcRepository(repo);
         });
-        notify({
-            title: 'Reloading Repositories',
-            text: 'Checking for Updates and recalculating the status',
-            type: 'success',
-        });
+    }
+    async function recalcRepository(repo: IReplicArmaRepository) {
+        if (repos.value === null) throw new Error('No Repositories found');
+        useHashStore().cache = useHashStore().cache.filter((cacheItem: ICacheItem) => cacheItem.id !== repo.id);
+        await useRepoStore().checkRevision(repo.id);
+        await useHashStore().addToQueue(repo);
     }
 
     return {
@@ -181,6 +198,7 @@ export const useRepoStore = defineStore('repo', () => {
         modsetCache,
         checkRevision,
         updateModsetCache,
-        recalcRepositoryStatus,
+        recalcRepositories,
+        recalcRepository,
     };
 });

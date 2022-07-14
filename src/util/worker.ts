@@ -1,7 +1,5 @@
 import type { File, Modset, ModsetMod } from '@/models/Repository';
 import { useWebWorkerFn } from '@vueuse/core';
-// import DeflateWorker from './deflate_worker?worker';
-// import UncompressWorker from './uncompress_worker?worker';
 
 export const ReplicWorker = {
     async mapFilesToMods(files: File[], modsets: Modset[]): Promise<Modset[]> {

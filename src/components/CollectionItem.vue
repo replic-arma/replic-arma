@@ -7,7 +7,7 @@
         <span class="repo__status" :class="`status--${status}`" v-t="'download-status.' + status"></span>
         <div class="collection__play">
             <span v-t="'play'"></span>
-            <mdicon name="play" size="35" />
+            <mdicon name="play" size="25" />
         </div>
         <router-link :to="'./collection/' + collection.id" class="collection__open button">
             <mdicon name="folder-open"></mdicon>
@@ -45,7 +45,7 @@ const status = ref('ready');
 
     &__name {
         font-weight: bold;
-        font-size: 18pt;
+        font-size: 14pt;
     }
 
     &__open {

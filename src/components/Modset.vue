@@ -9,7 +9,7 @@
         </span>
         <div class="button modset__play" @click="play()">
             <span v-t="'play'"></span>
-            <mdicon name="play" size="35" />
+            <mdicon name="play" size="25" />
         </div>
         <router-link :to="'./modset/' + modset.id" class="modset__open button">
             <mdicon name="folder-open"></mdicon>
@@ -80,7 +80,7 @@ function play() {
 
     &__name {
         font-weight: bold;
-        font-size: 18pt;
+        font-size: 14pt;
     }
 
     &__open {

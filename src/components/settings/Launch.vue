@@ -1,85 +1,99 @@
 <template>
     <div class="launch-settings">
         <div class="launch-settings__fieldset">
-            <span v-t="'settings.base'"></span>
+            <span class="launch-settings__fieldset--title" v-t="'settings.base'"></span>
             <ul>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="noPause" v-model="model.noPause" /><span
                         v-t="'settings.noPause'"
                     ></span>
                 </li>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="window" v-model="model.window" /><span
                         v-t="'settings.window'"
                     ></span>
                 </li>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="checkSignatures" v-model="model.checkSignatures" /><span
                         v-t="'settings.checkSignatures'"
                     ></span>
                 </li>
-                <li>
-                    <input type="string" role="switch" name="name" v-model="model.name" /><span
-                        v-t="'settings.name'"
-                    ></span>
+                <li style="max-width: 85%">
+                    <div class="replic-input">
+                        <label v-t="'settings.name'"></label>
+                        <div class="replic-input__input-wrapper">
+                            <input class="replic-input__input" type="text" name="name" v-model="model.name" />
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
         <div class="launch-settings__fieldset">
-            <span v-t="'settings.performance'"></span>
+            <span class="launch-settings__fieldset--title" v-t="'settings.performance'"></span>
             <ul>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="hugepages" v-model="model.hugepages" /><span
                         v-t="'settings.hugepages'"
                     ></span>
                 </li>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="emptyWorld" v-model="model.emptyWorld" /><span
                         v-t="'settings.emptyWorld'"
                     ></span>
                 </li>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="noLogs" v-model="model.noLogs" /><span
                         v-t="'settings.noLogs'"
                     ></span>
                 </li>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="noSplash" v-model="model.noSplash" /><span
                         v-t="'settings.noSplash'"
                     ></span>
                 </li>
                 <li>
-                    <input type="checkbox" role="switch" name="emptyWorld" v-model="model.emptyWorld" /><span
-                        v-t="'settings.emptyWorld'"
-                    ></span>
-                </li>
-                <!-- <li>
-                    <input type="string" name="maxMem" v-model="model.maxMem" /><span v-t="'settings.maxMem'"></span>
-                </li>
-                <li>
-                    <input type="string" name="cpuCount" v-model="model.cpuCount" /><span
-                        v-t="'settings.cpuCount'"
-                    ></span>
+                    <div class="replic-input">
+                        <label v-t="'settings.maxMem'"></label>
+                        <div class="replic-input__input-wrapper">
+                            <input class="replic-input__input" type="text" name="maxMem" v-model="model.maxMem" />
+                        </div>
+                    </div>
                 </li>
                 <li>
-                    <input type="string" name="exThreads" v-model="model.exThreads" /><span
-                        v-t="'settings.exThreads'"
-                    ></span>
-                </li> -->
+                    <div class="replic-input">
+                        <label v-t="'settings.cpuCount'"></label>
+                        <div class="replic-input__input-wrapper">
+                            <input class="replic-input__input" type="text" name="cpuCount" v-model="model.cpuCount" />
+                        </div>
+                    </div>
+                </li>
                 <li>
-                    <input type="string" name="malloc" v-model="model.malloc" /><span v-t="'settings.malloc'"></span>
+                    <div class="replic-input">
+                        <label v-t="'settings.exThreads'"></label>
+                        <div class="replic-input__input-wrapper">
+                            <input class="replic-input__input" type="text" name="exThreads" v-model="model.exThreads" />
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="replic-input">
+                        <label v-t="'settings.malloc'"></label>
+                        <div class="replic-input__input-wrapper">
+                            <input class="replic-input__input" type="text" name="malloc" v-model="model.malloc" />
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
         <div class="launch-settings__fieldset">
-            <span v-t="'settings.developer'"></span>
+            <span class="launch-settings__fieldset--title" v-t="'settings.developer'"></span>
             <ul>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="filePatching" v-model="model.filePatching" /><span
                         v-t="'settings.filePatching'"
                     ></span>
                 </li>
-                <li>
+                <li class="launch-settings__checkbox">
                     <input
                         type="checkbox"
                         role="switch"
@@ -90,37 +104,17 @@
             </ul>
         </div>
         <div class="launch-settings__custom">
-            <label v-t="'settings.custom_parameter'"></label>
+            <label class="launch-settings__fieldset--title" v-t="'settings.custom_parameter'"></label>
             <textarea />
         </div>
     </div>
 </template>
 <script lang="ts" setup>
 import type { GameLaunchSettings } from '@/models/Settings';
-import { useRepoStore } from '@/store/repo';
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 interface Props {
     modelValue: GameLaunchSettings;
 }
-
-const settings = ref({
-    base: {
-        noPause: false,
-        window: false,
-        battleye: false,
-        checkSignatures: false,
-    },
-    performance: {
-        hugepages: false,
-        emptyWorld: false,
-        noLogs: false,
-        noSplash: false,
-    },
-    developer: {
-        filePatching: false,
-        showScriptErrors: false,
-    },
-});
 const props = defineProps<Props>();
 const emit = defineEmits(['update:modelValue']);
 const model = ref(props.modelValue);
@@ -128,24 +122,27 @@ const model = ref(props.modelValue);
 watch(model, async (newModel, oldModel) => {
     emit('update:modelValue', newModel);
 });
-
-function handleChange(val);
 </script>
 <style lang="scss" scoped>
 .launch-settings {
     display: grid;
     grid-template-columns: 1fr 1fr;
     &__fieldset {
-        list-style: none;
+        &--title {
+            font-weight: bold;
+        }
         ul {
+            list-style: none;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
-        li {
-            margin-block-end: 2rem;
-            display: grid;
-            grid-template-columns: min-content auto;
-            column-gap: 1rem;
-        }
+    }
+    &__checkbox {
+        display: grid;
+        grid-template-columns: min-content auto;
+        column-gap: 1rem;
     }
     &__custom {
         display: grid;

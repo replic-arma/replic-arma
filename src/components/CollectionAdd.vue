@@ -1,7 +1,6 @@
 <template>
     <div class="add-button" @click="isOpen = true">
         <mdicon name="plus" role="button"></mdicon>
-        <span v-t="'collection.add'"></span>
     </div>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">

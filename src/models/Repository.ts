@@ -86,7 +86,6 @@ export interface IReplicArmaRepository extends Repository {
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
     type?: 'local' | 'a3s' | 'swifty';
-    revisionChanged?: boolean;
     launchOptions: GameLaunchSettings;
     downloadDirectoryPath: string;
 }

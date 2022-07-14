@@ -11,7 +11,8 @@
 import { useRepoStore } from '../store/repo';
 import CollectionItem from '../components/CollectionItem.vue';
 import CollectionAdd from '../components/CollectionAdd.vue';
-const repository = useRepoStore().currentRepository;
+import { computed } from 'vue';
+const repository = computed(() => useRepoStore().currentRepository);
 </script>
 
 <style lang="scss" scoped>

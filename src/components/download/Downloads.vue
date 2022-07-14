@@ -1,9 +1,9 @@
 <template>
-    <mdicon name="download" role="button" size="45" @click="isOpen = true" />
+    <mdicon name="download" role="button" size="35" @click="isOpen = true" />
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
-                <mdicon role="button" name="close" size="40" @click="isOpen = false" />
+                <mdicon role="button" name="close" size="45" @click="isOpen = false" />
                 <h1>Downloads</h1>
                 <keep-alive>
                     <DownloadProgess />
@@ -76,7 +76,7 @@ span {
         grid-template-columns: 4rem 18rem auto;
         border-bottom: 1px solid black;
         align-items: center;
-        font-size: 20pt;
+        font-size: 14pt;
         span {
             cursor: pointer;
         }

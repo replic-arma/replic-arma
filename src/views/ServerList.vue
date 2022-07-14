@@ -7,8 +7,9 @@
 
 <script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
+import { computed } from 'vue';
 import ServerItem from '../components/Server.vue';
-const servers = useRepoStore().currentRepository?.game_servers;
+const servers = computed(() => useRepoStore().currentRepository?.game_servers);
 </script>
 
 <style lang="scss" scoped>

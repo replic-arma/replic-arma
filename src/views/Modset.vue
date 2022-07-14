@@ -2,7 +2,7 @@
     <div class="modset" v-if="modset !== undefined">
         <div class="modset__heading">
             <Tooltip text="Go Back">
-                <mdicon name="chevron-left" size="55" @click="$router.back()" />
+                <mdicon name="chevron-left" size="45" @click="$router.back()" />
             </Tooltip>
             <h1>{{ modset?.name }}</h1>
             <div class="icon-group">
@@ -161,7 +161,7 @@ function outdated(mod: ModsetMod) {
     &__heading {
         display: grid;
         grid-template-columns: 4rem 1fr auto;
-        font-size: 22pt;
+        font-size: 14pt;
         align-items: center;
         justify-content: center;
         span {

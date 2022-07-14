@@ -2,7 +2,7 @@
     <div class="collection" v-if="collection !== undefined">
         <div class="collection__heading">
             <Tooltip text="Go Back">
-                <mdicon name="chevron-left" size="55" @click="$router.back()" />
+                <mdicon name="chevron-left" size="45" @click="$router.back()" />
             </Tooltip>
             <h1>{{ collection.name }}</h1>
             <div class="icon-group">
@@ -43,7 +43,6 @@ import { useRouteStore } from '@/store/route';
 import { ref, toRaw } from 'vue';
 import Subnavi from '../components/util/Subnavi.vue';
 import ReplicCheckbox from '../components/util/ReplicCheckbox.vue';
-import Toast from '@/components/util/Toast';
 import { launchCollection } from '@/util/system/game';
 import { notify } from '@kyvg/vue3-notification';
 const collection = useRepoStore().currentCollection;
@@ -115,7 +114,7 @@ function play() {
     &__heading {
         display: grid;
         grid-template-columns: 4rem 1fr auto;
-        font-size: 22pt;
+        font-size: 14pt;
         align-items: center;
         justify-content: center;
         span {
@@ -127,6 +126,8 @@ function play() {
             color: #333333;
         }
         .icon-group {
+            display: flex;
+            gap: 1rem;
             align-items: center;
             justify-content: center;
             color: var(--c-text-3);

@@ -172,7 +172,7 @@ async function pauseDownloadF() {
     }
     &__name {
         font-weight: bold;
-        font-size: 18pt;
+        font-size: 14pt;
     }
     &__controls {
         display: flex;

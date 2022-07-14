@@ -2,13 +2,13 @@
     <div class="repo-view">
         <div class="repo-view__heading">
             <Tooltip text="Go Back">
-                <router-link class="button" to="/"><mdicon name="chevron-left" size="55" /></router-link>
+                <router-link class="button" to="/"><mdicon name="chevron-left" size="45" /></router-link>
             </Tooltip>
             <template v-if="repository">
                 <h1>{{ repository.name }}</h1>
                 <div class="icon-group">
                     <Tooltip text="Refresh Repository">
-                        <mdicon name="refresh" size="45" @click="checkRepo()" />
+                        <mdicon name="refresh" size="35" @click="checkRepo()" />
                     </Tooltip>
                     <Tooltip text="Settings">
                         <RepoSettings></RepoSettings>
@@ -17,7 +17,7 @@
             </template>
             <Loader v-else />
         </div>
-        <SubnaviVue :subnaviItems="subnaviItems"></SubnaviVue>
+        <SubnaviVue v-if="repository" :subnaviItems="subnaviItems"></SubnaviVue>
         <router-view />
     </div>
 </template>
@@ -30,16 +30,24 @@ import { useRepoStore } from '../store/repo';
 import { computed } from '@vue/runtime-core';
 import { useHashStore } from '@/store/hash';
 import RepoSettings from '../components/settings/RepoSettings.vue';
+import { notify } from '@kyvg/vue3-notification';
 
 const repository = computed(() => useRepoStore().currentRepository);
-const subnaviItems: SubnaviItem[] = [
-    { label: 'modsets', link: '/repo/' + repository.value?.id + '/modsets' },
-    { label: 'collections', link: '/repo/' + repository.value?.id + '/collections' },
-    { label: 'server.title', link: '/repo/' + repository.value?.id + '/servers' },
-];
+const subnaviItems = computed(() => {
+    return [
+        { label: 'modsets', link: '/repo/' + repository.value?.id + '/modsets' },
+        { label: 'collections', link: '/repo/' + repository.value?.id + '/collections' },
+        { label: 'server.title', link: '/repo/' + repository.value?.id + '/servers' },
+    ];
+});
 function checkRepo() {
     if (repository.value === undefined) return;
-    useHashStore().addToQueue(repository.value);
+    useRepoStore().recalcRepository(repository.value);
+    notify({
+        title: 'Reloading Repositories',
+        text: 'Checking for Updates and recalculating the status',
+        type: 'success',
+    });
 }
 </script>
 
@@ -49,7 +57,7 @@ function checkRepo() {
     &__heading {
         display: grid;
         grid-template-columns: 4rem 1fr auto auto;
-        font-size: 22pt;
+        font-size: 16pt;
         align-items: center;
         justify-content: center;
         h1 {

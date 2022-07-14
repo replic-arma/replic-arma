@@ -65,7 +65,10 @@
             "dark": "Dark"
         },
         "name": "Profile",
-        "malloc": "Malloc"
+        "malloc": "Malloc",
+        "maxMem": "Max Memory",
+        "cpuCount": "CPU Count",
+        "exThreads": "ExThreads"
     },
     "remove": "Remove",
     "save": "Save",

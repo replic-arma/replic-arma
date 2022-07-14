@@ -5,15 +5,16 @@
             <small class="server__name">{{ server.name }}</small>
         </div>
         <span class="server__port">{{ server.port }}</span>
-        <span class="server__password"
-            ><mdicon name="lock-outline" />{{
-                server.password === undefined || server.password === '' ? '-' : server.password
-            }}</span
-        >
+        <span class="server__password">
+            <template v-if="server.password === undefined || server.password === ''">
+                <mdicon name="lock-open-variant-outline" /> -
+            </template>
+            <template v-else> <mdicon name="lock-outline" />{{ server.password }} </template>
+        </span>
         <span class="server__modset">{{ server.modset !== undefined ? server.modset : '-' }}</span>
         <div class="server__play" @click="launchGame()">
             <span v-t="'play'"></span>
-            <mdicon name="play" size="35" />
+            <mdicon name="play" size="25" />
         </div>
     </li>
 </template>
@@ -37,7 +38,7 @@ function launchGame() {
     width: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 2fr 0.5fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 0.75fr 1fr 1fr 1fr;
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);
@@ -50,7 +51,7 @@ function launchGame() {
 
     &__host {
         font-weight: bold;
-        font-size: 18pt;
+        font-size: 14pt;
     }
 
     &__name {
@@ -74,12 +75,13 @@ function launchGame() {
     }
 
     &__port {
-        font-size: 18pt;
+        font-size: 14pt;
         color: var(--c-text-3);
+        text-align: center;
     }
 
     &__password {
-        font-size: 18pt;
+        font-size: 14pt;
     }
 
     &__info {

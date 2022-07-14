@@ -37,10 +37,6 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/Collection.vue'),
     },
     {
-        path: '/reposettings/:repoId',
-        component: () => import('../views/RepoSettings.vue'),
-    },
-    {
         path: '/:pathMatch(.*)*',
         redirect: '/',
     },
@@ -55,5 +51,4 @@ router.beforeEach((to, from, next) => {
 
     next();
 });
-
 export default router;

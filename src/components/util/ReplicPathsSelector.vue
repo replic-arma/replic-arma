@@ -40,7 +40,7 @@ function openDialog(): void {
 .replic-path-selector {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: auto 3rem;
+    grid-template-rows: auto 2rem;
     &__input-wrapper {
         position: relative;
         background: #fff;

@@ -14,7 +14,7 @@
         </div>
         <div class="repo__play" @click="play()">
             <span v-t="'play'"></span>
-            <mdicon name="play" size="35" />
+            <mdicon name="play" size="25" />
         </div>
         <router-link v-once :to="'/repo/' + repository.id + '/modsets'" class="repo__open button">
             <mdicon name="folder-open"></mdicon>
@@ -92,7 +92,7 @@ const currentModsetId = ref('');
 
     &__name {
         font-weight: bold;
-        font-size: 18pt;
+        font-size: 14pt;
     }
 
     &__status {

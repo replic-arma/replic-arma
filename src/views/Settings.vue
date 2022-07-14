@@ -24,7 +24,7 @@ function saveSettings() {
     &__heading {
         display: grid;
         grid-template-columns: 4rem 1fr auto;
-        font-size: 22pt;
+        font-size: 14pt;
         align-items: center;
         justify-content: center;
         h1 {
@@ -35,7 +35,7 @@ function saveSettings() {
         }
     }
     &__save {
-        font-size: 18pt;
+        font-size: 14pt;
     }
 }
 </style>

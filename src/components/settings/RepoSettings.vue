@@ -54,9 +54,10 @@ import Tabs from '../util/Tabs.vue';
 import type { GameLaunchSettings } from '@/models/Settings';
 import ReplicPathsSelector from '../util/ReplicPathsSelector.vue';
 import { notify } from '@kyvg/vue3-notification';
+import { clearModsetCache } from '@/util/system/modset_cache';
 const repository = useRepoStore().currentRepository;
 const router = useRouter();
-function removeRepo(): void {
+async function removeRepo(): Promise<void> {
     useRepoStore().repos =
         useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repository?.id) ?? [];
     useRepoStore().save();
@@ -65,6 +66,7 @@ function removeRepo(): void {
         text: `Repository ${repository?.name} has been removed`,
         type: 'success',
     });
+    clearModsetCache(repository?.id);
     router.push('/');
 }
 

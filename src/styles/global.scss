@@ -177,6 +177,7 @@ button.button {
 
   &--center {
     align-self: center;
+    margin: auto;
   }
 
   &--danger {
@@ -204,6 +205,12 @@ button.button {
       color: white;
       background-color: scale-color($btnColorDanger, $lightness: -15%);
     }
+  }
+  &:disabled,
+  &[disabled]{
+    border: 1px solid #999999;
+    background-color: #cccccc;
+    color: #666666;
   }
 }
 

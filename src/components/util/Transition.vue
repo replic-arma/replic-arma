@@ -5,7 +5,6 @@
         </transition>
     </router-view>
 </template>
-<script lang="ts" setup></script>
 <style lang="scss" scoped>
 .fade-enter-active,
 .fade-leave-active {

@@ -67,7 +67,7 @@ export const useDownloadStore = defineStore('download', () => {
             if (res !== 'paused') {
                 finished.value.push(current.value);
                 current.value = null;
-                await useRepoStore().recalcRepositoryStatus();
+                await useRepoStore().recalcRepository(repo.id);
                 next();
             }
         }

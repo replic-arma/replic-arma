@@ -7,10 +7,6 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/Repos.vue'),
     },
     {
-        path: '/settings',
-        component: () => import('../views/Settings.vue'),
-    },
-    {
         path: '/repo/:repoId',
         component: () => import('../views/Repo.vue'),
         children: [
@@ -35,6 +31,18 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/repo/:repoId/collection/:collectionId',
         component: () => import('../views/Collection.vue'),
+    },
+    {
+        path: '/setup/moddirectory',
+        component: () => import('../views/setup/ModDirectory.vue'),
+    },
+    {
+        path: '/setup/executable',
+        component: () => import('../views/setup/Executable.vue'),
+    },
+    {
+        path: '/setup/firstRepository',
+        component: () => import('../views/setup/FirstRepository.vue'),
     },
     {
         path: '/:pathMatch(.*)*',

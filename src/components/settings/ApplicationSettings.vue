@@ -9,18 +9,18 @@
             <div class="replic-dialog__content">
                 <Tabs>
                     <Tab title="General">
-                        <div class="general-settings" v-if="settingsCopy !== null">
+                        <div class="general-settings" v-if="settings !== null">
                             <PathSelectorVue
                                 :pathSelector="{ label: 'a3exe', name: 'a3exe' }"
                                 :pathSelectorOptions="{}"
-                                v-model="settingsCopy.gamePath"
+                                v-model="settings.gamePath"
                             ></PathSelectorVue>
                             <PathSelectorVue
                                 :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
                                 :pathSelectorOptions="{ directory: true }"
-                                v-model="settingsCopy.downloadDirectoryPath"
+                                v-model="settings.downloadDirectoryPath"
                             ></PathSelectorVue>
-                            <div class="general-settings__speed">
+                            <!-- <div class="general-settings__speed">
                                 <label for="speed" v-t="'download_max_speed'"></label>
                                 <select class="select" name="speed" v-model="settingsCopy.maxDownloadSpeed">
                                     <option value="0">unlimited</option>
@@ -44,7 +44,7 @@
                                     <option value="light" v-t="'settings.theme_option.light'"></option>
                                     <option value="dark" v-t="'settings.theme_option.dark'"></option>
                                 </select>
-                            </div>
+                            </div> -->
                             <div class="general-settings__buttons">
                                 <button
                                     class="button button--danger"
@@ -52,7 +52,12 @@
                                     v-t="'cache_clear'"
                                     @click="clearCache()"
                                 ></button>
-                                <button class="button button--danger" type="button" v-t="'settings.reset'"></button>
+                                <button
+                                    class="button button--danger"
+                                    type="button"
+                                    v-t="'settings.reset'"
+                                    @click="resetSettings()"
+                                ></button>
                                 <button
                                     class="button button--primary"
                                     type="button"
@@ -63,7 +68,7 @@
                         </div>
                     </Tab>
                     <Tab title="Launch Options">
-                        <Launch v-if="settingsCopy" v-model="settingsCopy.launchOptions"></Launch>
+                        <Launch v-if="settings" v-model="settings.launchOptions"></Launch>
                         <button class="button" v-once @click="saveSettings()" v-t="'save'"></button>
                     </Tab>
                 </Tabs>
@@ -74,17 +79,17 @@
 <script lang="ts" setup>
 import { useSettingsStore } from '@/store/settings';
 import { clearModsetCache } from '@/util/system/modset_cache';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import PathSelectorVue from '../util/PathSelector.vue';
 import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
 import Launch from './Launch.vue';
 import { notify } from '@kyvg/vue3-notification';
-const settingsCopy = computed(() => {
+const settings = computed(() => {
     return useSettingsStore().settings;
 });
 function saveSettings() {
-    useSettingsStore().settings = settingsCopy.value;
+    useSettingsStore().settings = settings.value;
     useSettingsStore().save();
     notify({
         title: 'Saved Settings',

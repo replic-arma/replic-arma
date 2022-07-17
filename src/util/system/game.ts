@@ -2,6 +2,7 @@ import type { Collection, GameServer, Modset, File, ModsetMod } from '@/models/R
 import type { GameLaunchSettings } from '@/models/Settings';
 import { useRepoStore } from '@/store/repo';
 import { useSettingsStore } from '@/store/settings';
+import { invoke } from '@tauri-apps/api';
 import { sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
 
@@ -89,4 +90,8 @@ async function spawnProcess(path: string, args: string, spawnOptions: SpawnOptio
 
     const child = await command.spawn();
     console.log('pid:', child.pid);
+}
+
+export async function getA3PathRegistry(): Promise<string> {
+    return await invoke('get_a3_dir');
 }

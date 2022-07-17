@@ -12,7 +12,8 @@
                         <div class="general-settings">
                             <template v-if="repository">
                                 <!-- <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small>
-                                <small v-once>Revision: {{ repository.revision }}</small> -->
+                                <small v-once>Revision: {{ repository.revision }}</small>
+                                <small v-once>Files: {{ repository.files.length }}</small> -->
                                 <div class="replic-input">
                                     <label>Autoconfig</label>
                                     <div class="replic-input__input-wrapper">

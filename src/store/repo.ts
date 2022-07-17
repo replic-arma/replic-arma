@@ -9,7 +9,6 @@ import { ref, computed, toRaw } from 'vue';
 import { useHashStore, type ICacheItem } from './hash';
 import { useRouteStore } from './route';
 import { useSettingsStore } from './settings';
-import { notify } from '@kyvg/vue3-notification';
 
 export const useRepoStore = defineStore('repo', () => {
     const repos = ref(null as null | Array<IReplicArmaRepository>);

@@ -16,24 +16,21 @@
         </div>
         <ul class="repos__list">
             <Loader v-if="repos === null" />
-            <RepoVue v-for="(repo, i) of repos" :key="i" :repository="repo"></RepoVue>
+            <RepositoryItem v-for="(repo, i) of repos" :key="i" :repository="repo" />
         </ul>
         <RepositoryAdd />
     </div>
 </template>
 
 <script lang="ts" setup>
-import RepoVue from '@/components/Repository.vue';
-import RepositoryAdd from '../components/RepositoryAdd.vue';
+import RepositoryItem from '@/components/repository/RepositoryItem.vue';
+import RepositoryAdd from '../components/repository/RepositoryAdd.vue';
 import Loader from '@/components/util/Loader.vue';
 import { useRepoStore } from '../store/repo';
 import { computed } from '@vue/runtime-core';
 import Downloads from '../components/download/Downloads.vue';
-import type { IReplicArmaRepository } from '@/models/Repository';
-import { useHashStore } from '@/store/hash';
 import ApplicationSettings from '../components/settings/ApplicationSettings.vue';
 import Tooltip from '../components/util/Tooltip.vue';
-import { useDownloadStore } from '@/store/download';
 import { useSettingsStore } from '@/store/settings';
 import { notify } from '@kyvg/vue3-notification';
 const repos = computed(() => useRepoStore().repos);
@@ -49,12 +46,6 @@ function reloadRepos() {
     }
 }
 
-const progress = computed(() => {
-    if (useDownloadStore().current === null) return 0;
-    return Number(
-        (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
-    ).toFixed(0);
-});
 useSettingsStore().applyLocale();
 </script>
 

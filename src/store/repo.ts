@@ -106,6 +106,7 @@ export const useRepoStore = defineStore('repo', () => {
         const repoData = await getRepoFromURL(`${repo.config_url}autoconfig`);
         if (repoData.revision !== repo.revision) {
             console.log(`Update for Repo ${repoData.name} detected`);
+            await clearModsetCache(repoID);
             let mods: ModsetMod[] = [];
             if (repoData.files !== undefined) {
                 mods = await ReplicWorker.createModsetFromFiles(repoData.files);
@@ -136,9 +137,7 @@ export const useRepoStore = defineStore('repo', () => {
             }
             repo = {
                 ...repo,
-                id: repo.id,
-                image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
-                type: repo.type,
+                build_date: repoData.build_date,
                 revision: repoData.revision,
                 collections: repo.collections,
                 downloadDirectoryPath: repo.downloadDirectoryPath,
@@ -148,7 +147,6 @@ export const useRepoStore = defineStore('repo', () => {
                     repoS = repo;
                 }
             });
-            await clearModsetCache(repoID);
             await updateModsetCache(repoID);
             await save();
         }

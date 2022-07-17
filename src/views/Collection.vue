@@ -15,16 +15,21 @@
             <div class="collection-mods__modset">
                 <span>Modsets</span>
                 <ul class="item-group">
-                    <li class="item item-modset" v-for="(modset, i) of modsets" :key="i">
-                        <ReplicCheckbox :label="modset.name" v-model="modsetMap[modset.id]" />
+                    <li class="item item-modset" v-for="(modset, i) of repository.modsets" :key="i">
+                        <CollectionModset :modset="modset" :collection="collection" />
                     </li>
                 </ul>
             </div>
             <div class="collection-mods__dlc">
                 <span>DLC</span>
                 <ul class="item-group">
-                    <li class="item" v-for="(dlc, i) of dlc" :key="i">
-                        <ReplicCheckbox :label="dlc" v-model="dlcMap[i]" />
+                    <li class="item" v-for="(label, key, index) in dlc" :key="index">
+                        <CollectionDLC
+                            :label="label"
+                            :id="key"
+                            :default="collection.dlc?.includes(key) ?? false"
+                            :open="false"
+                        />
                     </li>
                 </ul>
             </div>
@@ -32,21 +37,21 @@
                 <span>Local Mods</span>
             </div> -->
         </div>
+        <Modlist v-if="collection.modsets"></Modlist>
     </div>
 </template>
 
 <script lang="ts" setup>
-import type { SubnaviItem } from '@/components/util/Subnavi.vue';
-import type { Modset } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
-import { ref, toRaw } from 'vue';
-import Subnavi from '../components/util/Subnavi.vue';
-import ReplicCheckbox from '../components/util/ReplicCheckbox.vue';
+import { ref, computed } from 'vue';
+import CollectionModset from '../components/collection/CollectionModset.vue';
 import { launchCollection } from '@/util/system/game';
 import { notify } from '@kyvg/vue3-notification';
-const collection = useRepoStore().currentCollection;
-const modsets = ref([] as Modset[]);
+import Modlist from '../components/Modlist.vue';
+import CollectionDLC from '../components/collection/CollectionDLC.vue';
+const collection = computed(() => useRepoStore().currentCollection);
+const repository = computed(() => useRepoStore().currentRepository);
 const dlc = ref({
     contact: 'Contact',
     csla: 'CSLA Iron Curtain',
@@ -55,57 +60,18 @@ const dlc = ref({
     ws: 'Western Sahara',
 });
 
-const modsetMap = ref({} as { [key: string]: boolean });
-
-const dlcMap = ref({
-    contact: false,
-    csla: false,
-    GM: false,
-    vn: false,
-    ws: false,
-} as { [key: string]: boolean });
-
-modsets.value = useRepoStore().currentRepository?.modsets ?? [];
-modsets.value.forEach((modset) => {
-    modsetMap.value = { ...modsetMap.value, ...{ [modset.id]: collection?.modsets?.includes(modset.id) ?? false } };
-});
-
-for (const [k, v] of Object.entries(dlcMap.value)) {
-    if (collection?.dlc?.includes(k)) {
-        dlcMap.value[k] = true;
-    }
-}
-
 async function saveCollection() {
-    const modsets = [];
-    const dlc = [];
-    if (collection !== undefined && collection?.dlc === undefined) collection.dlc = [];
-    for (const [k, v] of Object.entries(toRaw(dlcMap.value))) {
-        if (v) {
-            dlc.push(k);
-        }
-    }
-    if (collection !== undefined && collection?.modsets === undefined) collection.modsets = [];
-    for (const [k, v] of Object.entries(toRaw(modsetMap.value))) {
-        if (v) {
-            modsets.push(k);
-        }
-    }
-    if (collection !== undefined) {
-        collection.modsets = modsets;
-        collection.dlc = dlc;
-    }
     await useRepoStore().save();
     notify({
         title: 'Saved Collection',
-        text: `Saved Collection ${collection?.name}`,
+        text: `Saved Collection ${collection.value!.name}`,
         type: 'success',
     });
 }
 
 function play() {
-    if (collection === undefined) return;
-    launchCollection(collection, useRouteStore().currentRepoID ?? '');
+    if (useRepoStore().currentCollection === undefined) return;
+    launchCollection(useRepoStore().currentCollection!, useRouteStore().currentRepoID ?? '');
 }
 </script>
 

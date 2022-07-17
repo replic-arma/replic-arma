@@ -24,11 +24,11 @@
                                         />
                                     </div>
                                 </div>
-                                <ReplicPathsSelector
+                                <PathSelector
                                     :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
                                     :pathSelectorOptions="{ directory: true }"
                                     v-model="repository.downloadDirectoryPath"
-                                ></ReplicPathsSelector>
+                                ></PathSelector>
                             </template>
                             <button class="button button--danger" v-once @click="removeRepo()" v-t="'remove'"></button>
                             <button class="button" v-once @click="save()" v-t="'save'"></button>
@@ -51,8 +51,7 @@ import { useRouter } from 'vue-router';
 import Launch from './Launch.vue';
 import Tab from '../util/Tab.vue';
 import Tabs from '../util/Tabs.vue';
-import type { GameLaunchSettings } from '@/models/Settings';
-import ReplicPathsSelector from '../util/ReplicPathsSelector.vue';
+import PathSelector from '../util/PathSelector.vue';
 import { notify } from '@kyvg/vue3-notification';
 import { clearModsetCache } from '@/util/system/modset_cache';
 const repository = useRepoStore().currentRepository;
@@ -78,7 +77,6 @@ async function save() {
         type: 'success',
     });
 }
-
 const isOpen = ref(false);
 function formatDate(timestamp: string) {
     return new Date(Number(timestamp) / 1000000).toLocaleDateString('de-de');

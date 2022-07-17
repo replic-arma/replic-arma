@@ -9,8 +9,8 @@
 
 <script lang="ts" setup>
 import { useRepoStore } from '../store/repo';
-import CollectionItem from '../components/CollectionItem.vue';
-import CollectionAdd from '../components/CollectionAdd.vue';
+import CollectionItem from '../components/collection/CollectionItem.vue';
+import CollectionAdd from '../components/collection/CollectionAdd.vue';
 import { computed } from 'vue';
 const repository = computed(() => useRepoStore().currentRepository);
 </script>

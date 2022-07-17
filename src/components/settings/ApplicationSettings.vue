@@ -10,16 +10,16 @@
                 <Tabs>
                     <Tab title="General">
                         <div class="general-settings" v-if="settingsCopy !== null">
-                            <ReplicPathSelectorVue
+                            <PathSelectorVue
                                 :pathSelector="{ label: 'a3exe', name: 'a3exe' }"
                                 :pathSelectorOptions="{}"
                                 v-model="settingsCopy.gamePath"
-                            ></ReplicPathSelectorVue>
-                            <ReplicPathSelectorVue
+                            ></PathSelectorVue>
+                            <PathSelectorVue
                                 :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
                                 :pathSelectorOptions="{ directory: true }"
                                 v-model="settingsCopy.downloadDirectoryPath"
-                            ></ReplicPathSelectorVue>
+                            ></PathSelectorVue>
                             <div class="general-settings__speed">
                                 <label for="speed" v-t="'download_max_speed'"></label>
                                 <select class="select" name="speed" v-model="settingsCopy.maxDownloadSpeed">
@@ -75,7 +75,7 @@
 import { useSettingsStore } from '@/store/settings';
 import { clearModsetCache } from '@/util/system/modset_cache';
 import { computed, ref } from 'vue';
-import ReplicPathSelectorVue from '../util/ReplicPathsSelector.vue';
+import PathSelectorVue from '../util/PathSelector.vue';
 import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
 import Launch from './Launch.vue';

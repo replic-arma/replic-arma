@@ -30,7 +30,7 @@ const isOpen = ref(false);
 function addCollection() {
     if (collectionName.value === null) return;
     useRepoStore()
-        .addCollection(useRouteStore().currentRepoID ?? '', { name: collectionName.value })
+        .addCollection(useRouteStore().currentRepoID ?? '', { name: collectionName.value, modsets: {} })
         .then(() => {
             useRepoStore().save();
             isOpen.value = false;

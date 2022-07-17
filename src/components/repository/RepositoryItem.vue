@@ -25,7 +25,7 @@
 import { useHashStore } from '@/store/hash';
 import type { IHashItem } from '@/store/hash';
 import { computed, onMounted, ref } from 'vue';
-import Status from './util/Status.vue';
+import Status from '../util/Status.vue';
 import { launchModset } from '@/util/system/game';
 import type { IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';

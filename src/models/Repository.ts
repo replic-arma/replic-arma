@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import type { GameLaunchSettings } from './Settings';
-
+export type ModsetMap = Record<string, string[]>;
 export interface File {
     path: string;
     size: number;
@@ -51,7 +51,7 @@ export interface Collection {
     id: string;
     name: string;
     description?: string;
-    modsets?: Array<string>;
+    modsets: ModsetMap;
     dlc?: Array<string>;
     localMods?: Array<ModsetMod>;
     launchOptions?: GameLaunchSettings;

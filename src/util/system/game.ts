@@ -5,28 +5,16 @@ import { useSettingsStore } from '@/store/settings';
 import { sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
 
-type ModsetMap = Map<string, string[]>;
-
 export async function launchCollection(collection: Collection, repoId: string) {
-    const modsetMap = new Map() as ModsetMap;
     const repo = useRepoStore().repos?.find((repo) => repo.id === repoId);
-    collection.modsets?.forEach((modsetId: string) => {
-        const modset = useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modsetId);
-        if (modset !== undefined) {
-            if (modsetMap.get(repo?.downloadDirectoryPath ?? '') !== undefined) {
-                modsetMap.set(repo?.downloadDirectoryPath ?? '', [
-                    ...modset.mods.flatMap((mod: ModsetMod) => mod.name ?? []),
-                    ...(modsetMap.get(repo?.downloadDirectoryPath ?? '') ?? []),
-                ]);
-            } else {
-                modsetMap.set(
-                    repo?.downloadDirectoryPath ?? '',
-                    modset.mods.flatMap((mod: ModsetMod) => mod.name ?? [])
-                );
-            }
-        }
-    });
-    await launchGame(repo!.launchOptions, modsetMap, collection.dlc);
+    await launchGame(
+        repo!.launchOptions,
+        getModDlcString(
+            repo?.downloadDirectoryPath ?? '',
+            Object.values(collection.modsets).flat(),
+            collection.dlc ?? []
+        )
+    );
 }
 
 export async function launchModset(modsetId: string, repoId: string) {
@@ -35,29 +23,30 @@ export async function launchModset(modsetId: string, repoId: string) {
     const repo = useRepoStore().repos?.find((repo) => repo.id === repoId);
     await launchGame(
         repo!.launchOptions,
-        new Map().set(repo?.downloadDirectoryPath, currentModset.mods.flatMap((mod: ModsetMod) => mod.name ?? []) ?? [])
+        getModDlcString(
+            repo?.downloadDirectoryPath ?? '',
+            currentModset.mods.flatMap((mod: ModsetMod) => mod.name ?? []),
+            []
+        )
     );
 }
 
 export async function launchGame(
     launchOptions: GameLaunchSettings,
-    mods: ModsetMap = new Map() as ModsetMap,
-    dlc: string[] = [],
+    modDlcString: string,
     gameServer: GameServer | null = null
 ): Promise<void> {
     const settings = useSettingsStore().settings;
     if (settings === null) throw new Error('No settings, cannot launch the game');
     if (settings.gamePath === null) throw new Error('Game Executable not set, cannot launch the game');
-    const parameterString = `${getParsedLaunchOptions(launchOptions)}${getModDlcString(mods, dlc)}${getConnectionString(
-        gameServer
-    )}`;
+    const parameterString = `${getParsedLaunchOptions(launchOptions)}${modDlcString}${getConnectionString(gameServer)}`;
     await spawnProcess(settings.gamePath, parameterString, {});
 }
 
-function getModDlcString(mods: ModsetMap, dlc: string[]) {
+function getModDlcString(directory: string, mods: string[], dlc: string[]) {
     let arrMods: string[] = [];
-    mods.forEach((mods: string[], directory: string) => {
-        arrMods = [...arrMods, ...mods.map((modName: string) => `${directory}${sep}${modName}`)];
+    mods.forEach((modName: string) => {
+        arrMods = [...arrMods, ...[`${directory}${sep}${modName}`]];
     });
 
     return ` -mod=${[...arrMods, ...dlc].join(';')};`;

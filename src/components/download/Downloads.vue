@@ -47,19 +47,20 @@ span {
     font-size: 16pt;
     position: relative;
     width: 100%;
-    display: inline-block;
+    display: inline-flex;
     &__count {
         margin-inline-start: 0.5rem;
         color: var(--c-text-3);
     }
     &::after {
         content: '';
-        top: 50%;
-        position: absolute;
         height: 2px;
         background: grey;
-        width: stretch;
+        width: 80%;
         margin-inline-start: 0.5rem;
+        margin-top: auto;
+        margin-bottom: auto;
+        display: inline-flex;
     }
 }
 

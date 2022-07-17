@@ -22,7 +22,7 @@ import type { IHashItem } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
 import { computed } from 'vue';
 import { useDownloadStore } from '@/store/download';
-import Status from './util/Status.vue';
+import Status from '../util/Status.vue';
 import { launchModset } from '@/util/system/game';
 const props = defineProps({
     modset: {
@@ -31,7 +31,7 @@ const props = defineProps({
     },
 });
 const status = computed(() => {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.modset.id);
+    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === useRouteStore().currentRepoID);
     if (cacheData === undefined) return 'checking';
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === props.modset.id)
         return 'downloading';

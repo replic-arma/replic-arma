@@ -16,8 +16,7 @@
                     </button>
                 </template>
                 <template v-if="status === 'ready'">
-                    <button class="button" @click="play()">
-                        Play
+                    <button class="button" @click="play()" v-t="'play'">
                         <mdicon name="play"></mdicon>
                     </button>
                 </template>
@@ -33,7 +32,7 @@
         <ul class="modset__mods">
             <li v-for="(mod, i) of modset?.mods" :key="i">
                 <Tooltip :text="getModSize(mod.name)" style="grid-column: 1">
-                    <div class="modset__mod">
+                    <div class="modset__mod" :class="[outdated(mod) ? 'outdated' : 'ready']">
                         {{ mod.name }}
                         <template v-if="outdated(mod)">
                             <mdicon name="close" />
@@ -57,7 +56,6 @@ import { useRouteStore } from '@/store/route';
 import { computed, ref } from 'vue';
 import { useDownloadStore } from '@/store/download';
 import { launchModset } from '@/util/system/game';
-import { unrefElement } from '@vueuse/core';
 import Status from '../components/util/Status.vue';
 const modset = useRepoStore().currentModset;
 const files = ref(0);
@@ -201,5 +199,13 @@ function outdated(mod: ModsetMod) {
         margin-inline: var(--space-xs);
         margin-block: var(--space-xxs);
     }
+}
+</style>
+<style>
+.outdated svg {
+    fill: red;
+}
+.ready svg {
+    fill: green;
 }
 </style>

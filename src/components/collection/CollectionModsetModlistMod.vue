@@ -67,4 +67,7 @@ watch(model, async (newModel, oldModel) => {
 .active {
     background: var(--c-surf-2);
 }
+.active .replic-checkbox__label {
+    color: white;
+}
 </style>

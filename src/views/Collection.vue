@@ -1,43 +1,46 @@
 <template>
-    <div class="collection" v-if="collection !== undefined">
-        <div class="collection__heading">
-            <Tooltip text="Go Back">
-                <mdicon name="chevron-left" size="45" @click="$router.back()" />
-            </Tooltip>
-            <h1>{{ collection.name }}</h1>
-            <div class="icon-group">
-                <button class="button" v-t="'play'" @click="play()"></button>
-                <button class="button" v-t="'save'" @click="saveCollection()"></button>
+    <div class="collection">
+        <template v-if="collection !== undefined && repository !== undefined">
+            <div class="collection__heading">
+                <Tooltip text="Go Back">
+                    <mdicon name="chevron-left" size="45" @click="goToRepo()" />
+                </Tooltip>
+                <h1>{{ collection.name }}</h1>
+                <div class="icon-group">
+                    <button class="button" v-t="'play'" @click="play()"></button>
+                    <button class="button" v-t="'save'" @click="saveCollection()"></button>
+                </div>
             </div>
-        </div>
 
-        <div class="collection-mods">
-            <div class="collection-mods__modset">
-                <span>Modsets</span>
-                <ul class="item-group">
-                    <li class="item item-modset" v-for="(modset, i) of repository.modsets" :key="i">
-                        <CollectionModset :modset="modset" :collection="collection" />
-                    </li>
-                </ul>
-            </div>
-            <div class="collection-mods__dlc">
-                <span>DLC</span>
-                <ul class="item-group">
-                    <li class="item" v-for="(label, key, index) in dlc" :key="index">
-                        <CollectionDLC
-                            :label="label"
-                            :id="key"
-                            :default="collection.dlc?.includes(key) ?? false"
-                            :open="false"
-                        />
-                    </li>
-                </ul>
-            </div>
-            <!-- <div class="collection-mods__local-mods">
+            <div class="collection-mods">
+                <div class="collection-mods__modset">
+                    <span>Modsets</span>
+                    <ul class="item-group">
+                        <li class="item item-modset" v-for="(modset, i) of repository.modsets" :key="i">
+                            <CollectionModset :modset="modset" :collection="collection" />
+                        </li>
+                    </ul>
+                </div>
+                <div class="collection-mods__dlc">
+                    <span>DLC</span>
+                    <ul class="item-group">
+                        <li class="item" v-for="(label, key, index) in dlc" :key="index">
+                            <CollectionDLC
+                                :label="label"
+                                :id="key"
+                                :default="collection.dlc?.includes(key) ?? false"
+                                :open="false"
+                            />
+                        </li>
+                    </ul>
+                </div>
+                <!-- <div class="collection-mods__local-mods">
                 <span>Local Mods</span>
             </div> -->
-        </div>
-        <Modlist v-if="collection.modsets"></Modlist>
+            </div>
+            <Modlist v-if="collection.modsets"></Modlist>
+        </template>
+        <Loader v-else />
     </div>
 </template>
 
@@ -50,6 +53,8 @@ import { launchCollection } from '@/util/system/game';
 import { notify } from '@kyvg/vue3-notification';
 import Modlist from '../components/Modlist.vue';
 import CollectionDLC from '../components/collection/CollectionDLC.vue';
+import { useRouter } from 'vue-router';
+import Loader from '../components/util/Loader.vue';
 const collection = computed(() => useRepoStore().currentCollection);
 const repository = computed(() => useRepoStore().currentRepository);
 const dlc = ref({
@@ -59,7 +64,7 @@ const dlc = ref({
     vn: 'S.O.G. Prairie Fire',
     ws: 'Western Sahara',
 });
-
+const router = useRouter();
 async function saveCollection() {
     await useRepoStore().save();
     notify({
@@ -69,9 +74,13 @@ async function saveCollection() {
     });
 }
 
-function play() {
+async function play() {
     if (useRepoStore().currentCollection === undefined) return;
-    launchCollection(useRepoStore().currentCollection!, useRouteStore().currentRepoID ?? '');
+    await launchCollection(useRepoStore().currentCollection!, useRouteStore().currentRepoID ?? '');
+}
+
+function goToRepo() {
+    router.push('/repo/' + useRouteStore().currentRepoID + '/collections');
 }
 </script>
 

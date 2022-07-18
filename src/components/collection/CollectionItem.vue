@@ -5,7 +5,7 @@
             <small class="collection__description">{{ collection.description }}</small>
         </div>
         <span class="repo__status" :class="`status--${status}`" v-t="'download-status.' + status"></span>
-        <div class="collection__play">
+        <div class="collection__play" @click="play()">
             <span v-t="'play'"></span>
             <mdicon name="play" size="25" />
         </div>
@@ -16,14 +16,18 @@
 </template>
 <script lang="ts" setup>
 import type { Collection } from '@/models/Repository';
+import { useRouteStore } from '@/store/route';
+import { launchCollection } from '@/util/system/game';
 import { ref } from 'vue';
-defineProps({
-    collection: {
-        type: Object,
-        default: null,
-    },
-});
+interface Props {
+    collection: Collection;
+}
+const props = defineProps<Props>();
 const status = ref('ready');
+async function play() {
+    if (props.collection === undefined) return;
+    await launchCollection(props.collection!, useRouteStore().currentRepoID ?? '');
+}
 </script>
 <style lang="scss" scoped>
 .collection {

@@ -99,13 +99,14 @@
 import { ref } from 'vue';
 import Progress from '../../components/util/Progress.vue';
 import { useRepoStore } from '@/store/repo';
+import { useRouter } from 'vue-router';
 const autoConfigModel = ref('');
-const isOpen = ref(false);
 const loading = ref(false);
 const errorMsg = ref('');
 const repoStore = useRepoStore();
 const submitted = ref(false);
 const status = ref(null as null | boolean);
+const router = useRouter();
 function addRepo() {
     submitted.value = true;
     loading.value = true;
@@ -113,8 +114,8 @@ function addRepo() {
         .addRepo(autoConfigModel.value)
         .then(() => {
             loading.value = false;
-            isOpen.value = false;
             autoConfigModel.value = '';
+            router.push('/');
         })
         .catch((error) => {
             console.log(error);

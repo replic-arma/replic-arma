@@ -5,7 +5,7 @@
             <span class="download-item__repo-name" v-if="repo !== null && repo !== undefined">{{ repo.name }}</span>
             <span class="download-item__name">{{ downloadItem.item.name }}</span>
         </div>
-        <div v-if="downloadItem.status !== 'queued' || downloadItem.status === 'paused'" class="download-item__status">
+        <div v-if="downloadItem.status === 'paused'" class="download-item__status">
             <span class="download-item__progress">{{ progress }}%</span>
             <span class="download-item__size">{{ received }} GB / {{ size }} GB</span>
             <div class="download-item__progress-bar" :style="`--progress: ${progress}%;`"></div>

@@ -42,7 +42,7 @@ const settings = computed(() => {
 });
 resolvePath();
 async function resolvePath() {
-    useSettingsStore().settings!.gamePath = `${await getA3PathRegistry()}\\arma3.exe`;
+    useSettingsStore().settings!.gamePath = `${await getA3PathRegistry()}\\arma3_x64.exe`;
     inProgress.value = false;
 }
 const router = useRouter();

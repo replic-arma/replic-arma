@@ -4,7 +4,7 @@
             <Tooltip text="Go Back">
                 <router-link class="button" to="/"><mdicon name="chevron-left" size="45" /></router-link>
             </Tooltip>
-            <template v-if="repository">
+            <template v-if="repository !== undefined">
                 <h1>{{ repository.name }}</h1>
                 <div class="icon-group">
                     <Tooltip text="Refresh Repository">
@@ -17,7 +17,7 @@
             </template>
             <Loader v-else />
         </div>
-        <SubnaviVue v-if="repository" :subnaviItems="subnaviItems"></SubnaviVue>
+        <SubnaviVue v-if="repository !== undefined" :subnaviItems="subnaviItems"></SubnaviVue>
         <router-view />
     </div>
 </template>
@@ -25,10 +25,8 @@
 <script lang="ts" setup>
 import SubnaviVue from '@/components/util/Subnavi.vue';
 import Loader from '@/components/util/Loader.vue';
-import type { SubnaviItem } from '@/components/util/Subnavi.vue';
 import { useRepoStore } from '../store/repo';
 import { computed } from '@vue/runtime-core';
-import { useHashStore } from '@/store/hash';
 import RepoSettings from '../components/settings/RepoSettings.vue';
 import { notify } from '@kyvg/vue3-notification';
 

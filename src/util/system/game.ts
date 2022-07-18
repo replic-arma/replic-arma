@@ -1,4 +1,4 @@
-import type { Collection, GameServer, Modset, File, ModsetMod } from '@/models/Repository';
+import type { Collection, GameServer, Modset, File, ModsetMod, IReplicArmaRepository } from '@/models/Repository';
 import type { GameLaunchSettings } from '@/models/Settings';
 import { useRepoStore } from '@/store/repo';
 import { useSettingsStore } from '@/store/settings';
@@ -7,7 +7,7 @@ import { sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
 
 export async function launchCollection(collection: Collection, repoId: string) {
-    const repo = useRepoStore().repos?.find((repo) => repo.id === repoId);
+    const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === repoId);
     await launchGame(
         repo!.launchOptions,
         getModDlcString(
@@ -21,7 +21,7 @@ export async function launchCollection(collection: Collection, repoId: string) {
 export async function launchModset(modsetId: string, repoId: string) {
     const currentModset = useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modsetId);
     if (currentModset === null || currentModset === undefined) throw new Error('No settings, cannot launch the game');
-    const repo = useRepoStore().repos?.find((repo) => repo.id === repoId);
+    const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === repoId);
     await launchGame(
         repo!.launchOptions,
         getModDlcString(
@@ -59,23 +59,23 @@ function getConnectionString(gameServer: GameServer | null = null) {
 }
 
 function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
-    let parsedLaunchOptions = '';
-    if (launchOptions.noPause) parsedLaunchOptions += ' -noPause';
-    if (launchOptions.noSplash) parsedLaunchOptions += ' -noSplash';
-    if (launchOptions.window) parsedLaunchOptions += ' -window';
-    if (launchOptions.showScriptErrors) parsedLaunchOptions += ' -showScriptErrors';
-    if (launchOptions.filePatching) parsedLaunchOptions += ' -filePatching';
-    if (launchOptions.checkSignatures) parsedLaunchOptions += ' -checkSignatures';
-    if (launchOptions.enableHT) parsedLaunchOptions += ' -enableHT';
-    if (launchOptions.hugepages) parsedLaunchOptions += ' -hugepages';
-    if (launchOptions.emptyWorld) parsedLaunchOptions += ' -world=empty';
-    if (launchOptions.noLogs) parsedLaunchOptions += ' -nologs';
-    if (launchOptions.maxMem !== 0) parsedLaunchOptions += ` -maxMem=${launchOptions.maxMem}`;
-    if (launchOptions.cpuCount !== 0) parsedLaunchOptions += ` -cpuCount=${launchOptions.cpuCount}`;
-    if (launchOptions.exThreads !== 0) parsedLaunchOptions += ` -exThreads=${launchOptions.exThreads}`;
-    if (launchOptions.malloc !== '') parsedLaunchOptions += ` -malloc=${launchOptions.malloc}`;
-    if (launchOptions.customParameter !== '') parsedLaunchOptions += ` ${launchOptions.customParameter}`;
-    return parsedLaunchOptions;
+    const parsedLaunchOptions: string[] = [];
+    if (launchOptions.noPause) parsedLaunchOptions.push('-noPause');
+    if (launchOptions.noSplash) parsedLaunchOptions.push('-nosplash');
+    if (launchOptions.window) parsedLaunchOptions.push('-window');
+    if (launchOptions.showScriptErrors) parsedLaunchOptions.push('-showScriptErrors');
+    if (launchOptions.filePatching) parsedLaunchOptions.push('-filePatching');
+    if (launchOptions.checkSignatures) parsedLaunchOptions.push('-checkSignatures');
+    if (launchOptions.enableHT) parsedLaunchOptions.push('-enableHT');
+    if (launchOptions.hugepages) parsedLaunchOptions.push('-hugepages');
+    if (launchOptions.emptyWorld) parsedLaunchOptions.push('-world=empty');
+    if (launchOptions.noLogs) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.maxMem !== 0) parsedLaunchOptions.push(`-maxMem=${launchOptions.maxMem}`);
+    if (launchOptions.cpuCount !== 0) parsedLaunchOptions.push(`-cpuCount=${launchOptions.cpuCount}`);
+    if (launchOptions.exThreads !== 0) parsedLaunchOptions.push(`-exThreads=${launchOptions.exThreads}`);
+    if (launchOptions.malloc !== '') parsedLaunchOptions.push(`-malloc=${launchOptions.malloc}`);
+    if (launchOptions.customParameter !== '') parsedLaunchOptions.push(`${launchOptions.customParameter}`);
+    return parsedLaunchOptions.join(' ');
 }
 
 async function spawnProcess(path: string, args: string, spawnOptions: SpawnOptions) {

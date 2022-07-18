@@ -35,15 +35,12 @@ import { useSettingsStore } from '@/store/settings';
 import { notify } from '@kyvg/vue3-notification';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
-    const repos = useRepoStore().repos;
-    if (repos !== null) {
-        useRepoStore().recalcRepositories();
-        notify({
-            title: 'Reloading Repository',
-            text: 'Checking for Updates and recalculating the status',
-            type: 'success',
-        });
-    }
+    useRepoStore().recalcRepositories();
+    notify({
+        title: 'Reloading Repository',
+        text: 'Checking for Updates and recalculating the status',
+        type: 'success',
+    });
 }
 
 useSettingsStore().applyLocale();

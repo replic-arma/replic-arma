@@ -16,6 +16,7 @@ export interface GameLaunchSettings {
     noLogs: boolean;
     customParameter: string;
     battleye: boolean;
+    skipIntro: boolean;
 }
 export interface IApplicationSettings {
     language: string;

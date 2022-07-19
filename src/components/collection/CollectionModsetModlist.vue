@@ -8,7 +8,6 @@
             </div>
             <div class="replic-dialog__content">
                 <div class="collection-modlist__mods" v-if="modset !== undefined && collection !== undefined">
-                    <!-- <span class="collection-modlist__mod"  :key="i">{{ mod.name }}</span> -->
                     <CollectionModsetModlistMod
                         v-for="(mod, i) of modset.mods"
                         :label="mod.name"

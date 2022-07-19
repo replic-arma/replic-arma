@@ -57,6 +57,7 @@ import { computed, ref } from 'vue';
 import { useDownloadStore } from '@/store/download';
 import { launchModset } from '@/util/system/game';
 import Status from '../components/util/Status.vue';
+import { notify } from '@kyvg/vue3-notification';
 const modset = useRepoStore().currentModset;
 const files = ref(0);
 const size = computed(() => {
@@ -143,6 +144,11 @@ const progress = computed(() => {
 function download() {
     if (modset === undefined) return;
     useDownloadStore().addToDownloadQueue(modset, useRouteStore().currentRepoID ?? '');
+    notify({
+        title: 'Added Modset to queue',
+        text: `Modset ${modset?.name} has been added to the download queue`,
+        type: 'success',
+    });
 }
 
 function outdated(mod: ModsetMod) {

@@ -57,7 +57,7 @@
           {
             "name": "run-game",
             "cmd": "cmd",
-            "args": ["/C", "start", "", { "validator": "\\S+" }, { "validator": "\\S+" }]
+            "args": ["/C", "start", "", { "validator": "\\S+" }, { "validator": "\\S+" }, { "validator": "\\S+" }, { "validator": "\\S+" }]
           }
         ]
       }

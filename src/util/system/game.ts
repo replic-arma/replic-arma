@@ -40,8 +40,13 @@ export async function launchGame(
     const settings = useSettingsStore().settings;
     if (settings === null) throw new Error('No settings, cannot launch the game');
     if (settings.gamePath === null) throw new Error('Game Executable not set, cannot launch the game');
-    const parameterString = `${getParsedLaunchOptions(launchOptions)}${modDlcString}${getConnectionString(gameServer)}`;
-    await spawnProcess(settings.gamePath, parameterString, {});
+    await spawnProcess(
+        settings.gamePath,
+        getParsedLaunchOptions(launchOptions),
+        getConnectionString(gameServer),
+        modDlcString,
+        {}
+    );
 }
 
 function getModDlcString(directory: string, mods: string[], dlc: string[]) {
@@ -70,6 +75,7 @@ function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
     if (launchOptions.hugepages) parsedLaunchOptions.push('-hugepages');
     if (launchOptions.emptyWorld) parsedLaunchOptions.push('-world=empty');
     if (launchOptions.noLogs) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.skipIntro) parsedLaunchOptions.push('-skipIntro');
     if (launchOptions.maxMem !== 0) parsedLaunchOptions.push(`-maxMem=${launchOptions.maxMem}`);
     if (launchOptions.cpuCount !== 0) parsedLaunchOptions.push(`-cpuCount=${launchOptions.cpuCount}`);
     if (launchOptions.exThreads !== 0) parsedLaunchOptions.push(`-exThreads=${launchOptions.exThreads}`);
@@ -78,8 +84,14 @@ function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
     return parsedLaunchOptions.join(' ');
 }
 
-async function spawnProcess(path: string, args: string, spawnOptions: SpawnOptions) {
-    const command = new Command('run-game', ['/C', 'start', '', path, args], spawnOptions);
+async function spawnProcess(
+    path: string,
+    mods: string,
+    launchOptions: string,
+    connection: string,
+    spawnOptions: SpawnOptions
+) {
+    const command = new Command('run-game', ['/C', 'start', '', path, mods, launchOptions, connection], spawnOptions);
     command.on('close', (data) => {
         console.log(`command finished with code ${data.code} and signal ${data.signal}`);
     });

@@ -68,7 +68,8 @@
         "malloc": "Malloc",
         "maxMem": "Max Memory",
         "cpuCount": "CPU Count",
-        "exThreads": "ExThreads"
+        "exThreads": "ExThreads",
+        "skipIntro": "Skip Intro"
     },
     "remove": "Remove",
     "save": "Save",

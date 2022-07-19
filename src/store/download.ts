@@ -8,6 +8,7 @@ import { useHashStore } from './hash';
 import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
 import { sep } from '@tauri-apps/api/path';
+import { notify } from '@kyvg/vue3-notification';
 export const useDownloadStore = defineStore('download', () => {
     const current = ref(null as null | DownloadItem);
     const queue = ref([] as Array<DownloadItem>);
@@ -49,6 +50,11 @@ export const useDownloadStore = defineStore('download', () => {
             );
         }
         if (current.value !== null) {
+            notify({
+                title: 'Download started',
+                text: `The download of Modset ${current.value.item?.name} has started`,
+                type: 'success',
+            });
             current.value.status = 'downloading';
             const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === current.value?.item.id);
             if (cacheData === undefined) return;
@@ -66,8 +72,13 @@ export const useDownloadStore = defineStore('download', () => {
             );
             if (res !== 'paused') {
                 finished.value.push(current.value);
+                notify({
+                    title: 'Download finished',
+                    text: `The download of Modset ${current.value.item?.name} has been completed`,
+                    type: 'success',
+                });
                 current.value = null;
-                await useRepoStore().recalcRepository(repo.id);
+                await useRepoStore().recalcRepositories();
                 next();
             }
         }

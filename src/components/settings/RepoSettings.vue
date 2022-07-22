@@ -9,7 +9,7 @@
             <div class="replic-dialog__content">
                 <Tabs>
                     <Tab title="General">
-                        <div class="general-settings">
+                        <div class="repo-settings">
                             <template v-if="repository">
                                 <!-- <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small>
                                 <small v-once>Revision: {{ repository.revision }}</small>
@@ -26,18 +26,37 @@
                                     </div>
                                 </div>
                                 <PathSelector
-                                    :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
+                                    :pathSelector="{
+                                        label: 'mod_directory',
+                                        name: 'modDirectory',
+                                        placeholder: 'C:\\Documents\\Arma3Mods',
+                                    }"
                                     :pathSelectorOptions="{ directory: true }"
                                     v-model="repository.downloadDirectoryPath"
                                 ></PathSelector>
                             </template>
-                            <button class="button button--danger" v-once @click="removeRepo()" v-t="'remove'"></button>
-                            <button class="button" v-once @click="save()" v-t="'save'"></button>
+                            <div class="repo-settings__buttons">
+                                <button
+                                    class="button button--danger"
+                                    v-once
+                                    @click="removeRepo()"
+                                    v-t="'remove'"
+                                ></button>
+                                <button
+                                    style="margin-left: auto"
+                                    class="button"
+                                    v-once
+                                    @click="save()"
+                                    v-t="'save'"
+                                ></button>
+                            </div>
                         </div>
                     </Tab>
                     <Tab title="Launch Options" v-if="repository">
                         <Launch v-model="repository.launchOptions"></Launch>
-                        <button class="button" v-once @click="save()" v-t="'save'"></button>
+                        <div class="repo-settings__buttons">
+                            <button class="button button--center" v-once @click="save()" v-t="'save'"></button>
+                        </div>
                     </Tab>
                 </Tabs>
             </div>
@@ -103,9 +122,19 @@ function formatDate(timestamp: string) {
     }
 }
 
-.general-settings {
+.repo-settings {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    &__buttons {
+        margin-block-start: 2rem;
+        display: flex;
+        gap: 1rem;
+    }
+    &__buttons {
+        margin-block-start: 2rem;
+        display: flex;
+        gap: 1rem;
+    }
 }
 </style>

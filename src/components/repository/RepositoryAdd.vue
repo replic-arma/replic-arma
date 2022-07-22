@@ -48,17 +48,17 @@
                             </path>
                         </svg>
                     </div>
-                    <span>Fetching Repository</span>
+                    <span v-t="'repository_add.fetching'"></span>
                 </div>
                 <div class="status" v-if="!loading && status !== null">
                     <div class="icon">
                         <template v-if="status">
-                            <mdicon name="check-circle" size="35"  />
-                            <span>Successfully added Repository</span>
+                            <mdicon name="check-circle" size="35" />
+                            <span v-t="'repository_add.success'"></span>
                         </template>
                         <template v-if="!status">
                             <mdicon name="close-circle" size="35" />
-                            <span>Failed to add Repository</span>
+                            <span v-t="'repository_add.error'"></span>
                         </template>
                     </div>
                 </div>
@@ -71,7 +71,7 @@
                                 type="text"
                                 name="repoName"
                                 v-model="autoConfigModel"
-                                :disabled="loading"
+                                :disabled="loading || autoConfigModel === ''"
                             />
                         </div>
                     </div>
@@ -90,7 +90,7 @@ const loading = ref(false);
 const errorMsg = ref('');
 const repoStore = useRepoStore();
 const submitted = ref(false);
-const status = ref(null as null|boolean);
+const status = ref(null as null | boolean);
 function addRepo() {
     submitted.value = true;
     loading.value = true;
@@ -116,6 +116,7 @@ function addRepo() {
     width: 75%;
     &__heading {
         display: grid;
+        font-weight: 600;
         grid-template-columns: 1fr auto;
         align-items: center;
         font-size: 20pt;

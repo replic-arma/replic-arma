@@ -4,30 +4,47 @@
             <span class="collection__name">{{ collection.name }}</span>
             <small class="collection__description">{{ collection.description }}</small>
         </div>
-        <span class="repo__status" :class="`status--${status}`" v-t="'download-status.' + status"></span>
+        <span class="repo__status" :class="`status--${status}`">
+            <status :status="status" :progress="0"></status>
+        </span>
         <div class="collection__play" @click="play()">
             <span v-t="'play'"></span>
             <mdicon name="play" size="25" />
         </div>
         <router-link :to="'./collection/' + collection.id" class="collection__open button">
-            <mdicon name="folder-open"></mdicon>
+            <mdicon name="folder-open-outline"></mdicon>
         </router-link>
     </li>
 </template>
 <script lang="ts" setup>
 import type { Collection } from '@/models/Repository';
+import { useDownloadStore } from '@/store/download';
+import { useHashStore } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
 import { launchCollection } from '@/util/system/game';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import Status from '../util/Status.vue';
 interface Props {
     collection: Collection;
 }
 const props = defineProps<Props>();
-const status = ref('ready');
 async function play() {
     if (props.collection === undefined) return;
     await launchCollection(props.collection!, useRouteStore().currentRepoID ?? '');
 }
+
+const status = computed(() => {
+    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === useRouteStore().currentRepoID);
+    if (cacheData === undefined) return 'checking';
+    if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+        return 'outdated';
+    }
+    for (const modsetId of Object.keys(props.collection.modsets)) {
+        if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modsetId)
+            return 'downloading';
+    }
+    return 'ready';
+});
 </script>
 <style lang="scss" scoped>
 .collection {
@@ -90,6 +107,7 @@ async function play() {
         justify-content: center;
         cursor: pointer;
         border-radius: 5rem;
+        color: grey;
         & > span:first-child {
             color: var(--c-surf-2);
         }
@@ -106,7 +124,7 @@ async function play() {
 
     &__info {
         display: grid;
-        padding-inline-start: var(--space-sm);
+        padding-inline-start: 1rem;
     }
 
     &__description {

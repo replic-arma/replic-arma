@@ -9,7 +9,7 @@
             <div class="replic-dialog__content">
                 <Tabs>
                     <Tab title="General">
-                        <div class="general-settings" v-if="settings !== null">
+                        <div class="application-settings" v-if="settings !== null">
                             <PathSelectorVue
                                 :pathSelector="{ label: 'a3exe', name: 'a3exe' }"
                                 :pathSelectorOptions="{}"
@@ -20,7 +20,7 @@
                                 :pathSelectorOptions="{ directory: true }"
                                 v-model="settings.downloadDirectoryPath"
                             ></PathSelectorVue>
-                            <!-- <div class="general-settings__speed">
+                            <!-- <div class="application-settings__speed">
                                 <label for="speed" v-t="'download_max_speed'"></label>
                                 <select class="select" name="speed" v-model="settingsCopy.maxDownloadSpeed">
                                     <option value="0">unlimited</option>
@@ -31,27 +31,21 @@
                                     <option value="25">25 MB/s</option>
                                 </select>
                             </div>
-                            <div class="general-settings__language">
+                            <div class="application-settings__language">
                                 <label for="language" v-t="'language'"></label>
                                 <select class="select" name="language" v-model="settingsCopy.language">
                                     <option value="en">English</option>
                                     <option value="de">German</option>
                                 </select>
                             </div>
-                            <div class="general-settings__theme">
+                            <div class="application-settings__theme">
                                 <label for="theme" v-t="'settings.theme'"></label>
                                 <select class="select" name="theme" v-model="settingsCopy.theme">
                                     <option value="light" v-t="'settings.theme_option.light'"></option>
                                     <option value="dark" v-t="'settings.theme_option.dark'"></option>
                                 </select>
                             </div> -->
-                            <div class="general-settings__buttons">
-                                <button
-                                    class="button button--danger"
-                                    type="button"
-                                    v-t="'cache_clear'"
-                                    @click="clearCache()"
-                                ></button>
+                            <div class="application-settings__buttons">
                                 <button
                                     class="button button--danger"
                                     type="button"
@@ -59,7 +53,14 @@
                                     @click="resetSettings()"
                                 ></button>
                                 <button
+                                    class="button button--danger"
+                                    type="button"
+                                    v-t="'cache_clear'"
+                                    @click="clearCache()"
+                                ></button>
+                                <button
                                     class="button button--primary"
+                                    style="margin-left: auto"
                                     type="button"
                                     v-t="'save'"
                                     @click="saveSettings()"
@@ -69,7 +70,12 @@
                     </Tab>
                     <Tab title="Launch Options">
                         <Launch v-if="settings" v-model="settings.launchOptions"></Launch>
-                        <button class="button" v-once @click="saveSettings()" v-t="'save'"></button>
+                        <div class="application-settings__buttons">
+                            <button class="button button--center" v-once @click="saveSettings()" v-t="'save'"></button>
+                        </div>
+                    </Tab>
+                    <Tab title="About">
+                        <About></About>
                     </Tab>
                 </Tabs>
             </div>
@@ -85,6 +91,7 @@ import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
 import Launch from './Launch.vue';
 import { notify } from '@kyvg/vue3-notification';
+import About from './About.vue';
 const settings = computed(() => {
     return useSettingsStore().settings;
 });
@@ -116,7 +123,7 @@ async function resetSettings() {
 const isOpen = ref(false);
 </script>
 <style lang="scss" scoped>
-.general-settings {
+.application-settings {
     display: flex;
     flex-direction: column;
     position: relative;
@@ -135,9 +142,9 @@ const isOpen = ref(false);
         flex-direction: column;
     }
     &__buttons {
+        margin-block-start: 2rem;
         display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
+        gap: 1rem;
     }
 }
 .replic-dialog {
@@ -148,6 +155,7 @@ const isOpen = ref(false);
         grid-template-columns: 1fr auto;
         align-items: center;
         font-size: 20pt;
+        font-weight: 600;
         margin-block-end: 2rem;
         span:not(:first-child) {
             cursor: pointer;

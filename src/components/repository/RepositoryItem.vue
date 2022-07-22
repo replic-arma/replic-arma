@@ -7,9 +7,16 @@
         </div>
         <div class="repo__modset">
             <select v-model="currentModsetId">
-                <option v-once v-for="(modset, i) of repository.modsets" :key="i" :value="modset.id">
-                    {{ modset.name }}
-                </option>
+                <optgroup label="------Modsets-------">
+                    <option v-once v-for="(modset, i) of repository.modsets" :key="i" :value="modset.id">
+                        {{ modset.name }}
+                    </option>
+                </optgroup>
+                <optgroup label="------Collections------" v-if="repository.collections.length > 0">
+                    <option v-once v-for="(collection, i) of repository.collections" :key="i" :value="collection.id">
+                        {{ collection.name }}
+                    </option>
+                </optgroup>
             </select>
         </div>
         <div class="repo__play" @click="play()">
@@ -17,7 +24,7 @@
             <mdicon name="play" size="25" />
         </div>
         <router-link v-once :to="'/repo/' + repository.id + '/modsets'" class="repo__open button">
-            <mdicon name="folder-open"></mdicon>
+            <mdicon name="folder-open-outline"></mdicon>
         </router-link>
     </li>
 </template>
@@ -75,11 +82,11 @@ const currentModsetId = ref('');
     list-style-type: none;
     display: grid;
     grid-template-columns: 4rem 1fr 0.5fr 1fr 0.5fr 10%;
-    padding-inline-start: var(--space-sm);
+    padding-inline-start: 1rem;
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-1);
     border-radius: 12px;
     overflow: hidden;
     &:hover {
@@ -87,7 +94,7 @@ const currentModsetId = ref('');
     }
 
     &__img {
-        block-size: var(--space-xl);
+        block-size: 3rem;
     }
 
     &__name {
@@ -132,13 +139,14 @@ const currentModsetId = ref('');
     }
 
     &__play {
+        font-weight: 500;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         border-radius: 5rem;
         margin-inline-start: 1rem;
-
+        color: grey;
         & > span:first-child {
             color: var(--c-surf-2);
         }
@@ -151,7 +159,7 @@ const currentModsetId = ref('');
     &__modset {
         position: relative;
         select {
-            background: #f2f2f2;
+            font-weight: 500;
             cursor: pointer;
             appearance: none;
             border: none;
@@ -162,18 +170,16 @@ const currentModsetId = ref('');
             color: var(--c-surf-2);
             background-size: 5px 5px, 5px 5px, 1px 1.5em;
             background-repeat: no-repeat;
-            background-image: linear-gradient(45deg, transparent 50%, gray 50%),
-                linear-gradient(135deg, gray 50%, transparent 50%), linear-gradient(to right, #ccc, #ccc);
-            background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px),
-                calc(100% - 2.5em) 0.5em;
-            &:focus {
-                background-image: linear-gradient(45deg, gray 50%, transparent 50%),
-                    linear-gradient(135deg, transparent 50%, gray 50%), linear-gradient(to right, #ccc, #ccc);
-                background-position: calc(100% - 15px) 1em, calc(100% - 20px) 1em, calc(100% - 2.5em) 0.5em;
-                background-size: 5px 5px, 5px 5px, 1px 1.5em;
-                background-repeat: no-repeat;
-                outline: 0;
+            &:hover {
+                background-image: linear-gradient(45deg, transparent 50%, gray 50%),
+                    linear-gradient(135deg, gray 50%, transparent 50%);
+                background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px),
+                    calc(100% - 2.5em) 0.5em;
             }
+            option {
+                cursor: pointer;
+            }
+            outline: 0;
         }
     }
 }

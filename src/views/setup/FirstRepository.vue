@@ -71,13 +71,14 @@
                                     name="repoName"
                                     v-model="autoConfigModel"
                                     :disabled="loading"
+                                    placeholder="http://a3s.gruppe-adler.de/mods/.a3s/autoconfig"
                                 />
                             </div>
                         </div>
                         <button
                             class="button button--center"
                             @click="addRepo"
-                            :disabled="loading"
+                            :disabled="loading || autoConfigModel === ''"
                             v-t="'submit'"
                         ></button>
                         <router-link to="/" custom v-slot="{ navigate }">
@@ -130,6 +131,7 @@ function addRepo() {
     width: 75%;
     &__heading {
         align-items: center;
+        font-weight: 600;
         margin-block-end: 2rem;
         span:not(:first-child) {
             cursor: pointer;
@@ -162,5 +164,6 @@ function addRepo() {
         text-decoration: underline;
     }
     color: gray;
+    font-size: 12pt;
 }
 </style>

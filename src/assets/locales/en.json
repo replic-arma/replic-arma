@@ -73,5 +73,11 @@
     },
     "remove": "Remove",
     "save": "Save",
-    "play": "Play"
+    "play": "Play",
+    "repository_add": {
+        "fetching": "Fetching Repository",
+        "error": "Failed to add Repository",
+        "success": "Successfully added Repository"
+    },
+    "download": "Download"
 }

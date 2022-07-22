@@ -121,7 +121,7 @@ async function pauseDownloadF() {
     list-style-type: none;
     display: grid;
     grid-template-columns: 4rem minmax(15ch, 15rem) 1fr 10%;
-    padding-inline-start: var(--space-sm);
+    padding-inline-start: 1rem;
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);
@@ -158,7 +158,7 @@ async function pauseDownloadF() {
         line-height: 0.5;
     }
     &__img {
-        block-size: var(--space-xl);
+        block-size: 3rem;
     }
     &__name-wrapper {
         display: flex;
@@ -177,22 +177,22 @@ async function pauseDownloadF() {
     &__controls {
         display: flex;
         justify-content: flex-end;
-        padding-inline-end: var(--space-md);
+        padding-inline-end: 1.5rem;
 
         span:first-of-type {
-            border-top-left-radius: var(--space-xs);
-            border-bottom-left-radius: var(--space-xs);
+            border-top-left-radius: .5rem;
+            border-bottom-left-radius: .5rem;
         }
 
         span:last-of-type {
-            border-top-right-radius: var(--space-xs);
-            border-bottom-right-radius: var(--space-xs);
+            border-top-right-radius: .5rem;
+            border-bottom-right-radius: .5rem;
         }
 
         span {
             background: var(--c-surf-2);
-            block-size: var(--space-lg);
-            inline-size: var(--space-lg);
+            block-size: 2rem;
+            inline-size: 2rem;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -214,7 +214,7 @@ async function pauseDownloadF() {
         grid-area: canvas;
         background: lightgrey;
         height: 0.5rem;
-        margin-block-start: var(--space-xxs);
+        margin-block-start: .25rem;
         border-radius: 1rem;
         position: relative;
         &::before {
@@ -233,7 +233,7 @@ async function pauseDownloadF() {
     }
 
     &__status {
-        padding-inline-end: var(--space-xs);
+        padding-inline-end: .5rem;
         color: grey;
     }
 }

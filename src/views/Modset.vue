@@ -1,18 +1,18 @@
 <template>
-    <div class="modset" v-if="modset !== undefined">
+    <div class="modset">
         <div class="modset__heading">
             <Tooltip text="Go Back">
                 <mdicon name="chevron-left" size="45" @click="$router.back()" />
             </Tooltip>
-            <h1>{{ modset?.name }}</h1>
-            <div class="icon-group">
+            <h1 v-if="modset !== undefined">{{ modset?.name }}</h1>
+            <div class="icon-group" v-if="modset !== undefined">
                 <template v-if="status === 'downloading'">
                     <Status :status="status" :progress="progress"></Status>
                 </template>
                 <template v-if="status === 'outdated'">
                     <button class="button" @click="download()">
                         <mdicon name="download"></mdicon>
-                        Download
+                        <span v-t="'download'"></span>
                     </button>
                 </template>
                 <template v-if="status === 'ready'">
@@ -58,14 +58,13 @@ import { useDownloadStore } from '@/store/download';
 import { launchModset } from '@/util/system/game';
 import Status from '../components/util/Status.vue';
 import { notify } from '@kyvg/vue3-notification';
-const modset = useRepoStore().currentModset;
+const modset = computed(() => useRepoStore().currentModset);
 const files = ref(0);
 const size = computed(() => {
     const modsetCache = useRepoStore().modsetCache;
-    if (modsetCache === null) return 0;
-    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset?.id);
+    if (modsetCache === null || modset.value === undefined) return 0;
+    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset.value!.id);
     const mods = cacheData?.mods.flatMap((mod: ModsetMod) => mod.files ?? []) ?? [];
-    files.value = mods.length;
     return Number(
         mods.reduce((previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size, 0) /
             10e8
@@ -74,8 +73,8 @@ const size = computed(() => {
 
 function getModSize(modName: string) {
     const modsetCache = useRepoStore().modsetCache;
-    if (modsetCache === null) return '0';
-    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset?.id);
+    if (modsetCache === null || modset.value === undefined) return '0';
+    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset.value!.id);
     const mod = cacheData?.mods.find((mod: ModsetMod) => mod.name === modName);
     if (mod !== undefined) {
         return mod.size !== undefined ? Number(mod.size / 10e5).toFixed(2) + 'MB' : '0';
@@ -84,15 +83,15 @@ function getModSize(modName: string) {
 }
 
 function play() {
-    if (modset === undefined) return;
-    launchModset(modset.id, useRouteStore().currentRepoID ?? '');
+    if (modset.value === undefined) return;
+    launchModset(modset.value.id, useRouteStore().currentRepoID ?? '');
 }
 
 const updateSize = computed(() => {
     const modsetCache = useRepoStore().modsetCache;
-    const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset?.id);
-    if (modsetCache === null || cacheDataa === null) return 0;
-    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset?.id);
+    const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
+    if (modsetCache === null) return 0;
+    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset.value!.id);
     const filesToDownload = [...(cacheDataa?.missingFiles as string[]), ...(cacheDataa?.outdatedFiles as string[])];
     const mods =
         cacheData?.mods
@@ -105,7 +104,7 @@ const updateSize = computed(() => {
 });
 
 const updateFiles = computed(() => {
-    const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset?.id);
+    const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
     if (cacheDataa === null) return [];
 
     const filesToDownload = [...(cacheDataa?.missingFiles as string[]), ...(cacheDataa?.outdatedFiles as string[])];
@@ -114,9 +113,10 @@ const updateFiles = computed(() => {
 });
 
 const status = computed(() => {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === modset?.id);
+    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
     if (cacheData === undefined) return 'checking';
-    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modset!.id) return 'downloading';
+    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modset.value!.id)
+        return 'downloading';
     if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
         return 'outdated';
     } else {
@@ -142,17 +142,17 @@ const progress = computed(() => {
     }
 });
 function download() {
-    if (modset === undefined) return;
-    useDownloadStore().addToDownloadQueue(modset, useRouteStore().currentRepoID ?? '');
+    if (modset.value === undefined) return;
+    useDownloadStore().addToDownloadQueue(modset.value, useRouteStore().currentRepoID ?? '');
     notify({
         title: 'Added Modset to queue',
-        text: `Modset ${modset?.name} has been added to the download queue`,
+        text: `Modset ${modset.value.name} has been added to the download queue`,
         type: 'success',
     });
 }
 
 function outdated(mod: ModsetMod) {
-    const cache = useHashStore().cache.find((cache) => cache.id === modset?.id);
+    const cache = useHashStore().cache.find((cache) => cache.id === modset.value!.id);
     return (
         cache?.missingFiles.map((filePath: string) => filePath.split('\\').includes(mod.name)).includes(true) ||
         cache?.outdatedFiles.map((filePath: string) => filePath.split('\\').includes(mod.name)).includes(true)
@@ -200,10 +200,10 @@ function outdated(mod: ModsetMod) {
         background: var(--c-surf-3);
         width: fit-content;
         border-radius: 999px;
-        padding-inline: var(--space-md);
-        padding-block: var(--space-xs);
-        margin-inline: var(--space-xs);
-        margin-block: var(--space-xxs);
+        padding-inline: 1rem;
+        padding-block: 0.25rem;
+        margin-inline: 0.25rem;
+        margin-block: 0.25rem;
     }
 }
 </style>

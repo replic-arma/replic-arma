@@ -47,7 +47,7 @@ function routeChanged() {
     border-bottom: 1px solid #333333;
     display: flex;
     gap: 0.5rem;
-    padding-block-end: var(--space-md);
+    padding-block-end: 1.5rem;
     padding-inline-start: 0;
     position: relative;
     user-select: text;
@@ -66,6 +66,7 @@ function routeChanged() {
             height: 1.5rem;
             block-size: 3.25rem;
             border-radius: 0.25rem;
+            font-weight: 600;
         }
     }
 

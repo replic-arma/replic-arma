@@ -48,17 +48,10 @@
     --c-surf-2: #2F80ED; // "ACCENT"
     --c-surf-3: rgba(0, 0, 0, 0.1); // HOVER
     --c-surf-4: #FFFFFF;
+    --base-black: #424242;
 
-    --shadow-1:  0 0 .125rem 0 rgb(0 0 0 / 20%);
+    --shadow-1:  3px 3px 15px 0px rgba(0,0,0,0.35);
     --shadow-2:  0 0 .25rem 0 rgb(0 0 0 / 40%);
-
-    --space-xxs: .25rem;
-    --space-xs:  .5rem;
-    --space-sm:  1rem;
-    --space-md:  1.5rem;
-    --space-lg:  2rem;
-    --space-xl:  3rem;
-    --space-xxl: 6rem;
 
 /* ===== Scrollbar CSS ===== */
   /* Firefox */
@@ -92,12 +85,15 @@ html {
 }
 
 body {
-    padding-block-start: var(--space-xs);
-    padding-block-end: var(--space-xs);
-    padding-inline: var(--space-xl);
+    padding-block-start: .5rem;
+    padding-block-end: .5rem;
+    padding-inline: 3rem;
     font-family: Rubik, sans-serif;
     background-color: var(--c-surf-1);
     color: var(--c-text-1);
+    max-width: 1200px;
+    margin: auto;
+    font-weight: 400;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -155,6 +151,7 @@ button.button {
   transition: 150ms all ease-in-out;
   align-self: start;
   inline-size: fit-content;
+  font-size: 12pt;
   
   &:hover {
     background-color: scale-color($btnColor, $lightness: -20%);
@@ -178,6 +175,9 @@ button.button {
   &--center {
     align-self: center;
     margin: auto;
+  }
+  &--right {
+    margin-left: auto;
   }
 
   &--danger {
@@ -244,8 +244,8 @@ input[type="checkbox"][role="switch"] {
     }
 
     &:checked {
-        background-color: #66AA66;
-        border-color: #66AA66;
+        background-color: var(--c-surf-2);
+        border-color: var(--c-surf-2);
 
         &::after {
             transform: translateX(100%);
@@ -339,6 +339,7 @@ input[type="checkbox"][role="switch"] {
 }
 
 .replic-dialog {
+  max-width: 1200px;
   height: 500px;
   width: 100%;
   padding: 2rem 3rem;
@@ -360,12 +361,13 @@ input[type="checkbox"][role="switch"] {
       left: 0;
       right: 0;
       bottom: 0;
-      border-radius: 2px;
+      border-radius: .75rem;
+      box-shadow: var(--shadow-1);
   }
   &::before {
       content: '';
       display: block;
-      background-color: rgba(0, 0, 0, 0.6);
+      background-color: rgba(0, 0, 0, 0.5);
       z-index: -2;
       position: fixed;
       top: 0;

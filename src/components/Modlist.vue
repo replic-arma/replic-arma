@@ -8,7 +8,8 @@
         <div v-if="listOpen">
             <div v-for="(mods, key, index) in collection.modsets" :key="index">
                 <span class="modlist__mods-headline"
-                    ><span>{{ resolveModsetName(key) }}</span>&nbsp;({{ mods.length }})</span
+                    ><span>{{ resolveModsetName(key) }}</span
+                    >&nbsp;({{ mods.length }})</span
                 >
                 <div class="modlist__mods">
                     <span class="modlist__mod" v-for="(mod, i) of mods" :key="i">{{ mod }}</span>
@@ -61,7 +62,7 @@ function resolveModsetName(id: string) {
         background: var(--c-surf-3);
         width: fit-content;
         border-radius: 999px;
-        padding-inline: 1rem;
+        padding-inline: 0.5rem;
         padding-block: 0.25rem;
         margin-inline: 0.25rem;
         margin-block: 0.25rem;

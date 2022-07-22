@@ -33,7 +33,7 @@ watch(model, async (newModel, oldModel) => {
     background: var(--c-surf-3);
     width: fit-content;
     border-radius: 999px;
-    padding-inline: 1rem;
+    padding-inline: 0.5rem;
     padding-block: 0.25rem;
     margin-inline: 0.25rem;
     margin-block: 0.25rem;
@@ -62,6 +62,7 @@ watch(model, async (newModel, oldModel) => {
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        color: var(--c-surf-2);
     }
 }
 .active {

@@ -155,6 +155,9 @@ watch(model, async (newModel, oldModel) => {
         grid-template-rows: max-content auto;
         textarea {
             resize: none;
+            outline: 0;
+            border: transparent;
+            border-radius: 0.5rem;
         }
     }
 }

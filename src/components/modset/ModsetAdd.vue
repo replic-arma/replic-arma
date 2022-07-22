@@ -18,26 +18,26 @@
                             class="txt__input"
                             type="text"
                             name="repoName"
-                            v-model="autoConfigModel"
+                            v-model="modsetNameModel"
                             :disabled="loading"
                         />
                     </div>
                 </div>
-                <button class="button" @click="addModset" :disabled="loading" v-t="'submit'"></button>
+                <button
+                    class="button"
+                    @click="addModset"
+                    :disabled="loading || modsetNameModel === ''"
+                    v-t="'submit'"
+                ></button>
             </div>
         </div>
     </Teleport>
 </template>
 <script lang="ts" setup>
-import { ref } from "vue";
-import { useRepoStore } from "@/store/repo";
-import { useRouteStore } from "@/store/route";
-const routeStore = useRouteStore();
-const autoConfigModel = ref('');
+import { ref } from 'vue';
+const modsetNameModel = ref('');
 const isOpen = ref(false);
 const loading = ref(false);
-const errorMsg = ref('');
-const repoStore = useRepoStore();
 function addModset() {
     loading.value = true;
 }

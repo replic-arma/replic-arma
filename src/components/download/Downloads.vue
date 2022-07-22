@@ -40,7 +40,7 @@ span {
 }
 .download-items {
     display: grid;
-    gap: var(--space-sm);
+    gap: 1rem;
     padding-inline-start: 0;
 }
 .download-sub-head {
@@ -74,6 +74,7 @@ span {
     }
     &__heading {
         display: grid;
+        font-weight: 600;
         grid-template-columns: 4rem 18rem auto;
         border-bottom: 1px solid black;
         align-items: center;

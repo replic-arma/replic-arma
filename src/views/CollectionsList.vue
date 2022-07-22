@@ -20,7 +20,7 @@ const repository = computed(() => useRepoStore().currentRepository);
     &__list {
         padding: 0;
         display: grid;
-        gap: var(--space-sm);
+        gap: 1rem;
     }
 }
 </style>

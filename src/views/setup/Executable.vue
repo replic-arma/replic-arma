@@ -10,13 +10,17 @@
                 <div class="replic-dialog__content" v-if="!inProgress && settings !== null">
                     <div>
                         <PathSelector
-                            :pathSelector="{ label: 'a3exe', name: 'a3exe' }"
+                            :pathSelector="{
+                                label: 'a3exe',
+                                name: 'a3exe',
+                                placeholder: 'C:\\Program Files\\Steam\\steamapps\common\\Arma 3\\arma3_x64.exe',
+                            }"
                             :pathSelectorOptions="{}"
                             v-model="settings.gamePath"
                         ></PathSelector>
                     </div>
                     <button
-                        class="button button--center"
+                        class="button button--right"
                         @click="saveSettings()"
                         role="link"
                         :disabled="settings.gamePath === ''"
@@ -62,6 +66,7 @@ async function saveSettings() {
     width: 75%;
     &__heading {
         align-items: center;
+        font-weight: 600;
         margin-block-end: 2rem;
         span:not(:first-child) {
             cursor: pointer;

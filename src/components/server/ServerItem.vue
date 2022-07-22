@@ -42,7 +42,7 @@ function launchGame() {
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-1);
     border-radius: 12px;
     overflow: hidden;
     &:hover {
@@ -65,6 +65,7 @@ function launchGame() {
         cursor: pointer;
         border-radius: 5rem;
         margin-inline-start: 1rem;
+        color: grey;
         & > span:first-child {
             color: var(--c-surf-2);
         }

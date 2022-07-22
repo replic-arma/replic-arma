@@ -57,7 +57,7 @@ const changeTab = (index) => {
     cursor: pointer;
 }
 #tab-headers ul li.active {
-    color: #008438;
+    color: var(--c-surf-2);
     font-weight: bold;
 }
 
@@ -68,7 +68,7 @@ const changeTab = (index) => {
     left: 0;
     height: 2px;
     width: 100%;
-    background: #008438;
+    background: var(--c-surf-2);
 }
 #active-tab,
 #tab-headers {

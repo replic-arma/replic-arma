@@ -13,14 +13,18 @@
                 <div class="replic-dialog__content" v-if="settings !== null">
                     <div>
                         <PathSelector
-                            :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
+                            :pathSelector="{
+                                label: 'mod_directory',
+                                name: 'modDirectory',
+                                placeholder: 'C:\\Documents\\Arma3Mods',
+                            }"
                             :pathSelectorOptions="{ directory: true }"
                             v-model="settings.downloadDirectoryPath"
                         ></PathSelector>
                     </div>
                     <router-link to="/setup/executable" custom v-slot="{ navigate }">
                         <button
-                            class="button button--center"
+                            class="button button--right"
                             @click="navigate"
                             @keypress.enter="navigate"
                             role="link"
@@ -51,6 +55,7 @@ const settings = computed(() => {
     &__heading {
         align-items: center;
         margin-block-end: 2rem;
+        font-weight: 600;
         span:not(:first-child) {
             cursor: pointer;
         }

@@ -12,7 +12,7 @@
             <mdicon name="play" size="25" />
         </div>
         <router-link :to="'./modset/' + modset.id" class="modset__open button">
-            <mdicon name="folder-open"></mdicon>
+            <mdicon name="folder-open-outline"></mdicon>
         </router-link>
     </li>
 </template>
@@ -70,7 +70,7 @@ function play() {
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-1);
     border-radius: 12px;
     overflow: hidden;
 
@@ -121,6 +121,7 @@ function play() {
         justify-content: center;
         cursor: pointer;
         border-radius: 5rem;
+        color: grey;
         & > span:first-child {
             color: var(--c-surf-2);
         }
@@ -137,7 +138,7 @@ function play() {
 
     &__info {
         display: grid;
-        padding-inline-start: var(--space-sm);
+        padding-inline-start: 1rem;
     }
 
     &__description {

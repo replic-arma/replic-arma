@@ -49,6 +49,7 @@ function addCollection() {
     width: 75%;
     &__heading {
         display: grid;
+        font-weight: 600;
         grid-template-columns: 1fr auto;
         align-items: center;
         font-size: 20pt;

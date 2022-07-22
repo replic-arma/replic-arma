@@ -43,14 +43,14 @@ watch(useDownloadStore().speeds, (currentValue) => {
 });
 
 function formatSpeed(speed: number): string {
-    return `${speed / 1000} MB/s`;
+    return speed / 1000 < 1 ? `${speed} KB/s` : `${speed / 1000} MB/s`;
 }
 </script>
 <style lang="scss" scoped>
 .download-progress {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 8rem auto;
+    grid-template-rows: 5rem auto;
     grid-template-areas:
         'canvas canvas canvas'
         'current peak average';
@@ -58,6 +58,7 @@ function formatSpeed(speed: number): string {
     text-align: end;
     position: relative;
     padding-block-end: 0.5rem;
+    color: var(--base-black);
 
     &__graph {
         grid-area: canvas;

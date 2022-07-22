@@ -7,7 +7,9 @@
                 </Tooltip>
                 <h1>{{ collection.name }}</h1>
                 <div class="icon-group">
-                    <button class="button" v-t="'play'" @click="play()"></button>
+                    <button class="button" v-t="'play'" @click="play()">
+                        <mdicon name="play" />
+                    </button>
                     <button class="button" v-t="'save'" @click="saveCollection()"></button>
                 </div>
             </div>

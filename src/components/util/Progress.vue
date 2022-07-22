@@ -25,10 +25,10 @@ const props = defineProps<Props>();
 
 <style lang="scss" scoped>
 @mixin rounded-corners($radius) {
-  -moz-border-radius: $radius;
-  -webkit-border-radius: $radius;
-  -o-border-radius: $radius;
-  border-radius: $radius;
+    -moz-border-radius: $radius;
+    -webkit-border-radius: $radius;
+    -o-border-radius: $radius;
+    border-radius: $radius;
 }
 .off-screen {
     height: 1px;
@@ -83,11 +83,11 @@ const props = defineProps<Props>();
         z-index: 999;
     }
     .highlight-index:before {
-        background-color: #3cb0a5;
+        background-color: var(--c-surf-2);
         color: #fff;
     }
     .highlight-index {
-        background-color: #3cb0a5;
+        background-color: var(--c-surf-2);
         display: block;
         height: 100%;
         @include rounded-corners(4px);

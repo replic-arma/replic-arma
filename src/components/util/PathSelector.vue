@@ -2,7 +2,13 @@
     <div class="replic-path-selector">
         <label :for="pathSelector.name" v-t="pathSelector.label"></label>
         <div class="replic-path-selector__input-wrapper">
-            <input type="text" :id="pathSelector.name" class="replic-path-selector__input" v-model="model" />
+            <input
+                type="text"
+                :id="pathSelector.name"
+                class="replic-path-selector__input"
+                v-model="model"
+                :placeholder="pathSelector.placeholder"
+            />
             <button class="replic-path-selector__button" @click="openDialog()">
                 <span v-t="'select'"></span>
             </button>
@@ -17,6 +23,7 @@ interface Props {
     pathSelector: {
         label: string;
         name: string;
+        placeholder: string;
     };
     modelValue: string;
 }
@@ -59,7 +66,7 @@ function openDialog(): void {
     &__button {
         block-size: 100%;
         inline-size: 5rem;
-        padding-inline-start: var(--space-xs);
+        padding-inline-start: 0.5rem;
         align-content: center;
         justify-content: center;
         background: lightgrey;
@@ -69,6 +76,8 @@ function openDialog(): void {
         &:hover {
             background: var(--c-surf-3);
         }
+        outline: 0;
+        border: none;
     }
 }
 </style>

@@ -119,7 +119,20 @@ export const useRepoStore = defineStore('repo', () => {
             });
             const modSetIds = repo.modsets.map((modset: Modset) => modset.id);
             repo.collections = repo.collections.map((collection: Collection) => {
-                collection.modsets = collection.modsets?.filter((modsetId: string) => modSetIds.includes(modsetId));
+                if (collection.modsets !== undefined) {
+                    Object.keys(collection.modsets).forEach((mId: string) => {
+                        if (!modSetIds.includes(mId)) {
+                            delete collection.modsets[mId];
+                        } else {
+                            const modset = repo!.modsets.find((modset: Modset) => modset.id === mId);
+                            if (modset === undefined) throw new Error('Could not find modset in collection update');
+                            const modNames = modset.mods.map((mod: ModsetMod) => mod.name);
+                            if (collection.modsets[mId] === undefined)
+                                throw new Error('Could not find modset in collection update');
+                            collection.modsets[mId]!.filter((modName: string) => modNames?.includes(modName));
+                        }
+                    });
+                }
                 return collection;
             });
 
@@ -141,7 +154,7 @@ export const useRepoStore = defineStore('repo', () => {
                 collections: repo.collections,
                 downloadDirectoryPath: repo.downloadDirectoryPath,
             };
-            repos.value.forEach((repoS: IReplicArmaRepository) =>{
+            repos.value.forEach((repoS: IReplicArmaRepository) => {
                 if (repoS.id === repo?.id) {
                     repoS = repo;
                 }

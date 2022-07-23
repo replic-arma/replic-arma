@@ -7,6 +7,9 @@
                 </Tooltip>
                 <h1>{{ collection.name }}</h1>
                 <div class="icon-group">
+                    <Tooltip text="Downloads" position="bottom">
+                        <Downloads />
+                    </Tooltip>
                     <button class="button" v-t="'play'" @click="play()">
                         <mdicon name="play" />
                     </button>
@@ -57,6 +60,7 @@ import Modlist from '../components/Modlist.vue';
 import CollectionDLC from '../components/collection/CollectionDLC.vue';
 import { useRouter } from 'vue-router';
 import Loader from '../components/util/Loader.vue';
+import Downloads from '../components/download/Downloads.vue';
 const collection = computed(() => useRepoStore().currentCollection);
 const repository = computed(() => useRepoStore().currentRepository);
 const dlc = ref({

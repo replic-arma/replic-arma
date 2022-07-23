@@ -66,7 +66,6 @@ span {
 
 .replic-dialog {
     top: 0;
-    margin: 0;
     height: fit-content;
     &::after {
         border-bottom-left-radius: 2rem;

@@ -3,7 +3,9 @@
         <div class="online-status__bubble">
             <div
                 class="bubble"
-                :style="`--status: ${online ? 'lightgreen' : 'red'}; --status-bg: ${online ? '0, 255, 34' : '255, 0, 0'};`"
+                :style="`--status: ${online ? 'lightgreen' : 'red'}; --status-bg: ${
+                    online ? '0, 255, 34' : '255, 0, 0'
+                };`"
             >
                 <span class="bubble-outer-dot">
                     <span class="bubble-inner-dot"></span>
@@ -18,9 +20,10 @@
 </template>
 
 <script lang="ts" setup>
-import { useOnline } from '@vueuse/core';
+import { useNetwork, useOnline } from '@vueuse/core';
 
 const online = useOnline();
+const network = useNetwork();
 </script>
 <style lang="scss" scoped>
 .online-status {

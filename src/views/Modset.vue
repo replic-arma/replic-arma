@@ -6,6 +6,9 @@
             </Tooltip>
             <h1 v-if="modset !== undefined">{{ modset?.name }}</h1>
             <div class="icon-group" v-if="modset !== undefined">
+                <Tooltip text="Downloads" position="bottom">
+                    <Downloads />
+                </Tooltip>
                 <template v-if="status === 'downloading'">
                     <Status :status="status" :progress="progress"></Status>
                 </template>
@@ -58,6 +61,7 @@ import { useDownloadStore } from '@/store/download';
 import { launchModset } from '@/util/system/game';
 import Status from '../components/util/Status.vue';
 import { notify } from '@kyvg/vue3-notification';
+import Downloads from '../components/download/Downloads.vue';
 const modset = computed(() => useRepoStore().currentModset);
 const files = ref(0);
 const size = computed(() => {
@@ -177,6 +181,8 @@ function outdated(mod: ModsetMod) {
             color: #333333;
         }
         .icon-group {
+            display: grid;
+            grid-template-columns: 3rem 1fr;
             align-items: center;
             justify-content: center;
             color: var(--c-text-3);

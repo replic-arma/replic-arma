@@ -7,6 +7,9 @@
             <template v-if="repository !== undefined">
                 <h1>{{ repository.name }}</h1>
                 <div class="icon-group">
+                    <Tooltip text="Downloads" position="bottom">
+                        <Downloads />
+                    </Tooltip>
                     <Tooltip text="Refresh Repository">
                         <mdicon name="refresh" size="35" @click="checkRepo()" />
                     </Tooltip>
@@ -29,6 +32,7 @@ import { useRepoStore } from '../store/repo';
 import { computed } from '@vue/runtime-core';
 import RepoSettings from '../components/settings/RepoSettings.vue';
 import { notify } from '@kyvg/vue3-notification';
+import Downloads from '../components/download/Downloads.vue';
 
 const repository = computed(() => useRepoStore().currentRepository);
 const subnaviItems = computed(() => {
@@ -65,7 +69,7 @@ function checkRepo() {
         }
         .icon-group {
             display: grid;
-            grid-template-columns: 3rem 3rem;
+            grid-template-columns: 3rem 3rem 3rem;
             align-items: center;
             justify-content: center;
             color: var(--c-text-3);

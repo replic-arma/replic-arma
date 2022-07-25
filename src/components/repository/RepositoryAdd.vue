@@ -71,11 +71,16 @@
                                 type="text"
                                 name="repoName"
                                 v-model="autoConfigModel"
-                                :disabled="loading || autoConfigModel === ''"
+                                :disabled="loading"
                             />
                         </div>
                     </div>
-                    <button class="button" @click="addRepo" :disabled="loading" v-t="'submit'"></button>
+                    <button
+                        class="button"
+                        @click="addRepo"
+                        :disabled="loading || autoConfigModel === ''"
+                        v-t="'submit'"
+                    ></button>
                 </template>
             </div>
         </div>

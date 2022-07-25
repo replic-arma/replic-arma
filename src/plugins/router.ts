@@ -27,6 +27,12 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/repo/:repoId/modset/:modsetId',
         component: () => import('../views/Modset.vue'),
+        children: [
+            {
+                path: 'mods',
+                component: () => import('../views/ModsetMods.vue'),
+            },
+        ],
     },
     {
         path: '/repo/:repoId/collection/:collectionId',

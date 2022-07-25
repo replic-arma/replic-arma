@@ -1,7 +1,7 @@
 {
     "package": {
         "productName": "ReplicArma",
-        "version": "0.1.7"
+        "version": "0.1.8"
     },
     "build": {
         "distDir": "../dist",
@@ -44,7 +44,10 @@
             }
         },
         "updater": {
-            "active": false
+            "active": false,
+            "endpoints": ["https://github.com/replic-arma/replic-arma/releases/download/updater/release.json"],
+            "dialog": true,
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFGOTg2MTBCNUYxRjczMDIKUldRQ2N4OWZDMkdZcnhkcVN1d1ErZzhicHZzaHpKK0k0WHpUQ2o0U2ZHUFgvd3pkaFNmcTVac1QK"
         },
         "allowlist": {
             "all": true,
@@ -57,15 +60,7 @@
                     {
                         "name": "run-game",
                         "cmd": "cmd",
-                        "args": [
-                            "/C",
-                            "start",
-                            "",
-                            { "validator": "\\S+" },
-                            { "validator": "\\S+" },
-                            { "validator": "\\S+" },
-                            { "validator": "\\S+" }
-                        ]
+                        "args": true
                     }
                 ]
             }
@@ -74,8 +69,8 @@
             {
                 "title": "ReplicArma",
                 "width": 1280,
-                "height": 720,
-                "minHeight": 850,
+                "height": 1000,
+                "minHeight": 1000,
                 "minWidth": 1080,
                 "resizable": true,
                 "fullscreen": false

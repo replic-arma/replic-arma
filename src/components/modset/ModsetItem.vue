@@ -11,7 +11,7 @@
             <span v-t="'play'"></span>
             <mdicon name="play" size="25" />
         </div>
-        <router-link :to="'./modset/' + modset.id" class="modset__open button">
+        <router-link :to="'./modset/' + modset.id + '/mods'" class="modset__open button">
             <mdicon name="folder-open-outline"></mdicon>
         </router-link>
     </li>

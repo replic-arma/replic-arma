@@ -1,64 +1,69 @@
 <template>
-    <div class="modlist">
-        <div class="modlist__heading" @click="toggle()">
-            <span>Alle Mods anzeigen</span>
-            <mdicon v-if="!listOpen" name="chevron-up"></mdicon>
-            <mdicon v-if="listOpen" name="chevron-down"></mdicon>
-        </div>
-        <div v-if="listOpen">
-            <div v-for="(mods, key, index) in collection.modsets" :key="index">
-                <span class="modlist__mods-headline"
-                    ><span>{{ resolveModsetName(key) }}</span
-                    >&nbsp;({{ mods.length }})</span
-                >
-                <div class="modlist__mods">
-                    <span class="modlist__mod" v-for="(mod, i) of mods" :key="i">{{ mod }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <ul class="modlist" :class="tree ? 'tree' : 'list'">
+        <li
+            class="modlist__mod"
+            v-for="(modName, index) of orderedMods"
+            :key="index"
+            :class="[outdated(modName) ? 'outdated' : 'ready']"
+        >
+            <Tooltip :text="getModSize(modName)" style="grid-column: 1">
+                <mdicon v-if="outdated(modName)" name="close" />
+                <mdicon v-else name="check" />
+                <span>{{ modName }}</span>
+            </Tooltip>
+        </li>
+    </ul>
 </template>
 
 <script lang="ts" setup>
-import type { Modset, ModsetMod } from '@/models/Repository';
+import type { ModsetMod } from '@/models/Repository';
+import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
-import { computed } from '@vue/reactivity';
-import { ref } from 'vue';
-
-const listOpen = ref(false);
-const collection = computed(() => useRepoStore().currentCollection);
-
-function toggle() {
-    listOpen.value = !listOpen.value;
+import { computed } from 'vue';
+interface Props {
+    mods: Array<string>;
+    tree: boolean;
+    modsetId: string;
+}
+const props = defineProps<Props>();
+function outdated(modName: string) {
+    const cache = useHashStore().cache.find((cache) => cache.id === props.modsetId);
+    return (
+        cache?.missingFiles.map((filePath: string) => filePath.split('\\').includes(modName)).includes(true) ||
+        cache?.outdatedFiles.map((filePath: string) => filePath.split('\\').includes(modName)).includes(true)
+    );
 }
 
-function resolveModsetName(id: string) {
-    const foundModset = useRepoStore().currentRepository?.modsets.find((modset: Modset) => modset.id === id);
-    if (foundModset !== undefined && foundModset !== null) {
-        return foundModset.name;
+const orderedMods = computed(() => {
+    const unorderedMods = props.mods;
+    return unorderedMods.sort((a, b) => a.localeCompare(b));
+});
+
+function getModSize(modName: string) {
+    const modsetCache = useRepoStore().modsetCache;
+    if (modsetCache === null) return '0';
+    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === props.modsetId);
+    const mod = cacheData?.mods.find((mod: ModsetMod) => mod.name === modName);
+    if (mod !== undefined) {
+        return mod.size !== undefined ? Number(mod.size / 10e5).toFixed(2) + 'MB' : '0';
     }
-    return id;
+    return '0';
 }
 </script>
 
 <style lang="scss" scoped>
 .modlist {
+    list-style-type: none;
+    padding: 0;
+    list-style: none;
     position: relative;
-    border-top: 1px solid lightgray;
-    width: 100%;
-    padding-block-start: 1rem;
-    &__heading {
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-    }
-    &__mods {
-        display: flex;
-        flex-flow: row wrap;
-        list-style-type: none;
-    }
-
-    &__mod {
+    margin-left: 0.5em;
+}
+.list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    .modlist__mod {
         background: var(--c-surf-3);
         width: fit-content;
         border-radius: 999px;
@@ -67,19 +72,44 @@ function resolveModsetName(id: string) {
         margin-inline: 0.25rem;
         margin-block: 0.25rem;
     }
-    &__mods-headline {
+}
+.tree {
+    &:before {
+        content: '';
+        display: block;
+        width: 0;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        border-left: 1px solid;
+    }
+
+    li {
+        margin: 0;
+        padding: 0 1.5em; /* indentation + .5em */
+        line-height: 2em; /* default list item's `line-height` */
+        font-weight: bold;
         position: relative;
-        width: 100%;
-        display: inline-flex;
-        &::after {
-            content: '';
-            height: 2px;
-            background: grey;
-            width: 250px;
-            margin-inline-start: 0.5rem;
-            margin-top: auto;
-            margin-bottom: auto;
-        }
+    }
+
+    li:before {
+        content: '';
+        display: block;
+        width: 10px; /* same with indentation */
+        height: 0;
+        border-top: 1px solid;
+        margin-top: -1px; /* border top width */
+        position: absolute;
+        top: 1em; /* (line-height/2) */
+        left: 0;
+    }
+
+    li:last-child:before {
+        background: inherit; /* same with body background */
+        height: auto;
+        top: 1em; /* (line-height/2) */
+        bottom: 0;
     }
 }
 </style>

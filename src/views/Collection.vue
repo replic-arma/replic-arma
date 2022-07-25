@@ -43,7 +43,7 @@
                 <span>Local Mods</span>
             </div> -->
             </div>
-            <Modlist v-if="collection.modsets"></Modlist>
+            <CollectionModlist></CollectionModlist>
         </template>
         <Loader v-else />
     </div>
@@ -56,11 +56,11 @@ import { ref, computed } from 'vue';
 import CollectionModset from '../components/collection/CollectionModset.vue';
 import { launchCollection } from '@/util/system/game';
 import { notify } from '@kyvg/vue3-notification';
-import Modlist from '../components/Modlist.vue';
 import CollectionDLC from '../components/collection/CollectionDLC.vue';
 import { useRouter } from 'vue-router';
 import Loader from '../components/util/Loader.vue';
 import Downloads from '../components/download/Downloads.vue';
+import CollectionModlist from '../components/collection/CollectionModlist.vue';
 const collection = computed(() => useRepoStore().currentCollection);
 const repository = computed(() => useRepoStore().currentRepository);
 const dlc = ref({

@@ -32,21 +32,8 @@
             Update Files {{ updateFiles.length }}
             Files {{ updateFiles }}
         </pre> -->
-        <ul class="modset__mods">
-            <li v-for="(mod, i) of modset?.mods" :key="i">
-                <Tooltip :text="getModSize(mod.name)" style="grid-column: 1">
-                    <div class="modset__mod" :class="[outdated(mod) ? 'outdated' : 'ready']">
-                        {{ mod.name }}
-                        <template v-if="outdated(mod)">
-                            <mdicon name="close" />
-                        </template>
-                        <template v-else>
-                            <mdicon name="check" />
-                        </template>
-                    </div>
-                </Tooltip>
-            </li>
-        </ul>
+        <Subnavi v-if="modset !== undefined" :subnaviItems="subnaviItems"></Subnavi>
+        <router-view />
     </div>
 </template>
 
@@ -62,7 +49,16 @@ import { launchModset } from '@/util/system/game';
 import Status from '../components/util/Status.vue';
 import { notify } from '@kyvg/vue3-notification';
 import Downloads from '../components/download/Downloads.vue';
+import Subnavi from '../components/util/Subnavi.vue';
 const modset = computed(() => useRepoStore().currentModset);
+const subnaviItems = computed(() => {
+    return [
+        {
+            label: 'Mods',
+            link: `/repo/${useRouteStore().currentRepoID}/modset/${useRouteStore().currentModsetID}/mods`,
+        },
+    ];
+});
 const files = ref(0);
 const size = computed(() => {
     const modsetCache = useRepoStore().modsetCache;
@@ -74,17 +70,6 @@ const size = computed(() => {
             10e8
     ).toFixed(2);
 });
-
-function getModSize(modName: string) {
-    const modsetCache = useRepoStore().modsetCache;
-    if (modsetCache === null || modset.value === undefined) return '0';
-    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset.value!.id);
-    const mod = cacheData?.mods.find((mod: ModsetMod) => mod.name === modName);
-    if (mod !== undefined) {
-        return mod.size !== undefined ? Number(mod.size / 10e5).toFixed(2) + 'MB' : '0';
-    }
-    return '0';
-}
 
 function play() {
     if (modset.value === undefined) return;
@@ -154,14 +139,6 @@ function download() {
         type: 'success',
     });
 }
-
-function outdated(mod: ModsetMod) {
-    const cache = useHashStore().cache.find((cache) => cache.id === modset.value!.id);
-    return (
-        cache?.missingFiles.map((filePath: string) => filePath.split('\\').includes(mod.name)).includes(true) ||
-        cache?.outdatedFiles.map((filePath: string) => filePath.split('\\').includes(mod.name)).includes(true)
-    );
-}
 </script>
 
 <style lang="scss" scoped>
@@ -169,7 +146,7 @@ function outdated(mod: ModsetMod) {
     &__heading {
         display: grid;
         grid-template-columns: 4rem 1fr auto;
-        font-size: 14pt;
+        font-size: 16pt;
         align-items: center;
         justify-content: center;
         span {

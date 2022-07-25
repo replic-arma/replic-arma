@@ -42,9 +42,9 @@ export async function launchGame(
     if (settings.gamePath === null) throw new Error('Game Executable not set, cannot launch the game');
     await spawnProcess(
         settings.gamePath,
+        modDlcString,
         getParsedLaunchOptions(launchOptions),
         getConnectionString(gameServer),
-        modDlcString,
         {}
     );
 }

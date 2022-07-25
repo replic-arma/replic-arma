@@ -8,12 +8,17 @@
         <div class="repo__modset">
             <select v-model="currentModsetId">
                 <optgroup label="------Modsets-------">
-                    <option v-once v-for="(modset, i) of repository.modsets" :key="i" :value="modset.id">
+                    <option v-once v-for="(modset, i) of repository.modsets" :key="i" :value="modset.id + '_1'">
                         {{ modset.name }}
                     </option>
                 </optgroup>
                 <optgroup label="------Collections------" v-if="repository.collections.length > 0">
-                    <option v-once v-for="(collection, i) of repository.collections" :key="i" :value="collection.id">
+                    <option
+                        v-once
+                        v-for="(collection, i) of repository.collections"
+                        :key="i"
+                        :value="collection.id + '_2'"
+                    >
                         {{ collection.name }}
                     </option>
                 </optgroup>
@@ -34,20 +39,36 @@ import type { IHashItem } from '@/store/hash';
 import { computed, onMounted, ref } from 'vue';
 import Status from '../util/Status.vue';
 import { launchModset } from '@/util/system/game';
-import type { IReplicArmaRepository } from '@/models/Repository';
+import type { Collection, IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
+
 interface Props {
     repository: IReplicArmaRepository;
 }
 const props = defineProps<Props>();
 const status = computed(() => {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === currentModsetId.value);
-    if (cacheData === undefined) return 'checking';
-    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === currentModsetId.value)
-        return 'downloading';
-    if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
-        return 'outdated';
+    const [id, type] = currentModsetId.value.split('_');
+    if (type === '1') {
+        const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === id);
+        if (cacheData === undefined) return 'checking';
+        if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) return 'downloading';
+        if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+            return 'outdated';
+        }
+        return 'ready';
     } else {
+        const collection = props.repository.collections.find((collection: Collection) => collection.id === id);
+        const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.repository.id);
+        if (cacheData === undefined) return 'checking';
+        if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+            return 'outdated';
+        }
+        if (collection !== undefined) {
+            for (const modsetId of Object.keys(collection.modsets)) {
+                if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modsetId)
+                    return 'downloading';
+            }
+        }
         return 'ready';
     }
 });
@@ -68,7 +89,7 @@ const progress = computed(() => {
 
 onMounted(() => {
     if (props.repository.modsets.length === 0) return '';
-    currentModsetId.value = props.repository.modsets[0].id ?? '';
+    currentModsetId.value = props.repository.modsets[0].id + '_1' ?? '';
 });
 function play() {
     launchModset(currentModsetId.value, props.repository.id);

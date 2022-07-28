@@ -20,6 +20,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use filetime::FileTime;
 use rayon::iter::{ParallelBridge, ParallelIterator};
+use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use tauri::{async_runtime::Mutex, Window};
 use tokio::{task, time::sleep};
@@ -29,17 +30,17 @@ use url::Url;
 pub async fn hash_check(
     window: Window,
     path_prefix: String,
-    files: Vec<String>,
+    file_tuples: Vec<(String, String)>,
     state: tauri::State<'_, ReplicArmaState>,
-) -> JSResult<(Vec<(String, String, i64)>, Vec<String>)> {
+) -> JSResult<(Vec<(String, String, i64)>, Vec<String>, Vec<String>)> {
     let mut old_hashes = state.known_hashes.lock().await;
 
     //let mut hashes: HashMap<String, (String, u128)> = read_t(state.data_dir.join("hashes.json"))?;
     let mut hashes = old_hashes.clone();
 
-    let files: Vec<String> = files
+    let files: Vec<String> = file_tuples
         .iter()
-        .map(|f| format!("{}{}", path_prefix, f))
+        .map(|f| format!("{}{}", path_prefix, f.0))
         .collect();
 
     // insert new files
@@ -61,7 +62,7 @@ pub async fn hash_check(
         .filter(|(file_name, _)| files.contains(file_name))
         .map(|hash| {
             let file = hash.0.clone();
-            let res = check_update(hash);
+            let res = check_update(hash.into());
             if let Ok(hash_tuple) = &res {
                 window.emit("hash_calculated", hash_tuple).unwrap();
             } else {
@@ -72,8 +73,7 @@ pub async fn hash_check(
         .partition(|x| x.is_ok());
 
     // partition into hashes and errors
-    let new_hashes: Vec<(String, String, i64, u64)> =
-        new_hashes_res.into_iter().map(Result::unwrap).collect();
+    let new_hashes: Vec<FileHash> = new_hashes_res.into_iter().map(Result::unwrap).collect();
     // let errors: Vec<String> = errors_res
     //     .into_iter()
     //     .map(|e| e.unwrap_err().to_string())
@@ -81,30 +81,85 @@ pub async fn hash_check(
 
     // update HashMap
     for hash in &new_hashes {
-        old_hashes.insert(hash.0.clone(), (hash.1.clone(), hash.2));
+        old_hashes.insert(hash.path.clone(), (hash.hash.clone(), hash.time_modified));
     }
 
     save_t(&state.data_dir.join("hashes.json"), old_hashes.clone())?;
 
     let result: Vec<_> = new_hashes
         .into_iter()
-        .map(|kvp| (kvp.0.replacen(&path_prefix, "", 1), kvp.1, kvp.2))
+        .map(|kvp| {
+            (
+                kvp.path.replacen(&path_prefix, "", 1),
+                kvp.hash,
+                kvp.time_modified,
+            )
+        })
         .collect();
 
-    Ok((result, not_existing_files))
+    let mut renameable_files: Vec<String> = Vec::new();
+    for file_tuple in file_tuples {
+        if let Some(fh) = result.iter().find(|fh| fh.1 == file_tuple.1) {
+            renameable_files.push(fh.0.clone());
+        }
+    }
+
+    // let s: Vec<_> = file_tuples
+    //     .into_iter()
+    //     .map(|file| if let Ok(fh) = result.iter().find(|fh| fh.1 == file.1) {})
+    //     .collect();
+
+    Ok((result, not_existing_files, renameable_files))
 }
 
-fn check_update(known_hash: (String, (String, i64))) -> Result<(String, String, i64, u64)> {
-    let path = PathBuf::from(&known_hash.0);
+#[derive(Serialize, Deserialize)]
+pub(crate) struct FileHash {
+    path: String,
+    hash: String,
+    time_modified: i64,
+    size: u64,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct KnownHash {
+    path: String,
+    hash: String,
+    time_modified: i64,
+}
+
+impl From<(String, (String, i64))> for KnownHash {
+    fn from(tuple: (String, (String, i64))) -> Self {
+        KnownHash {
+            path: tuple.0,
+            hash: tuple.1 .0,
+            time_modified: tuple.1 .1,
+        }
+    }
+}
+
+fn check_update(known_hash: KnownHash) -> Result<FileHash> {
+    let path = PathBuf::from(&known_hash.path);
 
     let meta = path.metadata()?;
     let time_modified = FileTime::from_last_modification_time(&meta).unix_seconds();
     let size = meta.len();
 
-    if known_hash.1 .1 < time_modified {
-        Ok((known_hash.0, compute_hash(path)?, time_modified, size))
+    if known_hash.time_modified < time_modified {
+        Ok(FileHash {
+            path: known_hash.path,
+            hash: compute_hash(path)?,
+            time_modified,
+            size,
+        })
+        //(known_hash.0, compute_hash(path)?, time_modified, size))
     } else {
-        Ok((known_hash.0, known_hash.1 .0, time_modified, size))
+        Ok(FileHash {
+            path: known_hash.path,
+            hash: known_hash.hash,
+            time_modified,
+            size,
+        })
+        //Ok((known_hash.0, known_hash.1 .0, time_modified, size))
     }
 }
 

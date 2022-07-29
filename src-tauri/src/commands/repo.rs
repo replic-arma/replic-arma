@@ -99,7 +99,10 @@ pub async fn hash_check(
 
     let mut renameable_files: Vec<String> = Vec::new();
     for file_tuple in file_tuples {
-        if let Some(fh) = result.iter().find(|fh| fh.1 == file_tuple.1) {
+        if let Some(fh) = result
+            .iter()
+            .find(|fh| fh.1 == file_tuple.1 && fh.0 != file_tuple.0)
+        {
             renameable_files.push(fh.0.clone());
         }
     }

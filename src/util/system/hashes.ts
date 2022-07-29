@@ -6,8 +6,11 @@ import type { Event as TauriEvent } from '@tauri-apps/api/helpers/event';
 
 const FILE_NAME = 'hashes.json';
 
-export async function checkHashes(modDirectory: string, files: string[]): Promise<Array<Array<Array<string>>>> {
-    return invoke('hash_check', { pathPrefix: modDirectory, files });
+export async function checkHashes(
+    modDirectory: string,
+    files: Array<Array<string>>
+): Promise<Array<Array<Array<string>>>> {
+    return invoke('hash_check', { pathPrefix: modDirectory, fileTuples: files });
 }
 
 export async function resetHashes(): Promise<void> {

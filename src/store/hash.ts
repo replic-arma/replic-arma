@@ -12,7 +12,6 @@ export interface IHashItem {
 }
 export interface ICacheItem {
     id: string;
-    checkedFiles: string[][];
     outdatedFiles: string[];
     missingFiles: string[];
 }
@@ -36,13 +35,13 @@ export const useHashStore = defineStore('hash', () => {
         const settings = useSettingsStore().settings;
         if (settings === null) throw Error('Settings null');
         if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (getHashes)');
-        const reponse = await checkHashes(
+        const response = await checkHashes(
             `${currentHashRepo.value.downloadDirectoryPath ?? ''}\\`,
-            currentHashRepo.value.files.map((file: File) => file.path)
+            currentHashRepo.value.files.map((file: File) => [file.path, file.sha1])
         );
         return {
-            checkedFiles: (reponse[0] as string[][]) ?? [],
-            missingFiles: (reponse[1] as unknown as string[]) ?? [],
+            checkedFiles: (response[0] as string[][]) ?? [],
+            missingFiles: (response[1] as unknown as string[]) ?? [],
         };
     }
 
@@ -60,7 +59,6 @@ export const useHashStore = defineStore('hash', () => {
             const outDatedFiles = await ReplicWorker.getFileChanges(wantedFiles, hashData.checkedFiles);
             cache.value.push({
                 id: currentHashRepo.value.id,
-                checkedFiles: hashData.checkedFiles,
                 outdatedFiles: outDatedFiles,
                 missingFiles: hashData.missingFiles,
             });
@@ -81,13 +79,12 @@ export const useHashStore = defineStore('hash', () => {
                 const modsetCache = toRaw(
                     currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id)
                 );
-                if (cached?.checkedFiles === undefined || modsetCache === undefined) throw new Error('cache empty!');
+                if (cached === undefined || modsetCache === undefined) throw new Error('cache empty!');
                 const modsetFiles = modsetCache.mods?.flatMap((mod: ModsetMod) => mod.files);
                 const outDatedFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.outdatedFiles);
                 const missingFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.missingFiles);
                 cache.value.push({
                     id: modset.id,
-                    checkedFiles: cached?.checkedFiles,
                     outdatedFiles: outDatedFiles,
                     missingFiles,
                 });
@@ -103,6 +100,9 @@ export const useHashStore = defineStore('hash', () => {
         if (current !== null) {
             current.checkedFiles += 1;
         }
+    });
+    HASHING_PROGRESS.addEventListener('hash_failed', (bla) => {
+        console.log(bla);
     });
 
     return {

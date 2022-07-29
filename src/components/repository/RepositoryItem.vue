@@ -24,10 +24,7 @@
                 </optgroup>
             </select>
         </div>
-        <div class="repo__play" @click="play()">
-            <span v-t="'play'"></span>
-            <mdicon name="play" size="25" />
-        </div>
+        <PlayButton @play="play()"></PlayButton>
         <router-link v-once :to="'/repo/' + repository.id + '/modsets'" class="repo__open button">
             <mdicon name="folder-open-outline"></mdicon>
         </router-link>
@@ -41,6 +38,7 @@ import Status from '../util/Status.vue';
 import { launchModset } from '@/util/system/game';
 import type { Collection, IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
+import PlayButton from '../PlayButton.vue';
 
 interface Props {
     repository: IReplicArmaRepository;
@@ -92,7 +90,9 @@ onMounted(() => {
     currentModsetId.value = props.repository.modsets[0].id + '_1' ?? '';
 });
 function play() {
-    launchModset(currentModsetId.value, props.repository.id);
+    const [id, type] = currentModsetId.value.split('_');
+    if (id === undefined) return '';
+    launchModset(id, props.repository.id);
 }
 const currentModsetId = ref('');
 </script>
@@ -159,27 +159,16 @@ const currentModsetId = ref('');
         inset-inline-end: 90%;
     }
 
-    &__play {
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border-radius: 5rem;
-        margin-inline-start: 1rem;
-        color: grey;
-        & > span:first-child {
-            color: var(--c-surf-2);
-        }
-
-        &:hover {
-            transition: all 0.1s ease-in;
-            background-color: var(--c-surf-3);
-        }
-    }
     &__modset {
         position: relative;
+        select::-ms-expand {
+            display: none;
+        }
         select {
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
             font-weight: 500;
             cursor: pointer;
             appearance: none;
@@ -191,16 +180,22 @@ const currentModsetId = ref('');
             color: var(--c-surf-2);
             background-size: 5px 5px, 5px 5px, 1px 1.5em;
             background-repeat: no-repeat;
+            background-color: transparent;
             &:hover {
                 background-image: linear-gradient(45deg, transparent 50%, gray 50%),
                     linear-gradient(135deg, gray 50%, transparent 50%);
                 background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px),
                     calc(100% - 2.5em) 0.5em;
             }
-            option {
+            option,
+            optgroup {
                 cursor: pointer;
+                background: var(--c-surf-4);
             }
             outline: 0;
+        }
+        select:focus::-ms-value {
+            background-color: transparent;
         }
     }
 }

@@ -20,6 +20,7 @@ export const DEFAULT_LAUNCH_CONFIG: GameLaunchSettings = {
     noLogs: false,
     customParameter: '',
     battleye: false,
+    skipIntro: false,
 };
 
 const DEFAULT_CONFIG: IApplicationSettings = {
@@ -30,7 +31,6 @@ const DEFAULT_CONFIG: IApplicationSettings = {
     maxDownloadSpeed: 0,
     launchOptions: DEFAULT_LAUNCH_CONFIG,
 };
-
 
 export async function loadConfig(): Promise<IApplicationSettings> {
     const exists = await fileExists(FILE_NAME);

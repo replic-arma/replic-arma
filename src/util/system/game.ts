@@ -1,5 +1,6 @@
 import type { Collection, GameServer, Modset, File, ModsetMod, IReplicArmaRepository } from '@/models/Repository';
 import type { GameLaunchSettings } from '@/models/Settings';
+import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 import { useSettingsStore } from '@/store/settings';
 import { invoke } from '@tauri-apps/api';
@@ -12,23 +13,28 @@ export async function launchCollection(collection: Collection, repoId: string) {
         repo!.launchOptions,
         getModDlcString(
             repo?.downloadDirectoryPath ?? '',
-            Object.values(collection.modsets).flat(),
+            filterMods(repoId, Object.values(collection.modsets).flat()),
             collection.dlc ?? []
         )
     );
 }
 
-export async function launchModset(modsetId: string, repoId: string) {
+export async function launchModset(modsetId: string, repoId: string, gameServer: GameServer | null = null) {
     const currentModset = useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modsetId);
-    if (currentModset === null || currentModset === undefined) throw new Error('No settings, cannot launch the game');
+    if (currentModset === null || currentModset === undefined)
+        throw new Error('No modset found, cannot launch the game');
     const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === repoId);
     await launchGame(
         repo!.launchOptions,
         getModDlcString(
             repo?.downloadDirectoryPath ?? '',
-            currentModset.mods.flatMap((mod: ModsetMod) => mod.name ?? []),
+            filterMods(
+                repoId,
+                currentModset.mods.flatMap((mod: ModsetMod) => mod.name ?? [])
+            ),
             []
-        )
+        ),
+        gameServer
     );
 }
 
@@ -47,6 +53,15 @@ export async function launchGame(
         getConnectionString(gameServer),
         {}
     );
+}
+
+function filterMods(repoId: string, modNames: string[]) {
+    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === repoId);
+    if (cacheData === undefined) return modNames;
+    if (cacheData.missingFiles.length > 0) {
+        return modNames.filter((modName: string) => !cacheData.missingFiles.includes(modName));
+    }
+    return modNames;
 }
 
 function getModDlcString(directory: string, mods: string[], dlc: string[]) {

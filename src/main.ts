@@ -23,9 +23,9 @@ app.use(mdiVue, {
     icons: mdijs,
 });
 app.use(Notifications);
+app.use(i18n);
 app.mount('#app');
 useSettingsStore();
 useRepoStore();
 useHashStore();
 useDownloadStore();
-app.use(i18n);

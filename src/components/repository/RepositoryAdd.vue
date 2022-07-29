@@ -76,7 +76,7 @@
                         </div>
                     </div>
                     <button
-                        class="button"
+                        class="button button--center"
                         @click="addRepo"
                         :disabled="loading || autoConfigModel === ''"
                         v-t="'submit'"

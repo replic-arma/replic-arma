@@ -24,7 +24,7 @@
         "queued": "Update Pending",
         "paused": "Paused",
         "downloading": "Downloading",
-        "ready": "Ready to play",
+        "ready": "Ready",
         "play": "Play",
         "checking": "Checking",
         "unknown": "Unknown"
@@ -34,7 +34,7 @@
         "empty": "No Server available"
     },
     "submit": "Submit",
-    "ready": "Ready to play",
+    "ready": "Ready",
     "updating": "Updating",
     "select": "Select",
     "a3exe": "Arma 3 Exe",

@@ -4,7 +4,7 @@ import { useRouteStore } from '@/store/route';
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
-        component: () => import('../views/Repos.vue'),
+        component: () => import('../views/RepoList.vue'),
     },
     {
         path: '/repo/:repoId',

@@ -48,7 +48,7 @@ const changeTab = (index) => {
     margin: 0;
     padding: 0;
     display: flex;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid transparent;
 }
 #tab-headers ul li {
     list-style: none;

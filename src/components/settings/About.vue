@@ -2,7 +2,7 @@
     <div class="about">
         <div class="about-sub">
             <span class="about-sub__headline">Version </span>
-            <span>0.1.7-alpha </span>
+            <span>{{ version }} </span>
         </div>
         <div class="about-sub">
             <span class="about-sub__headline"> Code + Concept </span>
@@ -16,6 +16,13 @@
         </div>
     </div>
 </template>
+<script lang="ts" setup>
+import { getAppVersion } from '@/util/system/meta';
+import { ref } from 'vue';
+const version = ref('0.1.0');
+getAppVersion().then((v) => (version.value = v));
+</script>
+
 <style lang="scss" scoped>
 .about {
     display: flex;

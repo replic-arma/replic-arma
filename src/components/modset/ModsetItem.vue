@@ -7,10 +7,7 @@
         <span class="repo__status" :class="`status--${status}`">
             <Status :status="status" :progress="progress"></Status>
         </span>
-        <div class="button modset__play" @click="play()">
-            <span v-t="'play'"></span>
-            <mdicon name="play" size="25" />
-        </div>
+        <PlayButton @play="play()"></PlayButton>
         <router-link :to="'./modset/' + modset.id + '/mods'" class="modset__open button">
             <mdicon name="folder-open-outline"></mdicon>
         </router-link>
@@ -24,12 +21,12 @@ import { computed } from 'vue';
 import { useDownloadStore } from '@/store/download';
 import Status from '../util/Status.vue';
 import { launchModset } from '@/util/system/game';
-const props = defineProps({
-    modset: {
-        type: Object,
-        default: null,
-    },
-});
+import PlayButton from '../PlayButton.vue';
+import type { Modset } from '@/models/Repository';
+interface Props {
+    modset: Modset;
+}
+const props = defineProps<Props>();
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === useRouteStore().currentRepoID);
     if (cacheData === undefined) return 'checking';
@@ -113,22 +110,6 @@ function play() {
 
     &:hover #{&}__open::before {
         inset-inline-end: 90%;
-    }
-
-    &__play {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border-radius: 5rem;
-        color: grey;
-        & > span:first-child {
-            color: var(--c-surf-2);
-        }
-        &:hover {
-            transition: all 0.1s ease-in;
-            background-color: var(--c-surf-3);
-        }
     }
 
     &__modset {

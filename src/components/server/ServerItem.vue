@@ -12,23 +12,23 @@
             <template v-else> <mdicon name="lock-outline" />{{ server.password }} </template>
         </span>
         <span class="server__modset">{{ server.modset !== undefined ? server.modset : '-' }}</span>
-        <div class="server__play" @click="launchGame()">
-            <span v-t="'play'"></span>
-            <mdicon name="play" size="25" />
-        </div>
+        <PlayButton @play="play()"></PlayButton>
     </li>
 </template>
 <script lang="ts" setup>
 import type { GameServer } from '@/models/Repository';
-const props = defineProps({
-    server: {
-        type: Object,
-        default: null,
-    },
-});
+import { useRouteStore } from '@/store/route';
+import { launchModset } from '@/util/system/game';
+import PlayButton from '../PlayButton.vue';
 
-function launchGame() {
+interface Props {
+    server: GameServer;
+}
+const props = defineProps<Props>();
+
+function play() {
     if (props.server.modset === undefined) throw new Error('Server Modset undefined');
+    // launchModset(props.server.modset.id, useRouteStore().currentRepoID ?? '', props.server);
 }
 </script>
 <style lang="scss" scoped>
@@ -56,23 +56,6 @@ function launchGame() {
 
     &__name {
         color: var(--c-text-3);
-    }
-
-    &__play {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border-radius: 5rem;
-        margin-inline-start: 1rem;
-        color: grey;
-        & > span:first-child {
-            color: var(--c-surf-2);
-        }
-        &:hover {
-            transition: all 0.1s ease-in;
-            background-color: var(--c-surf-3);
-        }
     }
 
     &__port {

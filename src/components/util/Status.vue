@@ -10,16 +10,11 @@
     </div>
 </template>
 <script lang="ts" setup>
-const props = defineProps({
-    status: {
-        type: String,
-        default: null,
-    },
-    progress: {
-        type: Number,
-        default: null,
-    },
-});
+interface Props {
+    status: string;
+    progress: number;
+}
+const props = defineProps<Props>();
 </script>
 
 <style lang="scss">

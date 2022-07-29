@@ -7,10 +7,7 @@
         <span class="repo__status" :class="`status--${status}`">
             <status :status="status" :progress="0"></status>
         </span>
-        <div class="collection__play" @click="play()">
-            <span v-t="'play'"></span>
-            <mdicon name="play" size="25" />
-        </div>
+        <PlayButton @play="play()"></PlayButton>
         <router-link :to="'./collection/' + collection.id" class="collection__open button">
             <mdicon name="folder-open-outline"></mdicon>
         </router-link>
@@ -22,8 +19,9 @@ import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
 import { launchCollection } from '@/util/system/game';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import Status from '../util/Status.vue';
+import PlayButton from '../PlayButton.vue';
 interface Props {
     collection: Collection;
 }
@@ -99,22 +97,6 @@ const status = computed(() => {
 
     &:hover #{&}__open::before {
         inset-inline-end: 90%;
-    }
-
-    &__play {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border-radius: 5rem;
-        color: grey;
-        & > span:first-child {
-            color: var(--c-surf-2);
-        }
-        &:hover {
-            transition: all 0.1s ease-in;
-            background-color: var(--c-surf-3);
-        }
     }
 
     &__collection {

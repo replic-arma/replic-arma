@@ -1,6 +1,6 @@
 import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod, File } from '@/models/Repository';
 import { DEFAULT_LAUNCH_CONFIG } from '@/util/system/config';
-import { clearModsetCache, saveModsetCache } from '@/util/system/modset_cache';
+import { clearModsetCache, loadModsetCache, saveModsetCache } from '@/util/system/modset_cache';
 import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
 import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
@@ -147,18 +147,9 @@ export const useRepoStore = defineStore('repo', () => {
                     mods,
                 });
             }
-            repo = {
-                ...repo,
-                build_date: repoData.build_date,
-                revision: repoData.revision,
-                collections: repo.collections,
-                downloadDirectoryPath: repo.downloadDirectoryPath,
-            };
-            repos.value.forEach((repoS: IReplicArmaRepository) => {
-                if (repoS.id === repo?.id) {
-                    repoS = repo;
-                }
-            });
+
+            repo.build_date = repoData.build_date;
+            repo.revision = repoData.revision;
             await updateModsetCache(repoID);
             await save();
         }
@@ -177,6 +168,7 @@ export const useRepoStore = defineStore('repo', () => {
         repos.value = reposdata;
         reposdata.forEach(async (repo: IReplicArmaRepository) => {
             await checkRevision(repo.id);
+            useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
             await useHashStore().addToQueue(repo);
         });
     });

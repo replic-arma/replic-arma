@@ -14,12 +14,10 @@ export interface SubnaviItem {
     label: string;
     link: string;
 }
-const props = defineProps({
-    subnaviItems: {
-        type: Array,
-        default: null,
-    },
-});
+interface Props {
+    subnaviItems: Array<any>;
+}
+const props = defineProps<Props>();
 watch(useRoute(), () => {
     nextTick(() => routeChanged());
 });

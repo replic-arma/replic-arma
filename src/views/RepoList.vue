@@ -31,7 +31,6 @@ import { computed } from '@vue/runtime-core';
 import Downloads from '../components/download/Downloads.vue';
 import ApplicationSettings from '../components/settings/ApplicationSettings.vue';
 import Tooltip from '../components/util/Tooltip.vue';
-import { useSettingsStore } from '@/store/settings';
 import { notify } from '@kyvg/vue3-notification';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
@@ -42,8 +41,6 @@ function reloadRepos() {
         type: 'success',
     });
 }
-
-useSettingsStore().applyLocale();
 </script>
 
 <style lang="scss" scoped>

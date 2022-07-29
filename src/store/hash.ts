@@ -5,7 +5,6 @@ import { useSettingsStore } from './settings';
 import { computed, ref, toRaw } from 'vue';
 import { ReplicWorker } from '@/util/worker';
 import { checkHashes, HASHING_PROGRESS } from '@/util/system/hashes';
-import { loadModsetCache } from '@/util/system/modset_cache';
 export interface IHashItem {
     repoId: string;
     filesToCheck: number;
@@ -65,10 +64,6 @@ export const useHashStore = defineStore('hash', () => {
                 outdatedFiles: outDatedFiles,
                 missingFiles: hashData.missingFiles,
             });
-            useRepoStore().modsetCache = [
-                ...(await loadModsetCache(currentHashRepo.value.id)),
-                ...(useRepoStore().modsetCache ?? []),
-            ];
             const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
             let currentHashRepoModsetCache = toRaw(
                 useRepoStore().modsetCache?.filter((cacheModset: Modset) => neededModsets.includes(cacheModset.id))

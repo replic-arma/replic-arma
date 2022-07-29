@@ -1,21 +1,15 @@
 <template>
     <div class="grad-tooltip">
-        <span :tooltip="text" :position="position"><slot /></span>
+        <span :tooltip="text" :position="position ?? 'bottom'"><slot /></span>
     </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-const props = defineProps({
-    text: {
-        type: String,
-        default: null,
-    },
-    position: {
-        type: String,
-        default: 'bottom',
-    },
-});
+interface Props {
+    text: string;
+    position?: string;
+}
+const props = defineProps<Props>();
 </script>
 
 <style lang="scss" scoped>

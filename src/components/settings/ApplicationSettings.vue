@@ -22,7 +22,7 @@
                             ></PathSelectorVue>
                             <!-- <div class="application-settings__speed">
                                 <label for="speed" v-t="'download_max_speed'"></label>
-                                <select class="select" name="speed" v-model="settingsCopy.maxDownloadSpeed">
+                                <select class="select" name="speed" v-model="settings.maxDownloadSpeed">
                                     <option value="0">unlimited</option>
                                     <option value="1">1 MB/s</option>
                                     <option value="2">2 MB/s</option>
@@ -30,21 +30,21 @@
                                     <option value="10">10 MB/s</option>
                                     <option value="25">25 MB/s</option>
                                 </select>
-                            </div>
+                            </div> -->
                             <div class="application-settings__language">
                                 <label for="language" v-t="'language'"></label>
-                                <select class="select" name="language" v-model="settingsCopy.language">
+                                <select class="select" name="language" v-model="settings.language">
                                     <option value="en">English</option>
                                     <option value="de">German</option>
                                 </select>
                             </div>
                             <div class="application-settings__theme">
                                 <label for="theme" v-t="'settings.theme'"></label>
-                                <select class="select" name="theme" v-model="settingsCopy.theme">
+                                <select class="select" name="theme" v-model="settings.theme">
                                     <option value="light" v-t="'settings.theme_option.light'"></option>
                                     <option value="dark" v-t="'settings.theme_option.dark'"></option>
                                 </select>
-                            </div> -->
+                            </div>
                             <div class="application-settings__buttons">
                                 <button
                                     class="button button--danger"
@@ -85,18 +85,16 @@
 <script lang="ts" setup>
 import { useSettingsStore } from '@/store/settings';
 import { clearModsetCache } from '@/util/system/modset_cache';
-import { computed, ref, watch } from 'vue';
+import { ref } from 'vue';
 import PathSelectorVue from '../util/PathSelector.vue';
 import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
 import Launch from './Launch.vue';
 import { notify } from '@kyvg/vue3-notification';
 import About from './About.vue';
-const settings = computed(() => {
-    return useSettingsStore().settings;
-});
+const settings = useSettingsStore().settings;
 function saveSettings() {
-    useSettingsStore().settings = settings.value;
+    useSettingsStore().settings = settings;
     useSettingsStore().save();
     notify({
         title: 'Saved Settings',

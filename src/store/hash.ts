@@ -36,8 +36,10 @@ export const useHashStore = defineStore('hash', () => {
         if (settings === null) throw Error('Settings null');
         if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (getHashes)');
         const response = await checkHashes(
+            currentHashRepo.value.type ?? 'a3s',
             `${currentHashRepo.value.downloadDirectoryPath ?? ''}\\`,
-            currentHashRepo.value.files.map((file: File) => [file.path, file.sha1])
+            currentHashRepo.value.files.map((file: File) => [file.path, file.sha1, file.size]),
+            currentHashRepo.value.config_url ?? ''
         );
         return {
             checkedFiles: (response[0] as string[][]) ?? [],

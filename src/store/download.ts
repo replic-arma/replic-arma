@@ -65,7 +65,7 @@ export const useDownloadStore = defineStore('download', () => {
                 throw new Error(`Repository with id ${current.value?.repoId} has no download server`);
             if (repo.downloadDirectoryPath === null) throw new Error('No download path set');
             const res = await downloadFiles(
-                repo.type ?? 'a3s',
+                repo.type ?? 'A3S',
                 repo.download_server?.url,
                 `${repo.downloadDirectoryPath}${sep}`,
                 filesToDownload

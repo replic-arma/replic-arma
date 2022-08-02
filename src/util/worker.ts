@@ -1,5 +1,6 @@
 import type { File, Modset, ModsetMod } from '@/models/Repository';
 import { useWebWorkerFn } from '@vueuse/core';
+import { type HashResponseItem } from './system/hashes';
 
 export const ReplicWorker = {
     async mapFilesToMods(files: File[], modsets: Modset[]): Promise<Modset[]> {
@@ -24,7 +25,8 @@ export const ReplicWorker = {
                         mod_type: 'mod',
                         files: modMap.get(mod.name) ?? [],
                         size: (modMap.get(mod.name) ?? []).reduce(
-                            (previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size,
+                            (previousValue: number, currentValue: { size: number }) =>
+                                previousValue + currentValue.size,
                             0
                         ),
                     });
@@ -88,11 +90,10 @@ export const ReplicWorker = {
         return workerFn(mods, filesPaths);
     },
     async isFileIn(wantedFiles: File[], fileList: Array<string>): Promise<string[]> {
-        const { workerFn } = useWebWorkerFn((wantedFiles: File[], fileList: Array<string>) => {
-            return wantedFiles
-                .filter((wantedFile) => fileList.indexOf(wantedFile.path) !== -1)
-                .map((file) => file.path);
+        const { workerFn } = useWebWorkerFn((wantedFiles: File[], fileList: Array<HashResponseItem>) => {
+            const list = wantedFiles.map((file) => file.path);
+            return fileList.filter((wantedFile) => list.indexOf(wantedFile.file) !== -1);
         });
         return workerFn(wantedFiles, fileList);
-    }
+    },
 };

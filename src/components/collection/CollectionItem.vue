@@ -34,7 +34,7 @@ async function play() {
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === useRouteStore().currentRepoID);
     if (cacheData === undefined) return 'checking';
-    if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+    if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
         return 'outdated';
     }
     for (const modsetId of Object.keys(props.collection.modsets)) {

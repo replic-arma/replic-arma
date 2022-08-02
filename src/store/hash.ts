@@ -4,17 +4,17 @@ import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
 import { computed, ref, toRaw } from 'vue';
 import { ReplicWorker } from '@/util/worker';
-import { checkHashes, HASHING_PROGRESS } from '@/util/system/hashes';
+import { checkHashes, HASHING_PROGRESS, type HashResponse } from '@/util/system/hashes';
 export interface IHashItem {
     repoId: string;
     filesToCheck: number;
     checkedFiles: number;
 }
-export interface ICacheItem {
+
+export interface ICacheItem extends HashResponse {
     id: string;
-    outdatedFiles: string[];
-    missingFiles: string[];
 }
+
 export const useHashStore = defineStore('hash', () => {
     const current = ref(null as null | IHashItem);
     const queue = ref([] as Array<IHashItem>);
@@ -35,16 +35,12 @@ export const useHashStore = defineStore('hash', () => {
         const settings = useSettingsStore().settings;
         if (settings === null) throw Error('Settings null');
         if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (getHashes)');
-        const response = await checkHashes(
+        return await checkHashes(
             currentHashRepo.value.type ?? 'a3s',
             `${currentHashRepo.value.downloadDirectoryPath ?? ''}\\`,
             currentHashRepo.value.files.map((file: File) => [file.path, file.sha1, file.size]),
             currentHashRepo.value.config_url ?? ''
         );
-        return {
-            checkedFiles: (response[0] as string[][]) ?? [],
-            missingFiles: (response[1] as unknown as string[]) ?? [],
-        };
     }
 
     async function next() {
@@ -55,14 +51,9 @@ export const useHashStore = defineStore('hash', () => {
             if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (next)');
             current.value.filesToCheck = currentHashRepo.value.files.length;
             const hashData = await getHashes();
-            const wantedFiles = toRaw(currentHashRepo.value.files).filter(
-                (file) => !hashData.missingFiles.includes(file.path)
-            );
-            const outDatedFiles = await ReplicWorker.getFileChanges(wantedFiles, hashData.checkedFiles);
             cache.value.push({
                 id: currentHashRepo.value.id,
-                outdatedFiles: outDatedFiles,
-                missingFiles: hashData.missingFiles,
+                ...hashData,
             });
             const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
             let currentHashRepoModsetCache = toRaw(
@@ -83,12 +74,16 @@ export const useHashStore = defineStore('hash', () => {
                 );
                 if (cached === undefined || modsetCache === undefined) throw new Error('cache empty!');
                 const modsetFiles = modsetCache.mods?.flatMap((mod: ModsetMod) => mod.files);
-                const outDatedFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.outdatedFiles);
-                const missingFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.missingFiles);
+                const outdated = await ReplicWorker.isFileIn(modsetFiles as File[], cached.outdated);
+                const missing = await ReplicWorker.isFileIn(modsetFiles as File[], cached.missing);
+                const complete = await ReplicWorker.isFileIn(modsetFiles as File[], cached.complete);
+                const extra = await ReplicWorker.isFileIn(modsetFiles as File[], cached.extra);
                 cache.value.push({
                     id: modset.id,
-                    outdatedFiles: outDatedFiles,
-                    missingFiles,
+                    outdated,
+                    missing,
+                    extra,
+                    complete,
                 });
             }
             console.info(`Finished hash calc for repo ${currentHashRepo.value.name}`);
@@ -99,6 +94,7 @@ export const useHashStore = defineStore('hash', () => {
 
     HASHING_PROGRESS.addEventListener('hash_calculated', () => {
         const current = useHashStore().current;
+        console.log(current);
         if (current !== null) {
             current.checkedFiles += 1;
         }

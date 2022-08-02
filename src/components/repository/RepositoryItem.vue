@@ -50,7 +50,7 @@ const status = computed(() => {
         const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === id);
         if (cacheData === undefined) return 'checking';
         if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) return 'downloading';
-        if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+        if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
             return 'outdated';
         }
         return 'ready';
@@ -58,7 +58,7 @@ const status = computed(() => {
         const collection = props.repository.collections.find((collection: Collection) => collection.id === id);
         const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.repository.id);
         if (cacheData === undefined) return 'checking';
-        if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+        if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
             return 'outdated';
         }
         if (collection !== undefined) {

@@ -5,7 +5,10 @@
             <span class="download-item__repo-name" v-if="repo !== null && repo !== undefined">{{ repo.name }}</span>
             <span class="download-item__name">{{ downloadItem.item.name }}</span>
         </div>
-        <div v-if="downloadItem.status === 'downloading' || downloadItem.status === 'paused'" class="download-item__status">
+        <div
+            v-if="downloadItem.status === 'downloading' || downloadItem.status === 'paused'"
+            class="download-item__status"
+        >
             <span class="download-item__progress">{{ progress }}%</span>
             <span class="download-item__size">{{ received }} GB / {{ size }} GB</span>
             <div class="download-item__progress-bar" :style="`--progress: ${progress}%;`"></div>
@@ -16,11 +19,11 @@
             <div class="download-item__status">
                 <div class="download-item__queue-wrapper">
                     <span class="download-item__queue-label">Missing Files</span>
-                    <span class="download-item__queue-value">{{ cacheData?.missingFiles.length }}</span>
+                    <span class="download-item__queue-value">{{ cacheData?.missing.length }}</span>
                 </div>
                 <div class="download-item__queue-wrapper">
                     <span class="download-item__queue-label">Outdated Files</span>
-                    <span class="download-item__queue-value">{{ cacheData?.outdatedFiles.length }}</span>
+                    <span class="download-item__queue-value">{{ cacheData?.outdated.length }}</span>
                 </div>
                 <div class="download-item__queue-wrapper">
                     <span class="download-item__queue-label">Size</span>
@@ -180,13 +183,13 @@ async function pauseDownloadF() {
         padding-inline-end: 1.5rem;
 
         span:first-of-type {
-            border-top-left-radius: .5rem;
-            border-bottom-left-radius: .5rem;
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
         }
 
         span:last-of-type {
-            border-top-right-radius: .5rem;
-            border-bottom-right-radius: .5rem;
+            border-top-right-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
         }
 
         span {
@@ -214,7 +217,7 @@ async function pauseDownloadF() {
         grid-area: canvas;
         background: lightgrey;
         height: 0.5rem;
-        margin-block-start: .25rem;
+        margin-block-start: 0.25rem;
         border-radius: 1rem;
         position: relative;
         &::before {
@@ -233,7 +236,7 @@ async function pauseDownloadF() {
     }
 
     &__status {
-        padding-inline-end: .5rem;
+        padding-inline-end: 0.5rem;
         color: grey;
     }
 }

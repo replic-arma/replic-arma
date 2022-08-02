@@ -32,7 +32,7 @@ const status = computed(() => {
     if (cacheData === undefined) return 'checking';
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === props.modset.id)
         return 'downloading';
-    if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+    if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
         return 'outdated';
     } else {
         return 'ready';

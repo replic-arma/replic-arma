@@ -3,7 +3,19 @@ import TypedEventTarget from '../TypedEventTarget';
 import { fileExists, removeFile } from './fs';
 import { invoke } from '@tauri-apps/api';
 import type { Event as TauriEvent } from '@tauri-apps/api/helpers/event';
+export interface HashResponseItem {
+    completed_size: number;
+    file: string;
+    percentage: number;
+    size: number;
+}
 
+export interface HashResponse {
+    complete: HashResponseItem[];
+    extra: HashResponseItem[];
+    missing: HashResponseItem[];
+    outdated: HashResponseItem[];
+}
 const FILE_NAME = 'hashes.json';
 
 export async function checkHashes(
@@ -11,7 +23,7 @@ export async function checkHashes(
     modDirectory: string,
     files: Array<Array<string | number>>,
     url: string
-): Promise<Array<Array<Array<string>>>> {
+): Promise<HashResponse> {
     return invoke('file_check', { repoType, pathPrefix: modDirectory, fileInput: files, url });
 }
 

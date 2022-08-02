@@ -16,6 +16,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::commands::repo::file_check;
 use crate::commands::{
     repo::{download, get_repo, hash_check, pause_download},
     util::{dir_exists, file_exists, get_a3_dir},
@@ -140,7 +141,8 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             pause_download,
             file_exists,
             dir_exists,
-            get_a3_dir
+            get_a3_dir,
+            file_check
         ])
         .on_page_load(|window, _| {
             #[cfg(target_os = "windows")]

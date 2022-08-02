@@ -75,6 +75,7 @@ dependencies = [
  "once_cell",
  "path-slash",
  "rayon",
+ "rs-zsync",
  "serde",
  "serde_json",
  "sha-1",
@@ -1729,6 +1730,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3e378b66a060d48947b590737b30a1be76706c8dd7b8ba0f2fe3989c68a853f"
 
 [[package]]
+name = "md4"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93a5f5240a3fa1cb324a28cb42b1934750a093d7ad200ba052deecf4aff7104b"
+dependencies = [
+ "digest",
+]
+
+[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2538,6 +2548,15 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "windows 0.37.0",
+]
+
+[[package]]
+name = "rs-zsync"
+version = "0.1.0"
+source = "git+https://github.com/replic-arma/rs-zsync?branch=main#2da72a4ab779b7f283c532aa21c192f6435a2ce3"
+dependencies = [
+ "chrono",
+ "md4",
 ]
 
 [[package]]

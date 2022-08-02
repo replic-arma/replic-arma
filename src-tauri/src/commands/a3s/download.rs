@@ -1,11 +1,4 @@
-use std::{
-    ffi::{OsStr, OsString},
-    fs::{self, File, OpenOptions},
-    io::Write,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-
+use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::DateTime;
@@ -22,6 +15,13 @@ use hyper::{
 };
 use hyper_tls::HttpsConnector;
 use serde::{Deserialize, Serialize};
+use std::{
+    ffi::{OsStr, OsString},
+    fs::{self, File, OpenOptions},
+    io::Write,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tauri::async_runtime::Mutex;
 use url::Url;
 
@@ -82,6 +82,8 @@ pub trait Downloader {
         url: Url,
         destination: &Path,
     ) -> Result<()>;
+
+    async fn download_file_simple(&self, url: Url, destination: &Path) -> Result<()>;
 }
 
 fn append_ext(ext: impl AsRef<OsStr>, path: PathBuf) -> PathBuf {
@@ -109,15 +111,14 @@ where
     let res_tuple = get_response(destination, uri, client).await?;
     let mut res = res_tuple.0;
 
-    let mut out;
-    if res_tuple.1 {
-        out = OpenOptions::new()
+    let mut out = if res_tuple.1 {
+        OpenOptions::new()
             .write(true)
             .append(true)
-            .open(destination)?;
+            .open(destination)?
     } else {
-        out = File::create(destination)?;
-    }
+        File::create(destination)?
+    };
 
     let mut part_info = get_part_info_from_headers(res.headers());
 
@@ -162,6 +163,35 @@ where
     }
 
     // let sha1 = hash.finalize();
+    Ok(())
+}
+
+async fn download_file_simple<C>(client: Client<C>, url: Url, destination: &Path) -> Result<()>
+where
+    C: Connect + Clone + Send + Sync,
+    C: 'static,
+{
+    let uri: Uri = url.as_str().parse::<_>()?;
+
+    let mut _write_size: usize = 0;
+
+    let res_tuple = get_response(destination, uri, client).await?;
+    let mut res = res_tuple.0;
+
+    let mut out = if res_tuple.1 {
+        OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(destination)?
+    } else {
+        File::create(destination)?
+    };
+
+    while let Some(next) = res.data().await {
+        let chunk = next?;
+        _write_size += out.write(&chunk)?;
+    }
+
     Ok(())
 }
 
@@ -234,6 +264,10 @@ impl Downloader for HttpDownloader {
         // The underlying connection pool will be reused.
         Ok(download_file(state, window, self.client.clone(), url, destination).await?)
     }
+
+    async fn download_file_simple(&self, url: Url, destination: &Path) -> Result<()> {
+        Ok(download_file_simple(self.client.clone(), url, destination).await?)
+    }
 }
 
 pub struct HttpsDownloader {
@@ -261,4 +295,22 @@ impl Downloader for HttpsDownloader {
         // The underlying connection pool will be reused.
         Ok(download_file(state, window, self.client.clone(), url, destination).await?)
     }
+
+    async fn download_file_simple(&self, url: Url, destination: &Path) -> Result<()> {
+        Ok(download_file_simple(self.client.clone(), url, destination).await?)
+    }
+}
+
+pub async fn download_simple(url: &str, destination: &Path) -> Result<()> {
+    let connection_info = Url::parse(url)?;
+    let downloader: Box<dyn Downloader + Send + Sync> = match connection_info.scheme() {
+        "http" => Box::new(HttpDownloader::new()),
+        "https" => Box::new(HttpsDownloader::new()),
+        "ftp" => todo!(),
+        up => return Err(anyhow!("Unknown protocol/scheme: {}", up)),
+    };
+
+    downloader
+        .download_file_simple(connection_info, destination)
+        .await
 }

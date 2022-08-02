@@ -13,7 +13,7 @@
                 <DownloadItemVue v-if="downloadItem !== null" :downloadItem="downloadItem" />
             </ul>
             <div class="download-sub-head" v-if="queueItems.length > 0">
-                <span v-t="'download-status.queued'"></span>
+                <span v-t="'status.queued'"></span>
                 <span class="download-sub-head__count">({{ queueItems.length }})</span>
             </div>
             <ul class="download-items">
@@ -25,7 +25,6 @@
 <script lang="ts" setup>
 import DownloadItemVue from './DownloadItem.vue';
 import DownloadProgess from './DownloadProgess.vue';
-import type { DownloadItem } from '@/models/Download';
 import { computed, ref } from 'vue';
 import { useDownloadStore } from '@/store/download';
 
@@ -45,22 +44,22 @@ span {
 }
 .download-sub-head {
     font-size: 16pt;
-    position: relative;
     width: 100%;
-    display: inline-flex;
     &__count {
         margin-inline-start: 0.5rem;
         color: var(--c-text-3);
     }
+    display: grid;
+    grid-template-columns: auto 1fr;
+    margin-inline-end: 0.5rem;
+    gap: 1rem;
     &::after {
         content: '';
         height: 2px;
         background: grey;
-        width: 80%;
-        margin-inline-start: 0.5rem;
+        width: 100%;
         margin-top: auto;
         margin-bottom: auto;
-        display: inline-flex;
     }
 }
 
@@ -70,6 +69,8 @@ span {
     &::after {
         border-bottom-left-radius: 2rem;
         border-bottom-right-radius: 2rem;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
     }
     &__heading {
         display: grid;

@@ -72,7 +72,7 @@ function play() {
     overflow: hidden;
 
     &:hover {
-        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
+        // box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }
 
     &__name {

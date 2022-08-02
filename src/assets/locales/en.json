@@ -19,7 +19,7 @@
         "name": "Collection Name",
         "add": "Add Collection"
     },
-    "download-status": {
+    "status": {
         "outdated": "Outdated",
         "queued": "Update Pending",
         "paused": "Paused",
@@ -34,8 +34,6 @@
         "empty": "No Server available"
     },
     "submit": "Submit",
-    "ready": "Ready",
-    "updating": "Updating",
     "select": "Select",
     "a3exe": "Arma 3 Exe",
     "mod_directory": "Mod Directory",
@@ -79,5 +77,7 @@
         "error": "Failed to add Repository",
         "success": "Successfully added Repository"
     },
-    "download": "Download"
+    "download": "Download",
+    "mods": "Mods",
+    "edit": "Edit"
 }

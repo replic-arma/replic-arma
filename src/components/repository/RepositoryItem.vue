@@ -102,19 +102,21 @@ const currentModsetId = ref('');
     inline-size: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 4rem 1fr 0.5fr 1fr 0.5fr 10%;
-    padding-inline-start: 1rem;
+    grid-template-columns: 5rem 1fr 0.5fr 1fr 0.5fr 10%;
+
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);
     box-shadow: var(--shadow-1);
     border-radius: 12px;
     overflow: hidden;
+    text-overflow: ellipsis;
     &:hover {
-        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
+        // box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }
 
     &__img {
+        padding-inline-start: 1rem;
         block-size: 3rem;
     }
 

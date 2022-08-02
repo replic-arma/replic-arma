@@ -1,11 +1,6 @@
 <template>
     <div class="modlist-c">
-        <div class="modlist-c__heading" @click="toggle()">
-            <span>Alle Mods anzeigen</span>
-            <mdicon v-if="!listOpen" name="chevron-up"></mdicon>
-            <mdicon v-if="listOpen" name="chevron-down"></mdicon>
-        </div>
-        <div class="modlist-c__content" v-if="listOpen && collection !== undefined">
+        <div class="modlist-c__content" v-if="collection !== undefined">
             <div>
                 <div v-for="(mods, key, index) in collection.modsets" :key="index">
                     <div class="modlist-c__mods-headline">
@@ -31,14 +26,11 @@ import type { Modset } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { computed } from '@vue/reactivity';
 import { ref } from 'vue';
-import Modlist from '../Modlist.vue';
+import Modlist from '../components/Modlist.vue';
 
 const listOpen = ref(false);
 const collection = computed(() => useRepoStore().currentCollection);
 
-function toggle() {
-    listOpen.value = !listOpen.value;
-}
 const tree = ref(false);
 function toggleTree() {
     tree.value = !tree.value;
@@ -55,7 +47,6 @@ function resolveModsetName(id: string) {
 <style lang="scss" scoped>
 .modlist-c {
     position: relative;
-    border-top: 1px solid lightgray;
     width: 100%;
     padding-block-start: 1rem;
     &__heading {

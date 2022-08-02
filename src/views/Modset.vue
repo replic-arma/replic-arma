@@ -54,7 +54,7 @@ const modset = computed(() => useRepoStore().currentModset);
 const subnaviItems = computed(() => {
     return [
         {
-            label: 'Mods',
+            label: 'mods',
             link: `/repo/${useRouteStore().currentRepoID}/modset/${useRouteStore().currentModsetID}/mods`,
         },
     ];

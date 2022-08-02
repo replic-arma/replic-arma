@@ -8,7 +8,7 @@
             <status :status="status" :progress="0"></status>
         </span>
         <PlayButton @play="play()"></PlayButton>
-        <router-link :to="'./collection/' + collection.id" class="collection__open button">
+        <router-link :to="'./collection/' + collection.id + '/mods'" class="collection__open button">
             <mdicon name="folder-open-outline"></mdicon>
         </router-link>
     </li>

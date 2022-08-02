@@ -18,7 +18,8 @@
         "uuid": "^8.3.2",
         "vue": "^3.2.37",
         "vue-i18n": "^9.1.10",
-        "vue-router": "^4.1.2"
+        "vue-router": "^4.1.2",
+        "vue3-popper": "^1.5.0"
     },
     "devDependencies": {
         "@actions/core": "^1.9.0",

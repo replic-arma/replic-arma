@@ -6,11 +6,17 @@
             :key="index"
             :class="[outdated(modName) ? 'outdated' : 'ready']"
         >
-            <Tooltip :text="getModSize(modName)" style="grid-column: 1">
-                <mdicon v-if="outdated(modName)" name="close" />
-                <mdicon v-else name="check" />
-                <span>{{ modName }}</span>
-            </Tooltip>
+            <Popper :hover="true" :arrow="true">
+                <span>
+                    <mdicon v-if="outdated(modName)" name="close" />
+                    <mdicon v-else name="check" />
+                    <span>{{ modName }}</span>
+                </span>
+                <template #content>
+                    <div>{{ getModSize(modName).path }}</div>
+                    <div>{{ getModSize(modName).size }}</div>
+                </template>
+            </Popper>
         </li>
     </ul>
 </template>
@@ -20,11 +26,13 @@ import type { ModsetMod } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 import { computed } from 'vue';
+import Popper from 'vue3-popper';
 interface Props {
     mods: Array<string>;
     tree: boolean;
     modsetId: string;
 }
+
 const props = defineProps<Props>();
 function outdated(modName: string) {
     const cache = useHashStore().cache.find((cache) => cache.id === props.modsetId);
@@ -39,20 +47,25 @@ const orderedMods = computed(() => {
     return unorderedMods.sort((a, b) => a.localeCompare(b));
 });
 
-function getModSize(modName: string) {
+function getModSize(modName: string): { size: string; path: string } {
     const modsetCache = useRepoStore().modsetCache;
-    if (modsetCache === null) return '0';
+    if (modsetCache === null)
+        return { size: '0', path: `${useRepoStore().currentRepository?.downloadDirectoryPath}\\${modName}` };
     const cacheData = modsetCache.find((cacheModset) => cacheModset.id === props.modsetId);
     const mod = cacheData?.mods.find((mod: ModsetMod) => mod.name === modName);
     if (mod !== undefined) {
-        return mod.size !== undefined ? Number(mod.size / 10e5).toFixed(2) + 'MB' : '0';
+        return {
+            size: mod.size !== undefined ? Number(mod.size / 10e5).toFixed(2) + ' MB' : '0',
+            path: `${useRepoStore().currentRepository?.downloadDirectoryPath}\\${modName}`,
+        };
     }
-    return '0';
+    return { size: '0', path: `${useRepoStore().currentRepository?.downloadDirectoryPath}\\${modName}` };
 }
 </script>
 
 <style lang="scss" scoped>
 .modlist {
+    --tooltip-font-size: 0.9em;
     list-style-type: none;
     padding: 0;
     list-style: none;

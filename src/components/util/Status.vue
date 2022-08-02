@@ -3,7 +3,7 @@
         <template v-if="status === 'checking' || status === 'downloading'">
             <mdicon name="loading" spin />
         </template>
-        <span v-t="'download-status.' + status"></span>
+        <span v-t="'status.' + status"></span>
         <template v-if="progress !== null && (status === 'checking' || status === 'downloading')">
             <span>...{{ progress }}%</span>
         </template>
@@ -19,7 +19,7 @@ const props = defineProps<Props>();
 
 <style lang="scss">
 .replic-status {
-    display: flex;
+    text-align: center;
     font-weight: 500;
 }
 </style>

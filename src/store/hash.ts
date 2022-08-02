@@ -101,9 +101,6 @@ export const useHashStore = defineStore('hash', () => {
             current.checkedFiles += 1;
         }
     });
-    HASHING_PROGRESS.addEventListener('hash_failed', (bla) => {
-        console.log(bla);
-    });
 
     return {
         addToQueue,

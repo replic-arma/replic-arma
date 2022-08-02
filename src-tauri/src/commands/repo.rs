@@ -1,17 +1,9 @@
-use std::{
-    fs::{self, File},
-    io::{self},
-    path::{Path, PathBuf},
-    str::FromStr,
-    sync::Arc,
-    time::Duration,
-};
-
+use crate::commands::a3s::download::{Downloader, HttpDownloader, HttpsDownloader};
+use crate::commands::repo::check_a3s::check_a3s;
 use crate::{
     repository::Repository,
     state::ReplicArmaState,
     util::{
-        download::{Downloader, HttpDownloader, HttpsDownloader},
         methods::save_t,
         types::{JSResult, RepoType},
     },
@@ -22,9 +14,50 @@ use filetime::FileTime;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
+use std::{
+    fs::{self, File},
+    io::{self},
+    path::{Path, PathBuf},
+    str::FromStr,
+    sync::Arc,
+    time::Duration,
+};
 use tauri::{async_runtime::Mutex, Window};
 use tokio::{task, time::sleep};
 use url::Url;
+
+use super::a3s::check_a3s;
+
+#[derive(Serialize, Deserialize)]
+pub struct FileCheckResult {
+    pub complete: Vec<RepoFile>,
+    pub outdated: Vec<RepoFile>,
+    pub missing: Vec<RepoFile>,
+    pub extra: Vec<RepoFile>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RepoFile {
+    pub file: String,
+    pub size: u64,
+    pub completed_size: f64,
+    pub percentage: f64,
+}
+
+#[tauri::command]
+pub async fn file_check(
+    repo_type: RepoType,
+    path_prefix: String,
+    file_input: Vec<FileCheckInput>,
+    url: String,
+    window: Window,
+    state: tauri::State<'_, ReplicArmaState>,
+) -> JSResult<FileCheckResult> {
+    match repo_type {
+        RepoType::A3S => check_a3s(path_prefix, file_input, url, window, state).await,
+        RepoType::Swifty => todo!(),
+    }
+}
 
 #[tauri::command]
 pub async fn hash_check(
@@ -33,29 +66,20 @@ pub async fn hash_check(
     file_tuples: Vec<(String, String)>,
     state: tauri::State<'_, ReplicArmaState>,
 ) -> JSResult<(Vec<(String, String, i64)>, Vec<String>, Vec<String>)> {
-    let mut old_hashes = state.known_hashes.lock().await;
+    let mut known_hashes = state.known_hashes.lock().await;
 
     //let mut hashes: HashMap<String, (String, u128)> = read_t(state.data_dir.join("hashes.json"))?;
-    let mut hashes = old_hashes.clone();
-
-    let files: Vec<String> = file_tuples
+    let file_tuples_prefix: Vec<(String, String)> = file_tuples
         .iter()
-        .map(|f| format!("{}{}", path_prefix, f.0))
+        .map(|f| (format!("{}{}", path_prefix, f.0), f.1.clone()))
         .collect();
 
-    // insert new files
+    let files: Vec<String> = file_tuples_prefix.iter().map(|f| f.0.clone()).collect();
+
+    let mut hashes = known_hashes.clone();
     for file in files.iter() {
         hashes.entry(file.to_string()).or_insert((String::new(), 0));
     }
-
-    let mut not_existing_files = Vec::with_capacity(files.capacity());
-    for file in files.iter() {
-        if !Path::new(&file).is_file() {
-            not_existing_files.push(file.replacen(&path_prefix, "", 1));
-        }
-    }
-
-    // calc Hash
     let (new_hashes_res, _): (Vec<_>, Vec<_>) = hashes
         .into_iter()
         .par_bridge()
@@ -71,63 +95,96 @@ pub async fn hash_check(
             res
         })
         .partition(|x| x.is_ok());
-
-    // partition into hashes and errors
     let new_hashes: Vec<FileHash> = new_hashes_res.into_iter().map(Result::unwrap).collect();
-    // let errors: Vec<String> = errors_res
-    //     .into_iter()
-    //     .map(|e| e.unwrap_err().to_string())
-    //     .collect();
-
-    // update HashMap
     for hash in &new_hashes {
-        old_hashes.insert(hash.path.clone(), (hash.hash.clone(), hash.time_modified));
+        known_hashes.insert(hash.path.clone(), (hash.hash.clone(), hash.time_modified));
     }
+    save_t(&state.data_dir.join("hashes.json"), known_hashes.clone())?;
 
-    save_t(&state.data_dir.join("hashes.json"), old_hashes.clone())?;
+    let known_hashes = known_hashes.clone();
 
-    let result: Vec<_> = new_hashes
-        .into_iter()
-        .map(|kvp| {
-            (
-                kvp.path.replacen(&path_prefix, "", 1),
-                kvp.hash,
-                kvp.time_modified,
-            )
-        })
-        .collect();
-
-    let mut renameable_files: Vec<String> = Vec::new();
-    for file_tuple in file_tuples {
-        if let Some(fh) = result
-            .iter()
-            .find(|fh| fh.1 == file_tuple.1 && fh.0 != file_tuple.0)
-        {
-            renameable_files.push(fh.0.clone());
+    let mut missing_files = Vec::with_capacity(files.capacity());
+    for file in files.iter() {
+        if !Path::new(&file).is_file() {
+            missing_files.push(file.replacen(&path_prefix, "", 1));
         }
     }
 
+    let mut outdated_files = Vec::with_capacity(files.capacity());
+    for file in file_tuples_prefix.iter() {
+        if let Some(kh_tuple) = known_hashes.get(&file.0) {
+            if kh_tuple.0 != file.1 {
+                outdated_files.push(file.0.clone());
+            }
+        }
+    }
+
+    let mut renameable_files: Vec<(String, String)> = Vec::new();
+    for file_tuple in file_tuples_prefix.iter() {
+        if let Some(renamed_file) = known_hashes.iter().find(|kvp| {
+            kvp.1 .0 == file_tuple.1 && *kvp.0 != file_tuple.0 // && same_dir(&file_tuple.0, &*kvp.0)
+        }) {
+            renameable_files.push((file_tuple.0.clone(), renamed_file.0.clone()));
+        }
+    }
+
+    // let result: Vec<_> = new_hashes
+    //     .into_iter()
+    //     .map(|kvp| {
+    //         (
+    //             kvp.path.replacen(&path_prefix, "", 1),
+    //             kvp.hash,
+    //             kvp.time_modified,
+    //         )
+    //     })
+    //     .collect();
+
+    // let mut renameable_files: Vec<String> = Vec::new();
+    // for file_tuple in file_tuples {
+    //     if let Some(fh) = result
+    //         .iter()
+    //         .find(|fh| fh.1 == file_tuple.1 && fh.0 != file_tuple.0)
+    //     {
+    //         renameable_files.push(fh.0.clone());
+    //     }
+    // }
+    let result = Vec::<(String, String, i64)>::new();
+    let renameable_files2 = Vec::<String>::new();
     // let s: Vec<_> = file_tuples
     //     .into_iter()
     //     .map(|file| if let Ok(fh) = result.iter().find(|fh| fh.1 == file.1) {})
     //     .collect();
 
-    Ok((result, not_existing_files, renameable_files))
+    Ok((result, missing_files, renameable_files2))
 }
+
+// fn same_dir(file1: &str, file2: &str) -> bool {
+//     let p1 = Path::new(file1);
+//     let p2 = Path::new(file2);
+
+//     p1.ancestors().eq(p2.ancestors())
+// }
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct FileHash {
-    path: String,
-    hash: String,
-    time_modified: i64,
-    size: u64,
+    pub path: String,
+    pub hash: String,
+    pub time_modified: i64,
+    pub size: u64,
 }
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct KnownHash {
-    path: String,
-    hash: String,
-    time_modified: i64,
+    pub path: String,
+    pub hash: String,
+    pub time_modified: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct FileCheckInput {
+    pub file: String,
+    pub hash: String,
+    pub size: u64,
 }
 
 impl From<(String, (String, i64))> for KnownHash {
@@ -140,7 +197,7 @@ impl From<(String, (String, i64))> for KnownHash {
     }
 }
 
-fn check_update(known_hash: KnownHash) -> Result<FileHash> {
+pub(crate) fn check_update(known_hash: KnownHash) -> Result<FileHash> {
     let path = PathBuf::from(&known_hash.path);
 
     let meta = path.metadata()?;

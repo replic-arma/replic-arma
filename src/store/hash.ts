@@ -39,7 +39,7 @@ export const useHashStore = defineStore('hash', () => {
             currentHashRepo.value.type ?? 'a3s',
             `${currentHashRepo.value.downloadDirectoryPath ?? ''}\\`,
             currentHashRepo.value.files.map((file: File) => [file.path, file.sha1, file.size]),
-            currentHashRepo.value.config_url ?? ''
+            currentHashRepo.value.download_server?.url ?? ''
         );
     }
 

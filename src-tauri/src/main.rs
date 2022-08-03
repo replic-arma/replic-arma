@@ -211,6 +211,10 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
 
+    // urls:
+    // grad: http://a3s.gruppe-adler.de/mods/.a3s/autoconfig
+    // opt: http://repo.opt4.net/opt/.a3s/autoconfig
+
     use std::{path::PathBuf, str::FromStr};
 
     use crate::{

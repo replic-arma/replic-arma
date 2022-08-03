@@ -40,7 +40,7 @@ pub struct FileCheckResult {
 pub struct RepoFile {
     pub file: String,
     pub size: u64,
-    pub completed_size: f64,
+    pub current_size: f64,
     pub percentage: f64,
 }
 

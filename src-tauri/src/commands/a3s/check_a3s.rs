@@ -46,9 +46,13 @@ pub async fn check_a3s(
         .map(|hash| {
             let file = hash.0.clone();
             let res = check_update(hash.into());
+
             if let Ok(hash_tuple) = &res {
+                dbg!(&res.as_ref().ok().unwrap().path);
                 window.emit("hash_calculated", hash_tuple).unwrap();
             } else {
+                dbg!(&file);
+                dbg!(res.as_ref().err().unwrap());
                 window.emit("hash_failed", file).unwrap();
             }
             res
@@ -69,7 +73,7 @@ pub async fn check_a3s(
                 file: remove_prefix(file_input, &path_prefix),
                 size: file_input.size,
                 percentage: 0.0,
-                completed_size: 0.0,
+                current_size: 0.0,
             });
         }
     }
@@ -83,11 +87,11 @@ pub async fn check_a3s(
             if kh_tuple.0 != file_input.hash {
                 // hash doesn't match
 
-                if let Ok(progress) = get_zsync(&url, &file_without_prefix).await {
+                if let Ok(progress) = get_zsync(&url, &file_without_prefix, &path_prefix).await {
                     outdated_files.push(RepoFile {
                         file: file_without_prefix,
                         size: file_input.size,
-                        completed_size: progress.1,
+                        current_size: progress.1,
                         percentage: progress.0,
                     });
                 }
@@ -97,11 +101,17 @@ pub async fn check_a3s(
                     file: file_without_prefix,
                     size: file_input.size,
                     percentage: 100.0,
-                    completed_size: file_input.size as f64,
+                    current_size: file_input.size as f64,
                 });
             }
         }
     }
+
+    let missing_size: u64 = missing_files.iter().map(|f| f.size).sum();
+    let outdated_size: f64 = outdated_files.iter().map(|f| f.current_size).sum();
+    dbg!(missing_size);
+    dbg!(outdated_size);
+    dbg!(missing_size + outdated_size as u64);
 
     Ok(FileCheckResult {
         complete: completed_files,
@@ -115,14 +125,20 @@ fn remove_prefix(file_input: &FileCheckInput, path_prefix: &String) -> String {
     file_input.file.replacen(path_prefix, "", 1)
 }
 
-async fn get_zsync(url: &str, file: &str) -> Result<(f64, f64)> {
+async fn get_zsync(url: &str, file: &str, path_prefix: &str) -> Result<(f64, f64)> {
     let mut zsync_url = url.to_string();
+    zsync_url.push_str(file);
     zsync_url.push_str(".zsync");
 
-    let mut zsync_path = file.to_string();
+    let mut file_path = path_prefix.to_string();
+    file_path.push_str(file);
+
+    let mut zsync_path = file_path.clone();
     zsync_path.push_str(".zsync");
     let zsync_path = Path::new(&zsync_path);
 
+    dbg!(&zsync_path);
+    dbg!(&zsync_url);
     download_simple(&zsync_url, zsync_path).await?;
 
     let mut mf = MetaFile::new();
@@ -130,7 +146,8 @@ async fn get_zsync(url: &str, file: &str) -> Result<(f64, f64)> {
         return Err(anyhow!("Zsync parser error"));
     }
     let mut fm = FileMaker::new(&mf);
-    let progress = fm.map_matcher(Path::new(file));
+    dbg!(&file_path);
+    let progress = fm.map_matcher(Path::new(&file_path));
     let remaining_size = fm.remaining_size(progress);
 
     Ok((progress, remaining_size))

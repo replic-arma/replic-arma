@@ -18,6 +18,10 @@
         <div v-else>
             <div class="download-item__status">
                 <div class="download-item__queue-wrapper">
+                    <span class="download-item__queue-label">Delete</span>
+                    <span class="download-item__queue-value">{{ cacheData?.extra.length }}</span>
+                </div>
+                <div class="download-item__queue-wrapper">
                     <span class="download-item__queue-label">Missing Files</span>
                     <span class="download-item__queue-value">{{ cacheData?.missing.length }}</span>
                 </div>

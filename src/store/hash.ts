@@ -86,6 +86,7 @@ export const useHashStore = defineStore('hash', () => {
                     complete,
                 });
             }
+            console.log(hashData);
             console.info(`Finished hash calc for repo ${currentHashRepo.value.name}`);
             current.value = null;
             next();
@@ -94,7 +95,6 @@ export const useHashStore = defineStore('hash', () => {
 
     HASHING_PROGRESS.addEventListener('hash_calculated', () => {
         const current = useHashStore().current;
-        console.log(current);
         if (current !== null) {
             current.checkedFiles += 1;
         }

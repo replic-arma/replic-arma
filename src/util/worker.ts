@@ -89,7 +89,7 @@ export const ReplicWorker = {
         });
         return workerFn(mods, filesPaths);
     },
-    async isFileIn(wantedFiles: File[], fileList: Array<string>): Promise<string[]> {
+    async isFileIn(wantedFiles: File[], fileList: Array<HashResponseItem>): Promise<Array<HashResponseItem>> {
         const { workerFn } = useWebWorkerFn((wantedFiles: File[], fileList: Array<HashResponseItem>) => {
             const list = wantedFiles.map((file) => file.path);
             return fileList.filter((wantedFile) => list.indexOf(wantedFile.file) !== -1);

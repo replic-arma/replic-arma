@@ -59,7 +59,7 @@ function filterMods(repoId: string, modNames: string[]) {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === repoId);
     if (cacheData === undefined) return modNames;
     if (cacheData.missing.length > 0) {
-        return modNames.filter((modName: string) => !cacheData.missingFiles.includes(modName));
+        return modNames.filter((modName: string) => !cacheData.missing.includes(modName));
     }
     return modNames;
 }

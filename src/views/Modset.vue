@@ -50,6 +50,7 @@ import Status from '../components/util/Status.vue';
 import { notify } from '@kyvg/vue3-notification';
 import Downloads from '../components/download/Downloads.vue';
 import Subnavi from '../components/util/Subnavi.vue';
+import type { HashResponseItem } from '@/util/system/hashes';
 const modset = computed(() => useRepoStore().currentModset);
 const subnaviItems = computed(() => {
     return [
@@ -77,18 +78,12 @@ function play() {
 }
 
 const updateSize = computed(() => {
-    const modsetCache = useRepoStore().modsetCache;
     const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
-    if (modsetCache === null) return 0;
-    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset.value!.id);
-    const filesToDownload = [...(cacheDataa?.missingFiles as string[]), ...(cacheDataa?.outdatedFiles as string[])];
-    const mods =
-        cacheData?.mods
-            .flatMap((mod: ModsetMod) => mod.files ?? [])
-            .filter((file) => filesToDownload.includes(file.path)) ?? [];
+    const mods = [...(cacheDataa?.outdated ?? []), ...(cacheDataa?.missing ?? [])];
     return Number(
-        mods.reduce((previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size, 0) /
-            10e8
+        mods
+            .map((item: HashResponseItem) => item.size)
+            .reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0) / 10e8
     ).toFixed(2);
 });
 
@@ -96,9 +91,9 @@ const updateFiles = computed(() => {
     const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
     if (cacheDataa === null) return [];
 
-    const filesToDownload = [...(cacheDataa?.missingFiles as string[]), ...(cacheDataa?.outdatedFiles as string[])];
+    const filesToDownload = [...(cacheDataa?.missing ?? []), ...(cacheDataa?.outdated ?? [])];
 
-    return filesToDownload;
+    return filesToDownload.map((item: HashResponseItem) => item.file);
 });
 
 const status = computed(() => {

@@ -25,6 +25,7 @@
 import type { ModsetMod } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
+import type { HashResponseItem } from '@/util/system/hashes.js';
 import { computed } from 'vue';
 import Popper from 'vue3-popper';
 interface Props {
@@ -37,8 +38,10 @@ const props = defineProps<Props>();
 function outdated(modName: string) {
     const cache = useHashStore().cache.find((cache) => cache.id === props.modsetId);
     return (
-        cache?.missingFiles.map((filePath: string) => filePath.split('\\').includes(modName)).includes(true) ||
-        cache?.outdatedFiles.map((filePath: string) => filePath.split('\\').includes(modName)).includes(true)
+        cache?.missing
+            .map((hashItem: HashResponseItem) => hashItem.file.split('\\').includes(modName))
+            .includes(true) ||
+        cache?.outdated.map((hashItem: HashResponseItem) => hashItem.file.split('\\').includes(modName)).includes(true)
     );
 }
 

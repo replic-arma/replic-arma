@@ -9,6 +9,7 @@ import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
 import { sep } from '@tauri-apps/api/path';
 import { notify } from '@kyvg/vue3-notification';
+import type { HashResponseItem } from '@/util/system/hashes';
 export const useDownloadStore = defineStore('download', () => {
     const current = ref(null as null | DownloadItem);
     const queue = ref([] as Array<DownloadItem>);
@@ -23,11 +24,12 @@ export const useDownloadStore = defineStore('download', () => {
     );
 
     async function addToDownloadQueue(modset: Modset, repoId: string) {
-        const modsetCacheData = useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modset.id);
         const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === modset.id);
         if (cacheData === undefined) return;
-        const filesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
-        const totalSize = await ReplicWorker.getFileSize(toRaw(modsetCacheData?.mods) ?? [], filesToDownload);
+        const filesToDownload = [...cacheData.missing, ...cacheData.outdated];
+        const totalSize = filesToDownload
+            .map((item: HashResponseItem) => item.size)
+            .reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0);
         queue.value.push({
             item: modset,
             status: 'queued',
@@ -58,7 +60,7 @@ export const useDownloadStore = defineStore('download', () => {
             current.value.status = 'downloading';
             const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === current.value?.item.id);
             if (cacheData === undefined) return;
-            const filesToDownload = [...cacheData.missingFiles, ...cacheData.outdatedFiles];
+            const filesToDownload = [...cacheData.missing, ...cacheData.outdated];
             const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === current.value?.repoId);
             if (repo === undefined) throw new Error(`Repository with id ${current.value?.repoId} not found`);
             if (repo.download_server === undefined)
@@ -68,7 +70,7 @@ export const useDownloadStore = defineStore('download', () => {
                 repo.type ?? 'A3S',
                 repo.download_server?.url,
                 `${repo.downloadDirectoryPath}${sep}`,
-                filesToDownload
+                filesToDownload.map((item: HashResponseItem) => item.file)
             );
             if (res !== 'paused') {
                 finished.value.push(current.value);
@@ -97,8 +99,12 @@ export const useDownloadStore = defineStore('download', () => {
         if (current !== null) {
             const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === current.item.id);
             if (cacheData !== undefined) {
-                cacheData.missingFiles = cacheData.missingFiles.filter((path) => path !== data.detail.path);
-                cacheData.outdatedFiles = cacheData.outdatedFiles.filter((path) => path !== data.detail.path);
+                cacheData.missing = cacheData.missing.filter(
+                    (path: HashResponseItem) => path.file !== data.detail.path
+                );
+                cacheData.outdated = cacheData.outdated.filter(
+                    (path: HashResponseItem) => path.file !== data.detail.path
+                );
             }
         }
     });

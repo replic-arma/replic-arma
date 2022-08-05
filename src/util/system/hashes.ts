@@ -41,8 +41,8 @@ interface HashingProgressEventMap {
 
 export const HASHING_PROGRESS = new TypedEventTarget<HashingProgressEventMap>();
 
-listen('hash_calculated', (e: TauriEvent<[string, string, number, number]>) => {
-    const [absolutePath, hash, lastModified, size] = e.payload;
+listen('hash_calculated', (e: TauriEvent<{ hash: string; path: string; size: number; time_modified: number }>) => {
+    const { path: absolutePath, hash, time_modified: lastModified, size } = e.payload;
 
     const event = new CustomEvent('hash_calculated', { detail: { absolutePath, hash, lastModified, size } });
     HASHING_PROGRESS.dispatchTypedEvent('hash_calculated', event);

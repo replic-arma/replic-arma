@@ -86,7 +86,6 @@ export const useHashStore = defineStore('hash', () => {
                     complete,
                 });
             }
-            console.log(hashData);
             console.info(`Finished hash calc for repo ${currentHashRepo.value.name}`);
             current.value = null;
             next();

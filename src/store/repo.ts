@@ -99,7 +99,7 @@ export const useRepoStore = defineStore('repo', () => {
     async function checkRevision(repoID: string) {
         if (repos.value === null) throw new Error('Repositories not loaded yet.');
 
-        let repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
+        const repo = repos.value.find((repo: IReplicArmaRepository) => repo.id === repoID);
         if (repo === undefined) throw new Error('Repository not found');
         if (repo.config_url === undefined) throw new Error('Repository has no autoconfig');
         const repoData = await getRepoFromURL(`${repo.config_url}autoconfig`);

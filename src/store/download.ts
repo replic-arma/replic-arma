@@ -1,12 +1,10 @@
 import type { DownloadItem } from '@/models/Download';
 import type { IReplicArmaRepository, Modset } from '@/models/Repository';
 import { downloadFiles, DOWNLOAD_PROGRESS } from '@/util/system/download';
-import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
-import { ref, toRaw } from 'vue';
+import { ref } from 'vue';
 import { useHashStore } from './hash';
 import { useRepoStore } from './repo';
-import { useSettingsStore } from './settings';
 import { sep } from '@tauri-apps/api/path';
 import { notify } from '@kyvg/vue3-notification';
 import type { HashResponseItem } from '@/util/system/hashes';

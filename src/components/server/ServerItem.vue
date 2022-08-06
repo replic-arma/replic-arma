@@ -28,7 +28,7 @@ const props = defineProps<Props>();
 
 function play() {
     if (props.server.modset === undefined) throw new Error('Server Modset undefined');
-    // launchModset(props.server.modset.id, useRouteStore().currentRepoID ?? '', props.server);
+    launchModset(props.server.modset, useRouteStore().currentRepoID ?? '', props.server);
 }
 </script>
 <style lang="scss" scoped>

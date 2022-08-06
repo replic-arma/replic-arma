@@ -2,9 +2,11 @@ use std::path::Path;
 
 use anyhow::anyhow;
 use anyhow::Result;
+use futures::future;
 use rayon::prelude::{ParallelBridge, ParallelIterator};
 use rs_zsync::{file_maker::FileMaker, meta_file::MetaFile};
 use tauri::Window;
+use tokio::fs;
 
 use crate::{
     commands::repo::{check_update, FileCheckInput, FileCheckResult, FileHash, RepoFile},
@@ -23,6 +25,7 @@ pub async fn check_a3s(
 ) -> JSResult<FileCheckResult> {
     let mut known_hashes = state.known_hashes.lock().await;
 
+    // add path  to every file name
     let mut file_input_prefixed: Vec<FileCheckInput> = Vec::with_capacity(file_input.len());
     file_input.into_iter().for_each(|f| {
         let mut f_p = f.clone();
@@ -30,8 +33,7 @@ pub async fn check_a3s(
         file_input_prefixed.push(f_p);
     });
 
-    // let files: Vec<String> = file_tuples_prefix.iter().map(|f| f.0.clone()).collect();
-
+    // add new files into HashMap
     let mut hashes = known_hashes.clone();
     for file_input in file_input_prefixed.iter() {
         hashes
@@ -39,6 +41,7 @@ pub async fn check_a3s(
             .or_insert((String::new(), 0));
     }
 
+    // calc hashes
     let (new_hashes_res, _): (Vec<_>, Vec<_>) = hashes
         .into_iter()
         .par_bridge()
@@ -48,11 +51,8 @@ pub async fn check_a3s(
             let res = check_update(hash.into());
 
             if let Ok(hash_tuple) = &res {
-                dbg!(&res.as_ref().ok().unwrap().path);
                 window.emit("hash_calculated", hash_tuple).unwrap();
             } else {
-                dbg!(&file);
-                dbg!(res.as_ref().err().unwrap());
                 window.emit("hash_failed", file).unwrap();
             }
             res
@@ -62,10 +62,12 @@ pub async fn check_a3s(
     for hash in &new_hashes {
         known_hashes.insert(hash.path.clone(), (hash.hash.clone(), hash.time_modified));
     }
+
     save_t(&state.data_dir.join("hashes.json"), known_hashes.clone())?;
 
     let known_hashes = known_hashes.clone();
 
+    // collect non existing files
     let mut missing_files = Vec::with_capacity(file_input_prefixed.capacity());
     for file_input in file_input_prefixed.iter() {
         if !Path::new(&file_input.file).is_file() {
@@ -78,40 +80,73 @@ pub async fn check_a3s(
         }
     }
 
-    let mut outdated_files = Vec::with_capacity(file_input_prefixed.capacity());
-    let mut completed_files = Vec::with_capacity(file_input_prefixed.capacity());
-    for file_input in file_input_prefixed.iter() {
-        if let Some(kh_tuple) = known_hashes.get(&file_input.file) {
-            let file_without_prefix = remove_prefix(file_input, &path_prefix);
+    // partition into completed and outdated files (checks if hash is the same as in the repo)
+    let (completed, outdated): (Vec<_>, Vec<_>) = file_input_prefixed
+        .into_iter()
+        .filter(|fci| known_hashes.contains_key(&fci.file))
+        .map(|fci| (fci.clone(), known_hashes.get(&fci.file).unwrap()))
+        .partition(|(fci, kh_tuple)| kh_tuple.0 == fci.hash);
 
-            if kh_tuple.0 != file_input.hash {
-                // hash doesn't match
+    window.emit("outdated_file_count", outdated.len()).unwrap();
 
-                if let Ok(progress) = get_zsync(&url, &file_without_prefix, &path_prefix).await {
-                    outdated_files.push(RepoFile {
-                        file: file_without_prefix,
-                        size: file_input.size,
-                        current_size: progress.1,
-                        percentage: progress.0,
-                    });
-                }
-            } else {
-                // hash matches
-                completed_files.push(RepoFile {
+    // collect completed files
+    let completed_files: Vec<RepoFile> = completed
+        .into_iter()
+        .map(|(fci, _)| RepoFile {
+            file: remove_prefix(&fci, &path_prefix),
+            size: fci.size,
+            percentage: 100.0,
+            current_size: fci.size as f64,
+        })
+        .collect();
+
+    // create zsync tasks for outdated files
+    let zsync_tasks = outdated.into_iter().map(|(fci, _)| {
+        let url2 = url.clone();
+        let path_prefix2 = path_prefix.clone();
+        let inner_window = window.clone();
+        tokio::spawn(async move {
+            let file_without_prefix = remove_prefix(&fci, &path_prefix2);
+            if let Ok(progress) = get_zsync(&url2, &file_without_prefix, &path_prefix2).await {
+                inner_window
+                    .emit("zsync_completed", file_without_prefix.clone())
+                    .unwrap();
+                Ok(RepoFile {
                     file: file_without_prefix,
-                    size: file_input.size,
-                    percentage: 100.0,
-                    current_size: file_input.size as f64,
-                });
+                    size: fci.size,
+                    current_size: progress.1,
+                    percentage: progress.0,
+                })
+            } else {
+                Err(anyhow!("Err"))
             }
-        }
-    }
+        })
+    });
+
+    // collect outdated files via executing all the tasks
+    let zsync_results = future::join_all(zsync_tasks).await;
+    let outdated_files: Vec<RepoFile> = zsync_results
+        .into_iter()
+        .partition::<Vec<_>, _>(|x| x.is_ok() && x.as_ref().unwrap().is_ok())
+        .0 // only successfull tasks
+        .into_iter()
+        .map(|f| f.unwrap().unwrap())
+        .collect();
 
     let missing_size: u64 = missing_files.iter().map(|f| f.size).sum();
     let outdated_size: f64 = outdated_files.iter().map(|f| f.current_size).sum();
-    dbg!(missing_size);
-    dbg!(outdated_size);
-    dbg!(missing_size + outdated_size as u64);
+    let completed_size: u64 = completed_files.iter().map(|f| f.size).sum();
+    println!("missing file sizes: {}", missing_size);
+    println!("outdated file sizes: {}", outdated_size);
+    println!("completed file sizes: {}", completed_size);
+    println!(
+        "missing + outdated file sizes: {}",
+        missing_size + outdated_size as u64
+    );
+    println!(
+        "missing + outdated + completed file sizes: {}",
+        missing_size + outdated_size as u64 + completed_size
+    );
 
     Ok(FileCheckResult {
         complete: completed_files,
@@ -149,6 +184,10 @@ async fn get_zsync(url: &str, file: &str, path_prefix: &str) -> Result<(f64, f64
     dbg!(&file_path);
     let progress = fm.map_matcher(Path::new(&file_path));
     let remaining_size = fm.remaining_size(progress);
+
+    if zsync_path.exists() {
+        fs::remove_file(zsync_path).await;
+    }
 
     Ok((progress, remaining_size))
 }

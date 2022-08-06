@@ -36,7 +36,7 @@ pub struct FileCheckResult {
     pub extra: Vec<RepoFile>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct RepoFile {
     pub file: String,
     pub size: u64,

@@ -49,7 +49,8 @@ const status = computed(() => {
     if (type === '1') {
         const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === id);
         if (cacheData === undefined) return 'checking';
-        if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) return 'downloading';
+        if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id)
+            return useDownloadStore().current?.status;
         if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
             return 'outdated';
         }
@@ -64,15 +65,17 @@ const status = computed(() => {
         if (collection !== undefined) {
             for (const modsetId of Object.keys(collection.modsets)) {
                 if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modsetId)
-                    return 'downloading';
+                    return useDownloadStore().current?.status;
             }
         }
+
         return 'ready';
     }
 });
 
 const progress = computed(() => {
-    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === currentModsetId.value) {
+    const [id, type] = currentModsetId.value.split('_');
+    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) {
         return Number(
             Number(
                 (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
@@ -102,7 +105,7 @@ const currentModsetId = ref('');
     inline-size: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 5rem 1fr 0.5fr 1fr 0.5fr 10%;
+    grid-template-columns: 5rem 1fr 0.5fr 0.5fr 0.5fr 10%;
 
     align-items: center;
     justify-content: center;

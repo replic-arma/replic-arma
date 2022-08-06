@@ -1,6 +1,6 @@
 import type { File, Modset, ModsetMod } from '@/models/Repository';
 import { useWebWorkerFn } from '@vueuse/core';
-import { type HashResponseItem } from './system/hashes';
+import type { HashResponseItem } from './system/hashes';
 
 export const ReplicWorker = {
     async mapFilesToMods(files: File[], modsets: Modset[]): Promise<Modset[]> {
@@ -61,33 +61,6 @@ export const ReplicWorker = {
             });
         });
         return workerFn(files);
-    },
-    async splitFiles(files: File[], mod: ModsetMod): Promise<File[]> {
-        const { workerFn } = useWebWorkerFn((files: File[], mod: ModsetMod) => {
-            return [...new Set(files.filter((file) => mod.name === file.path.split('\\')[0]))];
-        });
-        return workerFn(files, mod);
-    },
-    async getFileChanges(wantedFiles: File[], checkedFiles: Array<Array<string>>): Promise<string[]> {
-        const { workerFn } = useWebWorkerFn((wantedFiles: File[], checkedFiles: Array<Array<string>>) => {
-            const flat = checkedFiles.flat();
-            return wantedFiles
-                .filter((wantedFile) => !flat.includes(wantedFile.sha1) && wantedFile.sha1 !== '0')
-                .map((file) => file.path);
-        });
-        return workerFn(wantedFiles, checkedFiles);
-    },
-    async getFileSize(mods: ModsetMod[], filesPaths: string[]) {
-        const { workerFn } = useWebWorkerFn((mods: ModsetMod[], filesPaths: string[]) => {
-            return mods
-                .flatMap((mod: ModsetMod) => mod.files ?? [])
-                .filter((file: File) => filesPaths.indexOf(file.path) !== -1)
-                .reduce(
-                    (previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size,
-                    0
-                );
-        });
-        return workerFn(mods, filesPaths);
     },
     async isFileIn(wantedFiles: File[], fileList: Array<HashResponseItem>): Promise<Array<HashResponseItem>> {
         const { workerFn } = useWebWorkerFn((wantedFiles: File[], fileList: Array<HashResponseItem>) => {

@@ -1,4 +1,4 @@
-import type { Collection, GameServer, Modset, File, ModsetMod, IReplicArmaRepository } from '@/models/Repository';
+import type { Collection, GameServer, Modset, ModsetMod, IReplicArmaRepository } from '@/models/Repository';
 import type { GameLaunchSettings } from '@/models/Settings';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
@@ -6,6 +6,7 @@ import { useSettingsStore } from '@/store/settings';
 import { invoke } from '@tauri-apps/api';
 import { sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
+import type { HashResponseItem } from './hashes';
 
 export async function launchCollection(collection: Collection, repoId: string) {
     const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === repoId);
@@ -59,7 +60,8 @@ function filterMods(repoId: string, modNames: string[]) {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === repoId);
     if (cacheData === undefined) return modNames;
     if (cacheData.missing.length > 0) {
-        return modNames.filter((modName: string) => !cacheData.missing.includes(modName));
+        const missingMods = cacheData.missing.map((mod: HashResponseItem) => mod.file);
+        return modNames.filter((modName: string) => !missingMods.includes(modName));
     }
     return modNames;
 }

@@ -54,7 +54,6 @@ const status = computed(() => {
         if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
             return 'outdated';
         }
-        return 'ready';
     } else {
         const collection = props.repository.collections.find((collection: Collection) => collection.id === id);
         const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.repository.id);
@@ -68,9 +67,8 @@ const status = computed(() => {
                     return useDownloadStore().current?.status;
             }
         }
-
-        return 'ready';
     }
+    return 'ready';
 });
 
 const progress = computed(() => {

@@ -99,6 +99,21 @@ export const useHashStore = defineStore('hash', () => {
         }
     });
 
+    HASHING_PROGRESS.addEventListener('zsync_completed', () => {
+        const current = useHashStore().current;
+        if (current !== null) {
+            current.checkedFiles += 1;
+        }
+    });
+
+    HASHING_PROGRESS.addEventListener('outdated_file_count', (data) => {
+        const current = useHashStore().current;
+        if (current !== null) {
+            current.checkedFiles = 0;
+            current.filesToCheck = data.detail.count;
+        }
+    });
+
     return {
         addToQueue,
         current,

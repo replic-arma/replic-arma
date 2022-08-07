@@ -1,7 +1,7 @@
 import type { DownloadItem } from '@/models/Download';
 import type { IReplicArmaRepository, Modset } from '@/models/Repository';
 import { downloadFiles, DOWNLOAD_PROGRESS } from '@/util/system/download';
-import { defineStore } from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useHashStore } from './hash';
 import { useRepoStore } from './repo';
@@ -93,9 +93,10 @@ export const useDownloadStore = defineStore('download', () => {
     });
 
     DOWNLOAD_PROGRESS.addEventListener('download_finished', (data) => {
-        const current = useDownloadStore().current;
-        if (current !== null) {
-            const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === current.item.id);
+        const { current } = storeToRefs(useDownloadStore());
+        const { cache } = storeToRefs(useHashStore());
+        if (current.value !== null) {
+            const cacheData = cache.value.find((cacheItem) => cacheItem.id === current.value?.item.id);
             if (cacheData !== undefined) {
                 cacheData.missing = cacheData.missing.filter(
                     (path: HashResponseItem) => path.file !== data.detail.path

@@ -37,6 +37,8 @@ export async function resetHashes(): Promise<void> {
 interface HashingProgressEventMap {
     hash_calculated: CustomEvent<{ absolutePath: string; hash: string; lastModified: number; size: number }>;
     hash_failed: CustomEvent<{ absolutePath: string }>;
+    outdated_file_count: CustomEvent<{ count: number }>;
+    zsync_completed: CustomEvent<{ filename: string }>;
 }
 
 export const HASHING_PROGRESS = new TypedEventTarget<HashingProgressEventMap>();
@@ -51,4 +53,14 @@ listen('hash_calculated', (e: TauriEvent<{ hash: string; path: string; size: num
 listen('hash_failed', (e: TauriEvent<string>) => {
     const event = new CustomEvent('hash_failed', { detail: { absolutePath: e.payload } });
     HASHING_PROGRESS.dispatchTypedEvent('hash_failed', event);
+});
+
+listen('outdated_file_count', (e: TauriEvent<number>) => {
+    const event = new CustomEvent('outdated_file_count', { detail: { count: e.payload } });
+    HASHING_PROGRESS.dispatchTypedEvent('outdated_file_count', event);
+});
+
+listen('zsync_completed', (e: TauriEvent<string>) => {
+    const event = new CustomEvent('zsync_completed', { detail: { filename: e.payload } });
+    HASHING_PROGRESS.dispatchTypedEvent('zsync_completed', event);
 });

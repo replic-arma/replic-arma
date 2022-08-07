@@ -23,6 +23,7 @@
     },
     "devDependencies": {
         "@actions/core": "^1.9.0",
+        "@actions/github": "^5.0.3",
         "@intlify/vite-plugin-vue-i18n": "^5.0.0",
         "@rushstack/eslint-patch": "^1.1.0",
         "@tauri-apps/cli": "^1.0.5",

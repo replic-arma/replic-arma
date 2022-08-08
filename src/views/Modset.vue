@@ -150,7 +150,6 @@ function download() {
         h1 {
             margin: 0;
             font-weight: bold;
-            color: #333333;
         }
         .icon-group {
             display: grid;

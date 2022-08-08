@@ -18,7 +18,7 @@ interface Props {
 const props = defineProps<Props>();
 const model = ref(props.default);
 
-watch(model, async (newModel, oldModel) => {
+watch(model, async (newModel) => {
     if (newModel) {
         if (useRepoStore().currentCollection?.dlc === undefined) useRepoStore().currentCollection!.dlc = [];
         useRepoStore().currentCollection!.dlc?.push(props.id);

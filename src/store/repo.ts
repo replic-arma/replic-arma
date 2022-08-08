@@ -1,4 +1,4 @@
-import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod, File } from '@/models/Repository';
+import type { Collection, GameServer, Modset, IReplicArmaRepository, ModsetMod } from '@/models/Repository';
 import { DEFAULT_LAUNCH_CONFIG } from '@/util/system/config';
 import { clearModsetCache, loadModsetCache, saveModsetCache } from '@/util/system/modset_cache';
 import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
@@ -167,9 +167,9 @@ export const useRepoStore = defineStore('repo', () => {
     loadRepos().then((reposdata: Array<IReplicArmaRepository>) => {
         repos.value = reposdata;
         reposdata.forEach(async (repo: IReplicArmaRepository) => {
-            await checkRevision(repo.id);
-            useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
-            await useHashStore().addToQueue(repo);
+            // await checkRevision(repo.id);
+            // useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
+            // await useHashStore().addToQueue(repo);
         });
     });
 

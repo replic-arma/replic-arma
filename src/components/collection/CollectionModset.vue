@@ -35,7 +35,7 @@ function checkStatus() {
     }
 }
 // Currently dispatches everytime we change anything, might not be perfect for performance
-watch(props.collection, (newModel, oldModel) => {
+watch(props.collection, () => {
     checkStatus();
 });
 

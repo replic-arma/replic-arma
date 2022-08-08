@@ -27,7 +27,8 @@
                 <span>Local Mods</span>
             </div> -->
             </div>
-            <CollectionModlist></CollectionModlist>
+            <button class="button" @click="saveCollection()" v-t="'save'"></button>
+            <CollectionModlist v-if="Object.keys(collection.modsets).length > 0"></CollectionModlist>
         </template>
         <Loader v-else />
     </div>
@@ -35,15 +36,11 @@
 
 <script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
-import { useRouteStore } from '@/store/route';
 import { ref, computed } from 'vue';
 import CollectionModset from '../components/collection/CollectionModset.vue';
-import { launchCollection } from '@/util/system/game';
 import { notify } from '@kyvg/vue3-notification';
 import CollectionDLC from '../components/collection/CollectionDLC.vue';
-import { useRouter } from 'vue-router';
 import Loader from '../components/util/Loader.vue';
-import Downloads from '../components/download/Downloads.vue';
 import CollectionModlist from '../components/collection/CollectionModlist.vue';
 const collection = computed(() => useRepoStore().currentCollection);
 const repository = computed(() => useRepoStore().currentRepository);
@@ -54,7 +51,6 @@ const dlc = ref({
     vn: 'S.O.G. Prairie Fire',
     ws: 'Western Sahara',
 });
-const router = useRouter();
 async function saveCollection() {
     await useRepoStore().save();
     notify({
@@ -62,15 +58,6 @@ async function saveCollection() {
         text: `Saved Collection ${collection.value!.name}`,
         type: 'success',
     });
-}
-
-async function play() {
-    if (useRepoStore().currentCollection === undefined) return;
-    await launchCollection(useRepoStore().currentCollection!, useRouteStore().currentRepoID ?? '');
-}
-
-function goToRepo() {
-    router.push('/repo/' + useRouteStore().currentRepoID + '/collections');
 }
 </script>
 

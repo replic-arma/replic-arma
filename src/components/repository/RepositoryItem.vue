@@ -72,7 +72,7 @@ const status = computed(() => {
 });
 
 const progress = computed(() => {
-    const [id, type] = currentModsetId.value.split('_');
+    const [id] = currentModsetId.value.split('_');
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) {
         return Number(
             Number(
@@ -87,11 +87,11 @@ const progress = computed(() => {
 });
 
 onMounted(() => {
-    if (props.repository.modsets.length === 0) return '';
+    if (props.repository.modsets.length === 0 || props.repository.modsets[0] === undefined) return '';
     currentModsetId.value = props.repository.modsets[0].id + '_1' ?? '';
 });
 function play() {
-    const [id, type] = currentModsetId.value.split('_');
+    const [id] = currentModsetId.value.split('_');
     if (id === undefined) return '';
     launchModset(id, props.repository.id);
 }

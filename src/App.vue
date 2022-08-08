@@ -16,17 +16,21 @@ const { locale } = useI18n({ useScope: 'global' });
 const router = useRouter();
 const store = useSettingsStore();
 const { settings } = storeToRefs(store);
-watch(settings, async (newModel, oldModel) => {
-    if (newModel !== null) {
-        if (newModel !== null && (newModel.downloadDirectoryPath === '' || newModel.gamePath === '')) {
-            await router.push('/setup/moddirectory');
+watch(
+    settings,
+    async (newModel) => {
+        if (newModel !== null) {
+            if (newModel !== null && (newModel.downloadDirectoryPath === '' || newModel.gamePath === '')) {
+                await router.push('/setup/moddirectory');
+            }
+            if (newModel.theme !== undefined) {
+                document.documentElement.setAttribute('data-theme', newModel.theme);
+            }
+            locale.value = newModel.language ?? 'en';
         }
-        if (newModel.theme !== undefined) {
-            document.documentElement.setAttribute('data-theme', newModel.theme);
-        }
-        locale.value = newModel.language ?? 'en';
-    }
-});
+    },
+    { deep: true }
+);
 
 // Disable RightClick
 // document.addEventListener('contextmenu', (event) => event.preventDefault());

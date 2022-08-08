@@ -23,6 +23,11 @@
                         v-t="'settings.checkSignatures'"
                     ></span>
                 </li>
+                <li class="launch-settings__checkbox">
+                    <input type="checkbox" role="switch" name="battleye" v-model="model.battleye" /><span
+                        v-t="'settings.battleye'"
+                    ></span>
+                </li>
                 <li style="max-width: 85%">
                     <div class="replic-input">
                         <label v-t="'settings.name'"></label>

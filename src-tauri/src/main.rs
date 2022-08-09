@@ -18,7 +18,7 @@ use std::path::PathBuf;
 
 use crate::commands::repo::file_check;
 use crate::commands::{
-    repo::{download, get_repo, hash_check, pause_download},
+    repo::{download, get_repo, pause_download},
     util::{dir_exists, file_exists, get_a3_dir},
 };
 use tauri::{api::path::app_dir, async_runtime::Mutex, Manager};
@@ -135,7 +135,6 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            hash_check,
             get_repo,
             download,
             pause_download,

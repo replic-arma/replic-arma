@@ -1,10 +1,10 @@
 {
-  "tabWidth": 4,
-  "useTabs": false,
-  "singleQuote": true,
-  "jsxSingleQuote": true,
-  "jsxBracketSameLine": true,
-  "printWidth": 120,
-  "trailingComma": "es5",
-  "endOfLine": "lf"
+    "tabWidth": 4,
+    "useTabs": false,
+    "singleQuote": true,
+    "jsxSingleQuote": true,
+    "jsxBracketSameLine": true,
+    "printWidth": 120,
+    "trailingComma": "es5",
+    "endOfLine": "auto"
 }

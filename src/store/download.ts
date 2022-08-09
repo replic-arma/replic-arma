@@ -58,7 +58,6 @@ export const useDownloadStore = defineStore('download', () => {
             current.value.status = 'downloading';
             const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === current.value?.item.id);
             if (cacheData === undefined) return;
-            const filesToDownload = [...cacheData.missing, ...cacheData.outdated];
             const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === current.value?.repoId);
             if (repo === undefined) throw new Error(`Repository with id ${current.value?.repoId} not found`);
             if (repo.download_server === undefined)
@@ -68,7 +67,8 @@ export const useDownloadStore = defineStore('download', () => {
                 repo.type ?? 'A3S',
                 repo.download_server?.url,
                 `${repo.downloadDirectoryPath}${sep}`,
-                filesToDownload.map((item: HashResponseItem) => item.file)
+                cacheData.missing.map((item: HashResponseItem) => item.file),
+                cacheData.outdated.map((item: HashResponseItem) => item.file)
             );
             if (res !== 'paused') {
                 finished.value.push(current.value);

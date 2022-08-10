@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ModsetMod } from '@/models/Repository';
+import { HashStatus, type ModsetMod } from '@/models/Repository';
 import { useHashStore } from '@/store/hash';
 import type { IHashItem } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
@@ -51,6 +51,7 @@ import { notify } from '@kyvg/vue3-notification';
 import Downloads from '../components/download/Downloads.vue';
 import Subnavi from '../components/util/Subnavi.vue';
 import type { HashResponseItem } from '@/util/system/hashes';
+import { DownloadStatus } from '@/models/Download';
 const modset = computed(() => useRepoStore().currentModset);
 const subnaviItems = computed(() => {
     return [
@@ -98,13 +99,13 @@ const updateFiles = computed(() => {
 
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
-    if (cacheData === undefined) return 'checking';
+    if (cacheData === undefined) return HashStatus.CHECKING;
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modset.value!.id)
-        return 'downloading';
+        return DownloadStatus.DOWNLOADING;
     if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-        return 'outdated';
+        return HashStatus.OUTDATED;
     } else {
-        return 'ready';
+        return HashStatus.READY;
     }
 });
 
@@ -114,10 +115,8 @@ const progress = computed(() => {
         useDownloadStore().current?.item.id === useRepoStore().currentModset?.id
     ) {
         return Number(
-            Number(
-                (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
-            ).toFixed(0)
-        );
+            (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+        ).toFixed(0);
     } else {
         if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID)
             return 0;

@@ -47,7 +47,7 @@
     </li>
 </template>
 <script lang="ts" setup>
-import type { DownloadItem } from '@/models/Download';
+import { DownloadStatus, type DownloadItem } from '@/models/Download';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
@@ -99,7 +99,7 @@ const cacheData = computed(() => {
 });
 
 function startDownload() {
-    if (props.downloadItem.status === 'paused' || props.downloadItem.status === 'queued') {
+    if (props.downloadItem.status === DownloadStatus.PAUSED || props.downloadItem.status === DownloadStatus.QUEUED) {
         useDownloadStore().next();
     }
 }
@@ -117,7 +117,7 @@ async function stopDownload() {
 }
 
 async function pauseDownloadF() {
-    useDownloadStore().current!.status = 'paused';
+    useDownloadStore().current!.status = DownloadStatus.PAUSED;
     await pauseDownload();
 }
 </script>

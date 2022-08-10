@@ -36,7 +36,7 @@ import type { IHashItem } from '@/store/hash';
 import { computed, onMounted, ref } from 'vue';
 import Status from '../util/Status.vue';
 import { launchModset } from '@/util/system/game';
-import type { Collection, IReplicArmaRepository } from '@/models/Repository';
+import { HashStatus, type Collection, type IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import PlayButton from '../PlayButton.vue';
 
@@ -48,18 +48,18 @@ const status = computed(() => {
     const [id, type] = currentModsetId.value.split('_');
     if (type === '1') {
         const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === id);
-        if (cacheData === undefined) return 'checking';
+        if (cacheData === undefined) return HashStatus.CHECKING;
         if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id)
             return useDownloadStore().current?.status;
         if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-            return 'outdated';
+            return HashStatus.OUTDATED;
         }
     } else {
         const collection = props.repository.collections.find((collection: Collection) => collection.id === id);
         const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.repository.id);
-        if (cacheData === undefined) return 'checking';
+        if (cacheData === undefined) return HashStatus.CHECKING;
         if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-            return 'outdated';
+            return HashStatus.OUTDATED;
         }
         if (collection !== undefined) {
             for (const modsetId of Object.keys(collection.modsets)) {
@@ -68,17 +68,15 @@ const status = computed(() => {
             }
         }
     }
-    return 'ready';
+    return HashStatus.READY;
 });
 
 const progress = computed(() => {
-    const [id, type] = currentModsetId.value.split('_');
+    const [id] = currentModsetId.value.split('_');
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) {
         return Number(
-            Number(
-                (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
-            ).toFixed(0)
-        );
+            (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+        ).toFixed(0);
     } else {
         if (useHashStore().current === null || useHashStore().current?.repoId !== props.repository.id) return 0;
         const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
@@ -87,11 +85,11 @@ const progress = computed(() => {
 });
 
 onMounted(() => {
-    if (props.repository.modsets.length === 0) return '';
+    if (props.repository.modsets.length === 0 || props.repository.modsets[0] == null) return '';
     currentModsetId.value = props.repository.modsets[0].id + '_1' ?? '';
 });
 function play() {
-    const [id, type] = currentModsetId.value.split('_');
+    const [id] = currentModsetId.value.split('_');
     if (id === undefined) return '';
     launchModset(id, props.repository.id);
 }

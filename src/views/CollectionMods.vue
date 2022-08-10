@@ -28,7 +28,6 @@ import { computed } from '@vue/reactivity';
 import { ref } from 'vue';
 import Modlist from '../components/Modlist.vue';
 
-const listOpen = ref(false);
 const collection = computed(() => useRepoStore().currentCollection);
 
 const tree = ref(false);

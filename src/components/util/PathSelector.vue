@@ -31,7 +31,7 @@ const props = defineProps<Props>();
 const emit = defineEmits(['update:modelValue']);
 const model = ref(props.modelValue);
 
-watch(model, async (newModel, oldModel) => {
+watch(model, async (newModel) => {
     emit('update:modelValue', newModel);
 });
 

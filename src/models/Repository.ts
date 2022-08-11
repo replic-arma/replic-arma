@@ -80,12 +80,23 @@ export interface ReplicArmaRepositoryError {
     message: string;
 }
 
+export enum RepositoryType {
+    A3S = 'A3S',
+    SWIFTY = 'swifty',
+    LOCAL = 'local',
+}
+
+export enum HashStatus {
+    OUTDATED = 'outdated',
+    READY = 'ready',
+    CHECKING = 'checking',
+}
 export interface IReplicArmaRepository extends Repository {
     id: string;
     image?: string;
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
-    type?: 'local' | 'A3S' | 'swifty';
+    type?: RepositoryType;
     launchOptions: GameLaunchSettings;
     downloadDirectoryPath: string;
 }

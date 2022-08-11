@@ -20,10 +20,9 @@
 </template>
 
 <script lang="ts" setup>
-import { useNetwork, useOnline } from '@vueuse/core';
+import { useOnline } from '@vueuse/core';
 
 const online = useOnline();
-const network = useNetwork();
 </script>
 <style lang="scss" scoped>
 .online-status {

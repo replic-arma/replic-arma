@@ -5,7 +5,7 @@
             <small class="collection__description">{{ collection.description }}</small>
         </div>
         <span class="repo__status" :class="`status--${status}`">
-            <status :status="status" :progress="0"></status>
+            <Status :status="status" :progress="0"></Status>
         </span>
         <PlayButton @play="play()"></PlayButton>
         <router-link :to="'./collection/' + collection.id + '/mods'" class="collection__open button">

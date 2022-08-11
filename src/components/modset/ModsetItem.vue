@@ -22,29 +22,28 @@ import { useDownloadStore } from '@/store/download';
 import Status from '../util/Status.vue';
 import { launchModset } from '@/util/system/game';
 import PlayButton from '../PlayButton.vue';
-import type { Modset } from '@/models/Repository';
+import { HashStatus, type Modset } from '@/models/Repository';
+import { DownloadStatus } from '@/models/Download';
 interface Props {
     modset: Modset;
 }
 const props = defineProps<Props>();
 const status = computed(() => {
     const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === useRouteStore().currentRepoID);
-    if (cacheData === undefined) return 'checking';
+    if (cacheData === undefined) return HashStatus.CHECKING;
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === props.modset.id)
-        return 'downloading';
+        return DownloadStatus.DOWNLOADING;
     if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-        return 'outdated';
+        return HashStatus.OUTDATED;
     } else {
-        return 'ready';
+        return HashStatus.READY;
     }
 });
 const progress = computed(() => {
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === props.modset.id) {
         return Number(
-            Number(
-                (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
-            ).toFixed(0)
-        );
+            (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+        ).toFixed(0);
     } else {
         if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID)
             return 0;

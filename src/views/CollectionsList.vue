@@ -1,5 +1,5 @@
 <template>
-    <div class="collections" >
+    <div class="collections">
         <ul class="collections__list" v-if="repository !== undefined">
             <CollectionItem v-for="(collection, i) of repository.collections" :key="i" :collection="collection" />
         </ul>

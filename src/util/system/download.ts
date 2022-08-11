@@ -11,13 +11,15 @@ export async function downloadFiles(
     repoType: string,
     downloadServerUrl: string,
     targetPath: string,
-    files: string[]
+    newFiles: string[],
+    partialFiles: string[]
 ): Promise<string> {
     return await invoke('download', {
         repoType: repoType.toUpperCase(),
         url: downloadServerUrl,
         targetPath,
-        fileArray: files,
+        newFiles,
+        partialFiles,
     });
 }
 

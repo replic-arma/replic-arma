@@ -8,13 +8,16 @@ use rs_zsync::{file_maker::FileMaker, meta_file::MetaFile};
 use tauri::Window;
 use tokio::fs;
 
+use crate::commands::utils::download_client::download_simple;
+use crate::commands::utils::hash::check_update;
+use crate::commands::utils::types::FileCheckInput;
+use crate::commands::utils::types::FileCheckResult;
+use crate::commands::utils::types::FileHash;
+use crate::commands::utils::types::RepoFile;
 use crate::{
-    commands::repo::{check_update, FileCheckInput, FileCheckResult, FileHash, RepoFile},
     state::ReplicArmaState,
     util::{methods::save_t, types::JSResult},
 };
-
-use super::download::download_simple;
 
 pub async fn check_a3s(
     path_prefix: String,
@@ -58,7 +61,9 @@ pub async fn check_a3s(
             res
         })
         .partition(|x| x.is_ok());
+
     let new_hashes: Vec<FileHash> = new_hashes_res.into_iter().map(Result::unwrap).collect();
+
     for hash in &new_hashes {
         known_hashes.insert(hash.path.clone(), (hash.hash.clone(), hash.time_modified));
     }
@@ -107,7 +112,21 @@ pub async fn check_a3s(
         let inner_window = window.clone();
         tokio::spawn(async move {
             let file_without_prefix = remove_prefix(&fci, &path_prefix2);
-            if let Ok(progress) = get_zsync(&url2, &file_without_prefix, &path_prefix2).await {
+
+            if let Ok(meta) = Path::new(&fci.file).metadata() {
+                if meta.len() == 0 {
+                    return Ok(RepoFile {
+                        file: file_without_prefix,
+                        size: 0,
+                        current_size: 0.0,
+                        percentage: 0.0,
+                    });
+                }
+            }
+
+            if let Ok(progress) =
+                get_zsync_progress(&url2, &file_without_prefix, &path_prefix2).await
+            {
                 inner_window
                     .emit("zsync_completed", file_without_prefix.clone())
                     .unwrap();
@@ -156,38 +175,47 @@ pub async fn check_a3s(
     })
 }
 
-fn remove_prefix(file_input: &FileCheckInput, path_prefix: &String) -> String {
+pub fn remove_prefix(file_input: &FileCheckInput, path_prefix: &String) -> String {
     file_input.file.replacen(path_prefix, "", 1)
 }
 
-async fn get_zsync(url: &str, file: &str, path_prefix: &str) -> Result<(f64, f64)> {
-    let mut zsync_url = url.to_string();
-    zsync_url.push_str(file);
-    zsync_url.push_str(".zsync");
+pub async fn get_zsync_progress(url: &str, file: &str, path_prefix: &str) -> Result<(f64, f64)> {
+    let mut fm = get_zsync(url, file, path_prefix).await?;
 
     let mut file_path = path_prefix.to_string();
     file_path.push_str(file);
 
+    let progress = fm.map_matcher(Path::new(&file_path));
+    let remaining_size = fm.remaining_size(progress);
+
+    Ok((progress, remaining_size))
+}
+
+pub async fn get_zsync(
+    url: &str,
+    file: &str,
+    path_prefix: &str,
+) -> Result<FileMaker, anyhow::Error> {
+    let mut zsync_url = url.to_string();
+    zsync_url.push_str(file);
+    zsync_url.push_str(".zsync");
+    let mut file_path = path_prefix.to_string();
+    file_path.push_str(file);
     let mut zsync_path = file_path.clone();
     zsync_path.push_str(".zsync");
     let zsync_path = Path::new(&zsync_path);
-
     dbg!(&zsync_path);
     dbg!(&zsync_url);
     download_simple(&zsync_url, zsync_path).await?;
-
     let mut mf = MetaFile::new();
     if mf.parse_zsync(zsync_path).is_err() {
         return Err(anyhow!("Zsync parser error"));
     }
     let mut fm = FileMaker::new(&mf);
     dbg!(&file_path);
-    let progress = fm.map_matcher(Path::new(&file_path));
-    let remaining_size = fm.remaining_size(progress);
 
     if zsync_path.exists() {
         fs::remove_file(zsync_path).await;
     }
-
-    Ok((progress, remaining_size))
+    Ok(fm)
 }

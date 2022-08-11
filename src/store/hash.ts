@@ -1,4 +1,10 @@
-import type { IReplicArmaRepository, File, Modset, ModsetMod } from '@/models/Repository';
+import {
+    type IReplicArmaRepository,
+    type File,
+    type Modset,
+    type ModsetMod,
+    RepositoryType,
+} from '@/models/Repository';
 import { defineStore } from 'pinia';
 import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
@@ -36,7 +42,7 @@ export const useHashStore = defineStore('hash', () => {
         if (settings === null) throw Error('Settings null');
         if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (getHashes)');
         return await checkHashes(
-            currentHashRepo.value.type ?? 'a3s',
+            currentHashRepo.value.type ?? RepositoryType.A3S,
             `${currentHashRepo.value.downloadDirectoryPath ?? ''}\\`,
             currentHashRepo.value.files.map((file: File) => [file.path, file.sha1, file.size]),
             currentHashRepo.value.download_server?.url ?? ''

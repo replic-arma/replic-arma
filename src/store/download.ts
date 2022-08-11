@@ -1,5 +1,5 @@
-import type { DownloadItem } from '@/models/Download';
-import type { IReplicArmaRepository, Modset } from '@/models/Repository';
+import { DownloadStatus, type DownloadItem } from '@/models/Download';
+import { RepositoryType, type IReplicArmaRepository, type Modset } from '@/models/Repository';
 import { downloadFiles, DOWNLOAD_PROGRESS } from '@/util/system/download';
 import { defineStore, storeToRefs } from 'pinia';
 import { ref } from 'vue';
@@ -30,7 +30,7 @@ export const useDownloadStore = defineStore('download', () => {
             .reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0);
         queue.value.push({
             item: modset,
-            status: 'queued',
+            status: DownloadStatus.QUEUED,
             size: totalSize,
             received: 0,
             repoId,
@@ -55,20 +55,20 @@ export const useDownloadStore = defineStore('download', () => {
                 text: `The download of Modset ${current.value.item?.name} has started`,
                 type: 'success',
             });
-            current.value.status = 'downloading';
+            current.value.status = DownloadStatus.DOWNLOADING;
             const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === current.value?.item.id);
             if (cacheData === undefined) return;
-            const filesToDownload = [...cacheData.missing, ...cacheData.outdated];
             const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === current.value?.repoId);
             if (repo === undefined) throw new Error(`Repository with id ${current.value?.repoId} not found`);
             if (repo.download_server === undefined)
                 throw new Error(`Repository with id ${current.value?.repoId} has no download server`);
             if (repo.downloadDirectoryPath === null) throw new Error('No download path set');
             const res = await downloadFiles(
-                repo.type ?? 'A3S',
+                repo.type ?? RepositoryType.A3S,
                 repo.download_server?.url,
                 `${repo.downloadDirectoryPath}${sep}`,
-                filesToDownload.map((item: HashResponseItem) => item.file)
+                cacheData.missing.map((item: HashResponseItem) => item.file),
+                cacheData.outdated.map((item: HashResponseItem) => item.file)
             );
             if (res !== 'paused') {
                 finished.value.push(current.value);

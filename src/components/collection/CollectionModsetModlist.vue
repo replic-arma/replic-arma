@@ -9,7 +9,7 @@
             <div class="replic-dialog__content">
                 <div class="collection-modlist__mods" v-if="modset !== undefined && collection !== undefined">
                     <CollectionModsetModlistMod
-                        v-for="(mod, i) of modset.mods"
+                        v-for="(mod, i) of orderedMods"
                         :label="mod.name"
                         :key="i"
                         :default="collection.modsets![props.modset.id]?.includes(mod.name) ?? false"
@@ -22,9 +22,9 @@
     </Teleport>
 </template>
 <script lang="ts" setup>
-import type { Modset, Collection, ModsetMod } from '@/models/Repository';
+import type { Modset, Collection } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import CollectionModsetModlistMod from './CollectionModsetModlistMod.vue';
 interface Props {
     modset: Modset;
@@ -52,6 +52,11 @@ function removeMod(modName: string) {
         delete useRepoStore().currentCollection!.modsets![props.modset.id];
     }
 }
+
+const orderedMods = computed(() => {
+    const unorderedMods = props.modset.mods;
+    return unorderedMods.sort((a, b) => a.name.localeCompare(b.name));
+});
 </script>
 <style lang="scss" scoped>
 .collection-modlist {

@@ -4,7 +4,7 @@ import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 import { useSettingsStore } from '@/store/settings';
 import { invoke } from '@tauri-apps/api';
-import { sep } from '@tauri-apps/api/path';
+import { dirname, sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
 import type { HashResponseItem } from './hashes';
 
@@ -47,6 +47,9 @@ export async function launchGame(
     const settings = useSettingsStore().settings;
     if (settings === null) throw new Error('No settings, cannot launch the game');
     if (settings.gamePath === null) throw new Error('Game Executable not set, cannot launch the game');
+    if (launchOptions.battleye) {
+        settings.gamePath = `${await dirname(settings.gamePath)}${sep}arma3battleye.exe`;
+    }
     await spawnProcess(
         settings.gamePath,
         modDlcString,

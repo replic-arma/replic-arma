@@ -58,7 +58,6 @@ function formatSpeed(speed: number): string {
     text-align: end;
     position: relative;
     padding-block-end: 0.5rem;
-    color: var(--base-black);
 
     &__graph {
         grid-area: canvas;

@@ -98,9 +98,6 @@ async function save() {
     });
 }
 const isOpen = ref(false);
-function formatDate(timestamp: string) {
-    return new Date(Number(timestamp) / 1000000).toLocaleDateString('de-de');
-}
 </script>
 <style lang="scss" scoped>
 .replic-dialog {

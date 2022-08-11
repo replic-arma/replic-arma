@@ -40,7 +40,6 @@ const releaseData = {
     },
 };
 
-
 releaseData.platforms['linux-x86_64'].url = process.env.URL_LINUX;
 releaseData.platforms['linux-x86_64'].signature = process.env.SIG_LINUX;
 releaseData.platforms['windows-x86_64'].url = process.env.URL_WINDOWS;

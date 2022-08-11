@@ -148,7 +148,7 @@ function addRepo() {
     text-align: center;
     svg path,
     svg rect {
-        fill: #ff6700;
+        fill: var(--c-surf-2);
     }
 }
 .status {

@@ -18,7 +18,7 @@ const store = useSettingsStore();
 const { settings } = storeToRefs(store);
 watch(
     settings,
-    async (newModel, oldModel) => {
+    async (newModel) => {
         if (newModel !== null) {
             if (newModel !== null && (newModel.downloadDirectoryPath === '' || newModel.gamePath === '')) {
                 await router.push('/setup/moddirectory');

@@ -4,7 +4,6 @@ import {
     type Modset,
     type IReplicArmaRepository,
     type ModsetMod,
-    type File,
     RepositoryType,
 } from '@/models/Repository';
 import { DEFAULT_LAUNCH_CONFIG } from '@/util/system/config';

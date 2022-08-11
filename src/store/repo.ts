@@ -62,7 +62,7 @@ export const useRepoStore = defineStore('repo', () => {
         const repoC: IReplicArmaRepository = {
             ...repo,
             id: repoId,
-            image: 'https://cdn.discordapp.com/channel-icons/834500277582299186/62046f86f4013c9a351b457edd4199b4.png?size=32',
+            image: 'https://wiki.gruppe-adler.de/images/adlerkopp.png',
             type: RepositoryType.A3S,
             collections: [],
             launchOptions: useSettingsStore().settings?.launchOptions ?? DEFAULT_LAUNCH_CONFIG,

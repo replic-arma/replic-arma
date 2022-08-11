@@ -4,7 +4,7 @@
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
                 <mdicon role="button" name="close" size="45" @click="isOpen = false" />
-                <h1>Downloads</h1>
+                <h1 v-t="'downloads'"></h1>
                 <keep-alive>
                     <DownloadProgess />
                 </keep-alive>

@@ -1,7 +1,7 @@
 <template>
     <div class="modlist-c">
         <div class="modlist-c__heading" @click="toggle()">
-            <span>Alle Mods anzeigen</span>
+            <span v-t="'show_all_mods'"></span>
             <mdicon v-if="!listOpen" name="chevron-up"></mdicon>
             <mdicon v-if="listOpen" name="chevron-down"></mdicon>
         </div>

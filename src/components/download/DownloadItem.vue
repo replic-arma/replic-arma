@@ -13,30 +13,30 @@
             <span class="download-item__size">{{ received }} GB / {{ size }} GB</span>
             <div class="download-item__progress-bar" :style="`--progress: ${progress}%;`"></div>
             <span class="download-item__time" v-if="downloadItem.status !== 'paused'">~{{ remaining }} left</span>
-            <span class="download-item__time" v-else>Paused</span>
+            <span class="download-item__time" v-else v-t="'status.paused'"></span>
         </div>
         <div v-else>
             <div class="download-item__status">
                 <div class="download-item__queue-wrapper">
-                    <span class="download-item__queue-label">Delete</span>
+                    <span class="download-item__queue-label" v-t="'files.delete'"></span>
                     <span class="download-item__queue-value">{{ cacheData?.extra.length }}</span>
                 </div>
                 <div class="download-item__queue-wrapper">
-                    <span class="download-item__queue-label">Missing Files</span>
+                    <span class="download-item__queue-label" v-t="'files.missing'"></span>
                     <span class="download-item__queue-value">{{ cacheData?.missing.length }}</span>
                 </div>
                 <div class="download-item__queue-wrapper">
-                    <span class="download-item__queue-label">Outdated Files</span>
+                    <span class="download-item__queue-label" v-t="'files.outdated'"></span>
                     <span class="download-item__queue-value">{{ cacheData?.outdated.length }}</span>
                 </div>
                 <div class="download-item__queue-wrapper">
-                    <span class="download-item__queue-label">Size</span>
+                    <span class="download-item__queue-label" v-t="'files.size'"></span>
                     <span class="download-item__queue-value">{{ size }} GB</span>
                 </div>
             </div>
         </div>
         <div class="download-item__controls">
-            <template v-if="downloadItem.status === 'downloading'">
+            <template v-if="downloadItem.status === DownloadStatus.DOWNLOADING">
                 <mdicon @click="pauseDownloadF" name="pause" />
             </template>
             <template v-else>

@@ -79,5 +79,18 @@
     },
     "download": "Download",
     "mods": "Mods",
-    "edit": "Edit"
+    "edit": "Edit",
+    "downloads": "Downloads",
+    "download-stats": {
+        "current": "Current",
+        "peak": "Peak",
+        "average": "Average"
+    },
+    "files": {
+        "delete": "Files to delete",
+        "missing": "Missing Files",
+        "outdated": "Outdated Files",
+        "size": "Size"
+    },
+    "show_all_mods": "Show all Mods"
 }

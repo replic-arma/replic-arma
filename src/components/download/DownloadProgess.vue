@@ -4,13 +4,19 @@
             <div v-for="(s, i) in displayedSpeeds" :key="i" :style="`--speed: ${s};`"></div>
         </div>
         <span
-            >Current <span class="download-progress__unit">{{ formatSpeed(stats.cur) }}</span></span
+            ><span v-t="'download-stats.current'"></span>&nbsp;<span class="download-progress__unit">{{
+                formatSpeed(stats.cur)
+            }}</span></span
         >
         <span
-            >Peak <span class="download-progress__unit">{{ formatSpeed(stats.max) }}</span></span
+            ><span v-t="'download-stats.peak'"></span>&nbsp;<span class="download-progress__unit">{{
+                formatSpeed(stats.max)
+            }}</span></span
         >
         <span
-            >Average <span class="download-progress__unit">{{ formatSpeed(stats.avg) }}</span></span
+            ><span v-t="'download-stats.average'"></span>&nbsp;<span class="download-progress__unit">{{
+                formatSpeed(stats.avg)
+            }}</span></span
         >
     </div>
 </template>

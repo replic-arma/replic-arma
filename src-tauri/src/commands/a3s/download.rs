@@ -1,9 +1,11 @@
-use std::fs::OpenOptions;
+use std::fs::{File, OpenOptions};
+use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::os::windows::prelude::FileExt;
 use std::path::Path;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use rs_zsync::file_maker::FilePart;
+use rs_zsync::meta_file::MetaFile;
 use tauri::{async_runtime::Mutex, Window};
 use tokio::{fs, task, time::sleep};
 use url::Url;
@@ -82,7 +84,7 @@ pub async fn download_a3s(
 
     for file in partial_files {
         let url = connection_info.join(&file)?;
-        let ranges = get_zsync_ranges(
+        let (ranges, mf) = get_zsync_ranges(
             connection_info.as_str(),
             &file,
             target_dir.to_str().unwrap_or_default(),
@@ -90,28 +92,46 @@ pub async fn download_a3s(
         .await?;
         let target_file = target_dir.join(file.clone());
 
-        let out = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(target_file)?;
+        let mut part_file = target_file.to_str().unwrap_or_default().to_owned();
+        part_file.push_str(".part");
+        {
+            let mut inp = BufReader::new(File::open(target_file.clone())?);
 
-        for range in ranges {
-            let buf = downloader
-                .download_partial(
-                    &state,
-                    &written_bytes,
-                    url.clone(),
-                    (range.start_offset, range.end_offset),
-                )
-                .await?;
-            if !(*state.downloading.lock().await).unwrap_or(true) {
-                *downloading.lock().await = false; // Should be already false???
-                break;
+            let mut out = BufWriter::new(File::create(&part_file)?);
+
+            let mut inner_buf = vec![0_u8; mf.blocksize];
+
+            for range in ranges {
+                if range.file_offset != -1 {
+                    inner_buf.resize(mf.blocksize, 0);
+                    inp.seek(SeekFrom::Start(range.file_offset as u64))?;
+                    let n = inp.read(&mut inner_buf)?;
+                    inner_buf.resize(n, 0);
+                    out.write_all(&inner_buf)?;
+                } else {
+                    let buf = downloader
+                        .download_partial(
+                            &state,
+                            &written_bytes,
+                            url.clone(),
+                            (range.start_offset, range.end_offset),
+                        )
+                        .await?;
+                    if !(*state.downloading.lock().await).unwrap_or(true) {
+                        *downloading.lock().await = false; // Should be already false???
+                        break;
+                    }
+
+                    out.write_all(&buf)?;
+                }
+
+                // out.write_all()
             }
-            out.seek_write(&buf, range.start_offset as u64)?;
         }
-
         if (*state.downloading.lock().await).unwrap_or(true) {
+            fs::remove_file(&target_file).await?;
+            fs::rename(part_file, target_file).await?;
+
             window.emit("download_finished", file).unwrap();
         } else {
             *downloading.lock().await = false; // Should be already false???
@@ -129,7 +149,11 @@ pub async fn download_a3s(
     Ok(dl_completed)
 }
 
-pub async fn get_zsync_ranges(url: &str, file: &str, path_prefix: &str) -> Result<Vec<FilePart>> {
+pub async fn get_zsync_ranges(
+    url: &str,
+    file: &str,
+    path_prefix: &str,
+) -> Result<(Vec<FilePart>, MetaFile)> {
     let mut fm = get_zsync(url, file, path_prefix).await?;
 
     let mut file_path = path_prefix.to_string();
@@ -137,5 +161,5 @@ pub async fn get_zsync_ranges(url: &str, file: &str, path_prefix: &str) -> Resul
 
     fm.map_matcher(Path::new(&file_path));
 
-    Ok(fm.file_maker())
+    Ok((fm.file_maker(), fm.metafile))
 }

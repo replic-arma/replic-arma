@@ -8,7 +8,7 @@ pub struct FileCheckResult {
     pub extra: Vec<RepoFile>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RepoFile {
     pub file: String,
     pub size: u64,
@@ -31,7 +31,7 @@ pub struct KnownHash {
     pub time_modified: i64,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FileCheckInput {
     pub file: String,
     pub hash: String,

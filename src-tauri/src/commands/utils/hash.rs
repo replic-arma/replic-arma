@@ -16,7 +16,7 @@ pub fn check_update(known_hash: KnownHash) -> Result<FileHash> {
     if size == 0 {
         Ok(FileHash {
             path: known_hash.path,
-            hash: String::new(),
+            hash: "0".into(),
             time_modified,
             size: 0,
         })

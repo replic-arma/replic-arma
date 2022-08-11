@@ -28,6 +28,14 @@ pub async fn check_a3s(
 ) -> JSResult<FileCheckResult> {
     let mut known_hashes = state.known_hashes.lock().await;
 
+    known_hashes.retain(|file, _| Path::new(&file).exists());
+
+    // for file in file_input.clone() {
+    //     if file.file.ends_with("cba_settings.sqf") {
+    //         dbg!("File Input: {:?}", file.clone());
+    //     }
+    // }
+
     // add path  to every file name
     let mut file_input_prefixed: Vec<FileCheckInput> = Vec::with_capacity(file_input.len());
     file_input.into_iter().for_each(|f| {
@@ -39,9 +47,14 @@ pub async fn check_a3s(
     // add new files into HashMap
     let mut hashes = known_hashes.clone();
     for file_input in file_input_prefixed.iter() {
-        hashes
-            .entry(file_input.file.clone())
-            .or_insert((String::new(), 0));
+        if hashes.contains_key(&file_input.file) {
+            if !Path::new(&file_input.file).exists() {
+                dbg!(&file_input.file);
+                hashes.remove(&file_input.file);
+            }
+        } else {
+            hashes.insert(file_input.file.clone(), (String::new(), 0));
+        }
     }
 
     // calc hashes
@@ -52,7 +65,7 @@ pub async fn check_a3s(
         .map(|hash| {
             let file = hash.0.clone();
             let res = check_update(hash.into());
-
+            // dbg!(&file);
             if let Ok(hash_tuple) = &res {
                 window.emit("hash_calculated", hash_tuple).unwrap();
             } else {
@@ -92,6 +105,8 @@ pub async fn check_a3s(
         .map(|fci| (fci.clone(), known_hashes.get(&fci.file).unwrap()))
         .partition(|(fci, kh_tuple)| kh_tuple.0 == fci.hash);
 
+    println!("Outdated: {:?}", outdated);
+
     window.emit("outdated_file_count", outdated.len()).unwrap();
 
     // collect completed files
@@ -113,15 +128,13 @@ pub async fn check_a3s(
         tokio::spawn(async move {
             let file_without_prefix = remove_prefix(&fci, &path_prefix2);
 
-            if let Ok(meta) = Path::new(&fci.file).metadata() {
-                if meta.len() == 0 {
-                    return Ok(RepoFile {
-                        file: file_without_prefix,
-                        size: 0,
-                        current_size: 0.0,
-                        percentage: 0.0,
-                    });
-                }
+            if !Path::new(&fci.file).exists() || fci.size == 0 {
+                return Ok(RepoFile {
+                    file: file_without_prefix,
+                    size: 0,
+                    current_size: 0.0,
+                    percentage: 0.0,
+                });
             }
 
             if let Ok(progress) =
@@ -167,6 +180,10 @@ pub async fn check_a3s(
         missing_size + outdated_size as u64 + completed_size
     );
 
+    // dbg!(completed_files);
+    // println!("Outdated: {:?}", outdated_files);y
+    // println!("Missing: {:?}", missing_files);
+
     Ok(FileCheckResult {
         complete: completed_files,
         outdated: outdated_files,
@@ -204,15 +221,15 @@ pub async fn get_zsync(
     let mut zsync_path = file_path.clone();
     zsync_path.push_str(".zsync");
     let zsync_path = Path::new(&zsync_path);
-    dbg!(&zsync_path);
-    dbg!(&zsync_url);
+    // dbg!(&zsync_path);
+    // dbg!(&zsync_url);
     download_simple(&zsync_url, zsync_path).await?;
     let mut mf = MetaFile::new();
     if mf.parse_zsync(zsync_path).is_err() {
         return Err(anyhow!("Zsync parser error"));
     }
     let mut fm = FileMaker::new(&mf);
-    dbg!(&file_path);
+    // dbg!(&file_path);
 
     if zsync_path.exists() {
         fs::remove_file(zsync_path).await;

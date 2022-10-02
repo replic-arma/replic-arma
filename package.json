@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@kyvg/vue3-notification": "^2.3.4",
-        "@tauri-apps/api": "^1.0.2",
+        "@tauri-apps/api": "^1.1.0",
         "@vueuse/core": "^8.0.0",
         "mdi-vue": "^3.0.12",
         "pako": "^2.0.4",
@@ -27,7 +27,7 @@
         "@actions/github": "^5.0.3",
         "@intlify/vite-plugin-vue-i18n": "^5.0.0",
         "@rushstack/eslint-patch": "^1.1.0",
-        "@tauri-apps/cli": "^1.0.5",
+        "@tauri-apps/cli": "^1.1.1",
         "@types/node": "^16.11.25",
         "@types/pako": "^1.0.3",
         "@types/uuid": "^8.3.4",

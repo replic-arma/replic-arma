@@ -1,5 +1,9 @@
 <template>
-    <div class="modset">
+    <Loader v-if="loading" />
+    <div v-else-if="modset === null">
+        <span>Could not load modset</span>
+    </div>
+    <div class="modset" v-else>
         <div class="modset__heading">
             <Tooltip text="Go Back">
                 <mdicon name="chevron-left" size="45" @click="$router.back()" />
@@ -9,17 +13,17 @@
                 <Tooltip text="Downloads" position="bottom">
                     <Downloads />
                 </Tooltip>
-                <template v-if="status === 'downloading'">
+                <template v-if="status === DownloadStatus.DOWNLOADING || status === HashStatus.CHECKING">
                     <Status :status="status" :progress="progress"></Status>
                 </template>
                 <template v-if="status === 'outdated'">
-                    <button class="button" @click="download()">
+                    <button class="button" @click="downloadModset()">
                         <mdicon name="download"></mdicon>
                         <span v-t="'download'"></span>
                     </button>
                 </template>
-                <template v-if="status === 'ready'">
-                    <button class="button" @click="play()" v-t="'play'">
+                <template v-if="status === HashStatus.READY">
+                    <button class="button" @click="playModset()" v-t="'play'">
                         <mdicon name="play"></mdicon>
                     </button>
                 </template>
@@ -33,106 +37,31 @@
             Files {{ updateFiles }}
         </pre> -->
         <Subnavi v-if="modset !== undefined" :subnaviItems="subnaviItems"></Subnavi>
-        <router-view />
+        <router-view :model="modset" />
     </div>
 </template>
 
 <script lang="ts" setup>
-import { HashStatus, type ModsetMod } from '@/models/Repository';
-import { useHashStore } from '@/store/hash';
-import type { IHashItem } from '@/store/hash';
-import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
-import { computed, ref } from 'vue';
-import { useDownloadStore } from '@/store/download';
-import { launchModset } from '@/util/system/game';
+import { computed } from 'vue';
 import Status from '../components/util/Status.vue';
-import { notify } from '@kyvg/vue3-notification';
 import Downloads from '../components/download/Downloads.vue';
 import Subnavi from '../components/util/Subnavi.vue';
-import type { HashResponseItem } from '@/util/system/hashes';
+import { useModset } from '@/composables/useModset';
 import { DownloadStatus } from '@/models/Download';
-const modset = computed(() => useRepoStore().currentModset);
+import { HashStatus } from '@/models/Repository';
+import Loader from '../components/util/Loader.vue';
+const { modset, status, progress, downloadModset, size, updateFiles, files, updateSize, playModset, loading } =
+    useModset(useRouteStore().currentRepoID ?? '', useRouteStore().currentModsetID ?? '');
+
 const subnaviItems = computed(() => {
     return [
         {
             label: 'mods',
-            link: `/repo/${useRouteStore().currentRepoID}/modset/${useRouteStore().currentModsetID}/mods`,
-        },
+            link: `/repo/${useRouteStore().currentRepoID}/modset/${useRouteStore().currentModsetID}/mods`
+        }
     ];
 });
-const files = ref(0);
-const size = computed(() => {
-    const modsetCache = useRepoStore().modsetCache;
-    if (modsetCache === null || modset.value === undefined) return 0;
-    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === modset.value!.id);
-    const mods = cacheData?.mods.flatMap((mod: ModsetMod) => mod.files ?? []) ?? [];
-    return Number(
-        mods.reduce((previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size, 0) /
-            10e8
-    ).toFixed(2);
-});
-
-function play() {
-    if (modset.value === undefined) return;
-    launchModset(modset.value.id, useRouteStore().currentRepoID ?? '');
-}
-
-const updateSize = computed(() => {
-    const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
-    const mods = [...(cacheDataa?.outdated ?? []), ...(cacheDataa?.missing ?? [])];
-    return Number(
-        mods
-            .map((item: HashResponseItem) => item.size)
-            .reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0) / 10e8
-    ).toFixed(2);
-});
-
-const updateFiles = computed(() => {
-    const cacheDataa = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
-    if (cacheDataa === null) return [];
-
-    const filesToDownload = [...(cacheDataa?.missing ?? []), ...(cacheDataa?.outdated ?? [])];
-
-    return filesToDownload.map((item: HashResponseItem) => item.file);
-});
-
-const status = computed(() => {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === modset.value!.id);
-    if (cacheData === undefined) return HashStatus.CHECKING;
-    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modset.value!.id)
-        return DownloadStatus.DOWNLOADING;
-    if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-        return HashStatus.OUTDATED;
-    } else {
-        return HashStatus.READY;
-    }
-});
-
-const progress = computed(() => {
-    if (
-        useDownloadStore().current !== null &&
-        useDownloadStore().current?.item.id === useRepoStore().currentModset?.id
-    ) {
-        return Number(
-            (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
-        ).toFixed(0);
-    } else {
-        if (useHashStore().current === null || useHashStore().current?.repoId !== useRouteStore().currentRepoID)
-            return 0;
-        const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
-        return Math.floor((checkedFiles / filesToCheck) * 100);
-    }
-});
-function download() {
-    if (modset.value === undefined) return;
-    useDownloadStore().addToDownloadQueue(modset.value, useRouteStore().currentRepoID ?? '');
-    notify({
-        title: 'Added Modset to queue',
-        text: `Modset ${modset.value.name} has been added to the download queue`,
-        type: 'success',
-    });
-}
 </script>
 
 <style lang="scss" scoped>

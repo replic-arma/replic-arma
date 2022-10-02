@@ -32,7 +32,7 @@ async function play() {
 }
 
 const status = computed(() => {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === useRouteStore().currentRepoID);
+    const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === useRouteStore().currentRepoID);
     if (cacheData === undefined) return 'checking';
     if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
         return 'outdated';
@@ -107,6 +107,7 @@ const status = computed(() => {
     &__info {
         display: grid;
         padding-inline-start: 1rem;
+        gap: 1rem;
     }
 
     &__description {

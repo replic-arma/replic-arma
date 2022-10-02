@@ -1,55 +1,55 @@
 <template>
-    <div class="collection">
-        <template v-if="collection !== undefined">
-            <div class="collection__heading">
-                <Tooltip text="Go Back">
-                    <mdicon name="chevron-left" size="45" @click="goToRepo()" />
+    <Loader v-if="loading" />
+    <div v-else-if="collection === null">
+        <span>Could not load collection</span>
+    </div>
+    <div class="collection" v-else>
+        <div class="collection__heading">
+            <Tooltip text="Go Back">
+                <mdicon name="chevron-left" size="45" @click="goToRepo()" />
+            </Tooltip>
+            <h1>{{ collection.name }}</h1>
+            <div class="icon-group">
+                <Tooltip text="Downloads" position="bottom">
+                    <Downloads />
                 </Tooltip>
-                <h1>{{ collection.name }}</h1>
-                <div class="icon-group">
-                    <Tooltip text="Downloads" position="bottom">
-                        <Downloads />
-                    </Tooltip>
-                    <button class="button" v-t="'play'" @click="play()">
-                        <mdicon name="play" />
-                    </button>
-                </div>
+                <button class="button" v-t="'play'" @click="playCollection()">
+                    <mdicon name="play" />
+                </button>
             </div>
-            <Subnavi v-if="collection !== undefined" :subnaviItems="subnaviItems"></Subnavi>
-            <router-view />
-        </template>
-        <Loader v-else />
+        </div>
+        <Subnavi v-if="collection !== undefined" :subnaviItems="subnaviItems"></Subnavi>
+        <router-view :model="collection" :repository="repository" />
     </div>
 </template>
 
 <script lang="ts" setup>
-import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
 import { computed } from 'vue';
-import { launchCollection } from '@/util/system/game';
 import { useRouter } from 'vue-router';
 import Loader from '../components/util/Loader.vue';
 import Downloads from '../components/download/Downloads.vue';
 import Subnavi from '../components/util/Subnavi.vue';
-const collection = computed(() => useRepoStore().currentCollection);
+import { useCollection } from '@/composables/useCollection';
+
+const { collection, repository, loading, playCollection } = useCollection(
+    useRouteStore().currentRepoID ?? '',
+    useRouteStore().currentCollectionID ?? ''
+);
+
 const subnaviItems = computed(() => {
     return [
         {
             label: 'mods',
-            link: `/repo/${useRouteStore().currentRepoID}/collection/${useRouteStore().currentCollectionID}/mods`,
+            link: `/repo/${useRouteStore().currentRepoID}/collection/${useRouteStore().currentCollectionID}/mods`
         },
         {
             label: 'edit',
-            link: `/repo/${useRouteStore().currentRepoID}/collection/${useRouteStore().currentCollectionID}/edit`,
-        },
+            link: `/repo/${useRouteStore().currentRepoID}/collection/${useRouteStore().currentCollectionID}/edit`
+        }
     ];
 });
 const router = useRouter();
-
-async function play() {
-    if (useRepoStore().currentCollection === undefined) return;
-    await launchCollection(useRepoStore().currentCollection!, useRouteStore().currentRepoID ?? '');
-}
 
 function goToRepo() {
     router.push('/repo/' + useRouteStore().currentRepoID + '/collections');

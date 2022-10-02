@@ -18,7 +18,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(['add', 'remove']);
 const model = ref(props.default);
-watch(model, async (newModel) => {
+watch(model, async newModel => {
     if (newModel) {
         emit('add', props.label);
     } else {

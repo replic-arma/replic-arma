@@ -17,13 +17,13 @@ export const useSettingsStore = defineStore('settings', () => {
     }
 
     // load config from the get-go
-    loadConfig().then((config) => {
+    loadConfig().then(config => {
         settings.value = config;
     });
 
     return {
         settings,
         reset,
-        save,
+        save
     };
 });

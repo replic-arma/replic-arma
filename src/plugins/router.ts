@@ -1,10 +1,10 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { useRouteStore } from '@/store/route';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
-        component: () => import('../views/RepoList.vue'),
+        component: () => import('../views/RepoList.vue')
     },
     {
         path: '/repo/:repoId',
@@ -12,17 +12,17 @@ const routes: Array<RouteRecordRaw> = [
         children: [
             {
                 path: 'modsets',
-                component: () => import('../views/ModsetList.vue'),
+                component: () => import('../views/Repository/Modsets.vue')
             },
             {
                 path: 'servers',
-                component: () => import('../views/ServerList.vue'),
+                component: () => import('../views/Repository/Servers.vue')
             },
             {
                 path: 'collections',
-                component: () => import('../views/CollectionsList.vue'),
-            },
-        ],
+                component: () => import('../views/Repository/Collections.vue')
+            }
+        ]
     },
     {
         path: '/repo/:repoId/modset/:modsetId',
@@ -30,9 +30,9 @@ const routes: Array<RouteRecordRaw> = [
         children: [
             {
                 path: 'mods',
-                component: () => import('../views/ModsetMods.vue'),
-            },
-        ],
+                component: () => import('../views/Modset/Mods.vue')
+            }
+        ]
     },
     {
         path: '/repo/:repoId/collection/:collectionId',
@@ -40,35 +40,35 @@ const routes: Array<RouteRecordRaw> = [
         children: [
             {
                 path: 'mods',
-                component: () => import('../views/CollectionMods.vue'),
+                component: () => import('../views/Collection/Mods.vue')
             },
             {
                 path: 'edit',
-                component: () => import('../views/CollectionEdit.vue'),
-            },
-        ],
+                component: () => import('../views/Collection/Edit.vue')
+            }
+        ]
     },
     {
         path: '/setup/moddirectory',
-        component: () => import('../views/setup/ModDirectory.vue'),
+        component: () => import('../views/setup/ModDirectory.vue')
     },
     {
         path: '/setup/executable',
-        component: () => import('../views/setup/Executable.vue'),
+        component: () => import('../views/setup/Executable.vue')
     },
     {
         path: '/setup/firstRepository',
-        component: () => import('../views/setup/FirstRepository.vue'),
+        component: () => import('../views/setup/FirstRepository.vue')
     },
     {
         path: '/:pathMatch(.*)*',
-        redirect: '/',
-    },
+        redirect: '/'
+    }
 ];
 
 const router = createRouter({
     history: createWebHistory('/'),
-    routes,
+    routes
 });
 router.beforeEach((to, from, next) => {
     useRouteStore().switchRoute(to);

@@ -60,7 +60,7 @@ export async function launchGame(
 }
 
 function filterMods(repoId: string, modNames: string[]) {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === repoId);
+    const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === repoId);
     if (cacheData === undefined) return modNames;
     if (cacheData.missing.length > 0) {
         const missingMods = cacheData.missing.map((mod: HashResponseItem) => mod.file);
@@ -112,13 +112,13 @@ async function spawnProcess(
     spawnOptions: SpawnOptions
 ) {
     const command = new Command('run-game', ['/C', 'start', '', path, mods, launchOptions, connection], spawnOptions);
-    command.on('close', (data) => {
+    command.on('close', data => {
         console.log(`command finished with code ${data.code} and signal ${data.signal}`);
     });
 
-    command.on('error', (error) => console.error(`command error: "${error}"`));
-    command.stdout.on('data', (line) => console.log(`command stdout: "${line}"`));
-    command.stderr.on('data', (line) => console.log(`command stderr: "${line}"`));
+    command.on('error', error => console.error(`command error: "${error}"`));
+    command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
+    command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
 
     const child = await command.spawn();
     console.log('pid:', child.pid);

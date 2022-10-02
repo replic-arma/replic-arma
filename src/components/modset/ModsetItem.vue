@@ -29,7 +29,7 @@ interface Props {
 }
 const props = defineProps<Props>();
 const status = computed(() => {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === useRouteStore().currentRepoID);
+    const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === useRouteStore().currentRepoID);
     if (cacheData === undefined) return HashStatus.CHECKING;
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === props.modset.id)
         return DownloadStatus.DOWNLOADING;

@@ -1,10 +1,10 @@
 import {
+    RepositoryType,
     type Collection,
     type GameServer,
-    type Modset,
     type IReplicArmaRepository,
-    type ModsetMod,
-    RepositoryType,
+    type Modset,
+    type ModsetMod
 } from '@/models/Repository';
 import { DEFAULT_LAUNCH_CONFIG } from '@/util/system/config';
 import { clearModsetCache, loadModsetCache, saveModsetCache } from '@/util/system/modset_cache';
@@ -12,30 +12,14 @@ import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
 import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
-import { ref, computed, toRaw } from 'vue';
+import { ref, toRaw } from 'vue';
 import { useHashStore, type ICacheItem } from './hash';
-import { useRouteStore } from './route';
 import { useSettingsStore } from './settings';
 
 export const useRepoStore = defineStore('repo', () => {
+    const reposInitialized = ref(false);
     const repos = ref(null as null | Array<IReplicArmaRepository>);
     const modsetCache = ref(null as null | Array<Modset>);
-
-    const currentRepository = computed(() => {
-        return repos.value?.find((repo: IReplicArmaRepository) => repo.id === useRouteStore().currentRepoID);
-    });
-
-    const currentModset = computed(() => {
-        return repos.value
-            ?.find((repo: IReplicArmaRepository) => repo.id === useRouteStore().currentRepoID)
-            ?.modsets.find((modset: Modset) => modset.id === useRouteStore().currentModsetID);
-    });
-
-    const currentCollection = computed(() => {
-        return repos.value
-            ?.find((repo: IReplicArmaRepository) => repo.id === useRouteStore().currentRepoID)
-            ?.collections.find((collection: Collection) => collection.id === useRouteStore().currentCollectionID);
-    });
 
     function save() {
         if (repos.value === null) throw new Error('Repositories not loaded yet.');
@@ -52,7 +36,7 @@ export const useRepoStore = defineStore('repo', () => {
             id: uuidv4(),
             name: 'All Mods',
             description: 'Contains all Mods from the Repository',
-            mods,
+            mods
         });
         repo.modsets = repo.modsets.map((modset: Modset) => {
             return { ...modset, id: uuidv4() };
@@ -65,7 +49,7 @@ export const useRepoStore = defineStore('repo', () => {
             type: RepositoryType.A3S,
             collections: [],
             launchOptions: useSettingsStore().settings?.launchOptions ?? DEFAULT_LAUNCH_CONFIG,
-            downloadDirectoryPath: useSettingsStore().settings?.downloadDirectoryPath ?? '',
+            downloadDirectoryPath: useSettingsStore().settings?.downloadDirectoryPath ?? ''
         };
         repos.value?.push(repoC as IReplicArmaRepository);
         await updateModsetCache(repoId);
@@ -117,10 +101,10 @@ export const useRepoStore = defineStore('repo', () => {
             if (repoData.files !== undefined) {
                 mods = await ReplicWorker.createModsetFromFiles(repoData.files);
             }
-            const allModsModset = repo.modsets.find((modset) => modset.name === 'All Mods');
+            const allModsModset = repo.modsets.find(modset => modset.name === 'All Mods');
             repo.modsets = repoData.modsets.map((modset: Modset) => {
                 const oldModset = repo!.modsets.find(
-                    (oldModset) => oldModset.name === modset.name && oldModset.name !== 'All Mods'
+                    oldModset => oldModset.name === modset.name && oldModset.name !== 'All Mods'
                 );
                 return { ...modset, id: oldModset?.id ?? uuidv4() };
             });
@@ -151,7 +135,7 @@ export const useRepoStore = defineStore('repo', () => {
                     id: uuidv4(),
                     name: 'All Mods',
                     description: 'Contains all Mods from the Repository',
-                    mods,
+                    mods
                 });
             }
 
@@ -171,13 +155,14 @@ export const useRepoStore = defineStore('repo', () => {
         await saveModsetCache(repo.id, calculatedModsetCache);
     }
 
-    loadRepos().then((reposdata: Array<IReplicArmaRepository>) => {
+    loadRepos().then(async (reposdata: Array<IReplicArmaRepository>) => {
         repos.value = reposdata;
-        reposdata.forEach(async (repo: IReplicArmaRepository) => {
+        await reposdata.forEach(async (repo: IReplicArmaRepository) => {
             await checkRevision(repo.id);
             useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
-            await useHashStore().addToQueue(repo);
+            // await useHashStore().addToQueue(repo);
         });
+        reposInitialized.value = true;
     });
 
     async function recalcRepositories() {
@@ -195,9 +180,6 @@ export const useRepoStore = defineStore('repo', () => {
     }
 
     return {
-        currentRepository,
-        currentModset,
-        currentCollection,
         addModset,
         addRepo,
         addCollection,
@@ -209,5 +191,6 @@ export const useRepoStore = defineStore('repo', () => {
         updateModsetCache,
         recalcRepositories,
         recalcRepository,
+        reposInitialized
     };
 });

@@ -31,10 +31,10 @@ const displayedMax = ref(10);
 const stats = ref({
     avg: 0,
     max: 0,
-    cur: 0,
+    cur: 0
 });
 
-watch(useDownloadStore().speeds, (currentValue) => {
+watch(useDownloadStore().speeds, currentValue => {
     displayedSpeeds.value = currentValue.slice(-100);
     displayedMax.value = Math.max(...displayedSpeeds.value);
 
@@ -42,7 +42,7 @@ watch(useDownloadStore().speeds, (currentValue) => {
         stats.value = {
             cur: currentValue[currentValue.length - 1] ?? 0,
             max: Math.max(...currentValue),
-            avg: Math.floor(currentValue.reduce((prev, cur) => prev + cur, 0) / currentValue.length),
+            avg: Math.floor(currentValue.reduce((prev, cur) => prev + cur, 0) / currentValue.length)
         };
         useDownloadStore().stats = stats.value;
     }

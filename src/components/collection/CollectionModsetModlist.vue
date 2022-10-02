@@ -23,7 +23,6 @@
 </template>
 <script lang="ts" setup>
 import type { Modset, Collection } from '@/models/Repository';
-import { useRepoStore } from '@/store/repo';
 import { computed, ref } from 'vue';
 import CollectionModsetModlistMod from './CollectionModsetModlistMod.vue';
 interface Props {
@@ -32,24 +31,26 @@ interface Props {
 }
 const props = defineProps<Props>();
 const isOpen = ref(false);
+const collectionData = ref(props.collection);
 function addMod(modName: string) {
-    if (props.collection.modsets !== undefined && props.modset.id in props.collection.modsets) {
-        props.collection.modsets![props.modset.id] = [
-            ...(props.collection.modsets![props.modset.id] ?? []),
-            ...[modName],
+    if (collectionData.value.modsets !== undefined && props.modset.id in collectionData.value.modsets) {
+        collectionData.value.modsets![props.modset.id] = [
+            ...(collectionData.value.modsets![props.modset.id] ?? []),
+            ...[modName]
         ];
     } else {
-        useRepoStore().currentCollection!.modsets = {
-            ...useRepoStore().currentCollection!.modsets,
-            ...{ [props.modset.id]: [modName] },
+        collectionData.value.modsets = {
+            ...collectionData.value.modsets,
+            ...{ [props.modset.id]: [modName] }
         };
     }
 }
 function removeMod(modName: string) {
-    props.collection.modsets![props.modset.id] =
-        props.collection.modsets![props.modset.id]?.filter((modsetModName: string) => modsetModName !== modName) ?? [];
-    if (props.collection.modsets![props.modset.id]!.length === 0) {
-        delete useRepoStore().currentCollection!.modsets![props.modset.id];
+    collectionData.value.modsets![props.modset.id] =
+        collectionData.value.modsets![props.modset.id]?.filter((modsetModName: string) => modsetModName !== modName) ??
+        [];
+    if (collectionData.value.modsets![props.modset.id]!.length === 0) {
+        delete collectionData.value.modsets![props.modset.id];
     }
 }
 

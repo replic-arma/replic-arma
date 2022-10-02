@@ -1,56 +1,47 @@
 <template>
-    <div class="repo-view">
+    <Loader v-if="loading" />
+    <div v-else-if="repository === null">
+        <span>Could not load repository</span>
+    </div>
+    <div class="repo-view" v-else>
         <div class="repo-view__heading">
             <Tooltip text="Go Back">
                 <router-link class="button" to="/"><mdicon name="chevron-left" size="45" /></router-link>
             </Tooltip>
-            <template v-if="repository !== undefined">
-                <h1>{{ repository.name }}</h1>
-                <div class="icon-group">
-                    <Tooltip text="Downloads" position="bottom">
-                        <Downloads />
-                    </Tooltip>
-                    <Tooltip text="Refresh Repository">
-                        <mdicon name="refresh" size="35" @click="checkRepo()" />
-                    </Tooltip>
-                    <Tooltip text="Settings">
-                        <RepoSettings></RepoSettings>
-                    </Tooltip>
-                </div>
-            </template>
-            <Loader v-else />
+            <h1>{{ repository.name }}</h1>
+            <div class="icon-group">
+                <Tooltip text="Downloads" position="bottom">
+                    <Downloads />
+                </Tooltip>
+                <Tooltip text="Refresh Repository">
+                    <mdicon name="refresh" size="35" @click="recalcRepository()" />
+                </Tooltip>
+                <Tooltip text="Settings">
+                    <Settings :modelValue="repository"></Settings>
+                </Tooltip>
+            </div>
         </div>
-        <SubnaviVue v-if="repository !== undefined" :subnaviItems="subnaviItems"></SubnaviVue>
-        <router-view />
+        <SubnaviVue :subnaviItems="subnaviItems"></SubnaviVue>
+        <router-view :model="repository" />
     </div>
 </template>
 
 <script lang="ts" setup>
 import SubnaviVue from '@/components/util/Subnavi.vue';
 import Loader from '@/components/util/Loader.vue';
-import { useRepoStore } from '../store/repo';
 import { computed } from '@vue/runtime-core';
-import RepoSettings from '../components/settings/RepoSettings.vue';
-import { notify } from '@kyvg/vue3-notification';
-import Downloads from '../components/download/Downloads.vue';
-
-const repository = computed(() => useRepoStore().currentRepository);
+import Settings from '@/components/Repository/Settings.vue';
+import Downloads from '@/components/download/Downloads.vue';
+import { useRepository } from '@/composables/useRepository';
+import { useRouteStore } from '@/store/route';
+const { repository, recalcRepository, loading } = useRepository(useRouteStore().currentRepoID ?? '');
 const subnaviItems = computed(() => {
     return [
         { label: 'modsets', link: '/repo/' + repository.value?.id + '/modsets' },
         { label: 'collections', link: '/repo/' + repository.value?.id + '/collections' },
-        { label: 'server.title', link: '/repo/' + repository.value?.id + '/servers' },
+        { label: 'server.title', link: '/repo/' + repository.value?.id + '/servers' }
     ];
 });
-function checkRepo() {
-    if (repository.value === undefined) return;
-    useRepoStore().recalcRepository(repository.value);
-    notify({
-        title: 'Reloading Repositories',
-        text: 'Checking for Updates and recalculating the status',
-        type: 'success',
-    });
-}
 </script>
 
 <style lang="scss" scoped>

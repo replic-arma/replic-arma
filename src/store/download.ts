@@ -22,7 +22,7 @@ export const useDownloadStore = defineStore('download', () => {
     );
 
     async function addToDownloadQueue(modset: Modset, repoId: string) {
-        const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === modset.id);
+        const cacheData = useHashStore().cache.find(cacheItem => cacheItem.id === modset.id);
         if (cacheData === undefined) return;
         const filesToDownload = [...cacheData.missing, ...cacheData.outdated];
         const totalSize = filesToDownload
@@ -33,7 +33,7 @@ export const useDownloadStore = defineStore('download', () => {
             status: DownloadStatus.QUEUED,
             size: totalSize,
             received: 0,
-            repoId,
+            repoId
         });
         if (current.value === null) {
             next();
@@ -53,10 +53,10 @@ export const useDownloadStore = defineStore('download', () => {
             notify({
                 title: 'Download started',
                 text: `The download of Modset ${current.value.item?.name} has started`,
-                type: 'success',
+                type: 'success'
             });
             current.value.status = DownloadStatus.DOWNLOADING;
-            const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === current.value?.item.id);
+            const cacheData = useHashStore().cache.find(cacheItem => cacheItem.id === current.value?.item.id);
             if (cacheData === undefined) return;
             const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === current.value?.repoId);
             if (repo === undefined) throw new Error(`Repository with id ${current.value?.repoId} not found`);
@@ -70,12 +70,12 @@ export const useDownloadStore = defineStore('download', () => {
                 cacheData.missing.map((item: HashResponseItem) => item.file),
                 cacheData.outdated.map((item: HashResponseItem) => item.file)
             );
-            if (res !== 'paused') {
+            if (res !== DownloadStatus.PAUSED) {
                 finished.value.push(current.value);
                 notify({
                     title: 'Download finished',
                     text: `The download of Modset ${current.value.item?.name} has been completed`,
-                    type: 'success',
+                    type: 'success'
                 });
                 current.value = null;
                 await useRepoStore().recalcRepositories();
@@ -84,7 +84,7 @@ export const useDownloadStore = defineStore('download', () => {
         }
     }
 
-    DOWNLOAD_PROGRESS.addEventListener('download_report', (data) => {
+    DOWNLOAD_PROGRESS.addEventListener('download_report', data => {
         const current = useDownloadStore().current;
         if (current !== null) {
             current.received += data.detail.size;
@@ -92,11 +92,11 @@ export const useDownloadStore = defineStore('download', () => {
         }
     });
 
-    DOWNLOAD_PROGRESS.addEventListener('download_finished', (data) => {
+    DOWNLOAD_PROGRESS.addEventListener('download_finished', data => {
         const { current } = storeToRefs(useDownloadStore());
         const { cache } = storeToRefs(useHashStore());
         if (current.value !== null) {
-            const cacheData = cache.value.find((cacheItem) => cacheItem.id === current.value?.item.id);
+            const cacheData = cache.value.find(cacheItem => cacheItem.id === current.value?.item.id);
             if (cacheData !== undefined) {
                 cacheData.missing = cacheData.missing.filter(
                     (path: HashResponseItem) => path.file !== data.detail.path
@@ -111,9 +111,10 @@ export const useDownloadStore = defineStore('download', () => {
     return {
         current,
         queue,
+        finished,
         next,
         addToDownloadQueue,
         speeds,
-        stats,
+        stats
     };
 });

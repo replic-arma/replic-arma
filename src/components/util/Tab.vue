@@ -1,6 +1,5 @@
-<script setup>
-import { ref, onMounted } from 'vue';
-const props = defineProps(['active']);
+<script setup lang="ts">
+defineProps(['active']);
 </script>
 
 <template>

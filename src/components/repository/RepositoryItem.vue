@@ -47,7 +47,7 @@ const props = defineProps<Props>();
 const status = computed(() => {
     const [id, type] = currentModsetId.value.split('_');
     if (type === '1') {
-        const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === id);
+        const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === id);
         if (cacheData === undefined) return HashStatus.CHECKING;
         if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id)
             return useDownloadStore().current?.status;
@@ -56,7 +56,7 @@ const status = computed(() => {
         }
     } else {
         const collection = props.repository.collections.find((collection: Collection) => collection.id === id);
-        const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.repository.id);
+        const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === props.repository.id);
         if (cacheData === undefined) return HashStatus.CHECKING;
         if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
             return HashStatus.OUTDATED;

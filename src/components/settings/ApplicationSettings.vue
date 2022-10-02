@@ -11,12 +11,20 @@
                     <Tab title="General">
                         <div class="application-settings" v-if="settings !== null">
                             <PathSelectorVue
-                                :pathSelector="{ label: 'a3exe', name: 'a3exe' }"
+                                :pathSelector="{
+                                    label: 'a3exe',
+                                    name: 'a3exe',
+                                    placeholder: 'C:\\Program Files\\Steam\\steamapps\common\\Arma 3\\arma3_x64.exe'
+                                }"
                                 :pathSelectorOptions="{}"
                                 v-model="settings.gamePath"
                             ></PathSelectorVue>
                             <PathSelectorVue
-                                :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
+                                :pathSelector="{
+                                    label: 'mod_directory',
+                                    name: 'modDirectory',
+                                    placeholder: 'C:\\Documents\\Arma3Mods'
+                                }"
                                 :pathSelectorOptions="{ directory: true }"
                                 v-model="settings.downloadDirectoryPath"
                             ></PathSelectorVue>
@@ -89,9 +97,9 @@ import { ref } from 'vue';
 import PathSelectorVue from '../util/PathSelector.vue';
 import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
-import Launch from './Launch.vue';
 import { notify } from '@kyvg/vue3-notification';
 import About from './About.vue';
+import Launch from './Launch.vue';
 const settings = useSettingsStore().settings;
 function saveSettings() {
     useSettingsStore().settings = settings;
@@ -99,7 +107,7 @@ function saveSettings() {
     notify({
         title: 'Saved Settings',
         text: 'Changes have been saved to your disk',
-        type: 'success',
+        type: 'success'
     });
 }
 async function clearCache() {
@@ -107,7 +115,7 @@ async function clearCache() {
     notify({
         title: 'Cleared Modset cache',
         text: 'Cleared old Modset cache',
-        type: 'success',
+        type: 'success'
     });
 }
 async function resetSettings() {
@@ -115,7 +123,7 @@ async function resetSettings() {
     notify({
         title: 'Reset Settings',
         text: 'Settings have been reset to default',
-        type: 'success',
+        type: 'success'
     });
 }
 const isOpen = ref(false);

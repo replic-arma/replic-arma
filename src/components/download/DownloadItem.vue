@@ -152,7 +152,7 @@ async function pauseDownloadF() {
     &#{&}--queued {
         .download-item__status {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
         }
     }
     &__queue-wrapper {
@@ -162,7 +162,6 @@ async function pauseDownloadF() {
     &__queue-value {
         color: black;
         font-weight: bolder;
-        line-height: 0.5;
     }
     &__img {
         block-size: 3rem;
@@ -175,7 +174,6 @@ async function pauseDownloadF() {
         font-weight: bold;
         font-size: 11pt;
         opacity: 50%;
-        line-height: 0.3;
     }
     &__name {
         font-weight: bold;

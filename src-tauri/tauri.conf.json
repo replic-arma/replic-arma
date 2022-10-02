@@ -44,7 +44,7 @@
             }
         },
         "updater": {
-            "active": true,
+            "active": false,
             "endpoints": ["https://github.com/replic-arma/replic-arma/releases/download/updater/release.json"],
             "dialog": true,
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFCRUJBNTRCNTYyNEE5OTMKUldTVHFTUldTNlhyR3lSRG12TmYxQVZMR2hRTTJaTVBud1BXd0FCd3cyV0d4L2hpbnEzaHpOVnEK"

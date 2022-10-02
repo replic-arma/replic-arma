@@ -19,7 +19,7 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue';
-const props = defineProps(['customClass']);
+defineProps(['customClass']);
 const tabContainer = ref(null);
 
 const tabs = ref(null);
@@ -34,7 +34,7 @@ onMounted(() => {
     }
     changeTab(0);
 });
-const changeTab = (index) => {
+const changeTab = index => {
     activeTabIndex.value = index;
     for (const x of tabs.value) {
         x.classList.remove('active');

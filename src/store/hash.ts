@@ -1,16 +1,16 @@
 import {
-    type IReplicArmaRepository,
-    type File,
-    type Modset,
-    type ModsetMod,
     RepositoryType,
+    type File,
+    type IReplicArmaRepository,
+    type Modset,
+    type ModsetMod
 } from '@/models/Repository';
+import { checkHashes, HASHING_PROGRESS, type HashResponse } from '@/util/system/hashes';
+import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
+import { computed, ref, toRaw } from 'vue';
 import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
-import { computed, ref, toRaw } from 'vue';
-import { ReplicWorker } from '@/util/worker';
-import { checkHashes, HASHING_PROGRESS, type HashResponse } from '@/util/system/hashes';
 export interface IHashItem {
     repoId: string;
     filesToCheck: number;
@@ -56,10 +56,12 @@ export const useHashStore = defineStore('hash', () => {
             current.value = firstElement;
             if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (next)');
             current.value.filesToCheck = currentHashRepo.value.files.length;
+            window.performance.mark(current.value.repoId);
+            console.info(`Started hash calc for repo ${currentHashRepo.value.name}`);
             const hashData = await getHashes();
             cache.value.push({
                 id: currentHashRepo.value.id,
-                ...hashData,
+                ...hashData
             });
             const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
             let currentHashRepoModsetCache = toRaw(
@@ -73,7 +75,7 @@ export const useHashStore = defineStore('hash', () => {
                 );
             }
             if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
-            const cached = toRaw(cache.value.find((cacheValue) => cacheValue.id === currentHashRepo.value?.id));
+            const cached = toRaw(cache.value.find(cacheValue => cacheValue.id === currentHashRepo.value?.id));
             for (const modset of currentHashRepo.value.modsets) {
                 const modsetCache = toRaw(
                     currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id)
@@ -89,10 +91,14 @@ export const useHashStore = defineStore('hash', () => {
                     outdated,
                     missing,
                     extra,
-                    complete,
+                    complete
                 });
             }
-            console.info(`Finished hash calc for repo ${currentHashRepo.value.name}`);
+            console.info(
+                `Finished hash calc for repo ${currentHashRepo.value.name} after ${
+                    window.performance.measure('repository', current.value.repoId).duration
+                }`
+            );
             current.value = null;
             next();
         }
@@ -112,7 +118,7 @@ export const useHashStore = defineStore('hash', () => {
         }
     });
 
-    HASHING_PROGRESS.addEventListener('outdated_file_count', (data) => {
+    HASHING_PROGRESS.addEventListener('outdated_file_count', data => {
         const current = useHashStore().current;
         if (current !== null) {
             current.checkedFiles = 0;
@@ -123,6 +129,6 @@ export const useHashStore = defineStore('hash', () => {
     return {
         addToQueue,
         current,
-        cache,
+        cache
     };
 });

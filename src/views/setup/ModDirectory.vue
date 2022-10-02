@@ -16,7 +16,7 @@
                             :pathSelector="{
                                 label: 'mod_directory',
                                 name: 'modDirectory',
-                                placeholder: 'C:\\Documents\\Arma3Mods',
+                                placeholder: 'C:\\Documents\\Arma3Mods'
                             }"
                             :pathSelectorOptions="{ directory: true }"
                             v-model="settings.downloadDirectoryPath"

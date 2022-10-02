@@ -17,7 +17,7 @@ interface Props {
     status: string;
     progress: number;
 }
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <style lang="scss">

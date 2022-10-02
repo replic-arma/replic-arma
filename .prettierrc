@@ -5,6 +5,8 @@
     "jsxSingleQuote": true,
     "jsxBracketSameLine": true,
     "printWidth": 120,
-    "trailingComma": "es5",
-    "endOfLine": "auto"
+    "trailingComma": "none",
+    "endOfLine": "auto",
+    "arrowParens": "avoid",
+    "semi": true
 }

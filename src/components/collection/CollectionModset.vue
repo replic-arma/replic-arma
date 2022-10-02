@@ -12,43 +12,35 @@
 </template>
 <script lang="ts" setup>
 import type { Collection, Modset, ModsetMod } from '@/models/Repository';
-import { useRepoStore } from '@/store/repo';
-import { ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import CollectionModsetModlist from './CollectionModsetModlist.vue';
 interface Props {
     modset: Modset;
     collection: Collection;
 }
 const props = defineProps<Props>();
-const model = ref(0);
-
-checkStatus();
-function checkStatus() {
+const model = computed(() => {
     if (props.collection.modsets !== undefined && props.modset.id in props.collection.modsets) {
         if (props.collection.modsets[props.modset.id]?.length !== props.modset.mods.length) {
-            model.value = -1;
+            return -1;
         } else {
-            model.value = 1;
+            return 1;
         }
     } else {
-        model.value = 0;
+        return 0;
     }
-}
-// Currently dispatches everytime we change anything, might not be perfect for performance
-watch(props.collection, () => {
-    checkStatus();
 });
+const collection = ref(props.collection);
 
-function update() {
-    if (props.collection.modsets !== undefined && props.modset.id in props.collection.modsets) {
-        delete useRepoStore().currentCollection!.modsets![props.modset.id];
+async function update() {
+    if (collection.value.modsets !== undefined && props.modset.id in props.collection.modsets) {
+        delete collection.value.modsets![props.modset.id];
     } else {
-        useRepoStore().currentCollection!.modsets = {
-            ...useRepoStore().currentCollection!.modsets,
-            ...{ [props.modset.id]: props.modset.mods.map((mod: ModsetMod) => mod.name) },
+        collection.value.modsets = {
+            ...collection.value.modsets,
+            ...{ [props.modset.id]: props.modset.mods.map((mod: ModsetMod) => mod.name) }
         };
     }
-    checkStatus();
 }
 </script>
 

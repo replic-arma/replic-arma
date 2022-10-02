@@ -8,24 +8,23 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { useRepoStore } from '@/store/repo';
+import type { Collection } from '@/models/Repository';
 import { ref, watch } from 'vue';
 interface Props {
     label: string;
     id: string;
     default: boolean;
+    model: Collection;
 }
 const props = defineProps<Props>();
 const model = ref(props.default);
-
-watch(model, async (newModel) => {
+const collection = ref(props.model);
+watch(model, async newModel => {
     if (newModel) {
-        if (useRepoStore().currentCollection?.dlc === undefined) useRepoStore().currentCollection!.dlc = [];
-        useRepoStore().currentCollection!.dlc?.push(props.id);
+        if (collection.value.dlc === undefined) collection.value.dlc = [];
+        collection.value.dlc?.push(props.id);
     } else {
-        useRepoStore().currentCollection!.dlc = useRepoStore().currentCollection!.dlc?.filter(
-            (dlc: string) => dlc !== props.id
-        );
+        collection.value.dlc = collection.value.dlc?.filter((dlc: string) => dlc !== props.id);
     }
 });
 </script>

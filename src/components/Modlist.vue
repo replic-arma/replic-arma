@@ -1,74 +1,38 @@
 <template>
     <ul class="modlist" :class="tree ? 'tree' : 'list'">
-        <li
-            class="modlist__mod"
+        <ModListItem
             v-for="(modName, index) of orderedMods"
+            :name="modName"
+            :hash-cache="hashCache"
+            :modset-cache="modsetCache"
             :key="index"
-            :class="[outdated(modName) ? 'outdated' : 'ready']"
-        >
-            <Popper :hover="true" :arrow="true">
-                <span>
-                    <mdicon v-if="outdated(modName)" name="close" />
-                    <mdicon v-else name="check" />
-                    <span>{{ modName }}</span>
-                </span>
-                <template #content>
-                    <div>{{ getModSize(modName).path }}</div>
-                    <div>{{ getModSize(modName).size }}</div>
-                </template>
-            </Popper>
-        </li>
+        ></ModListItem>
     </ul>
 </template>
 
 <script lang="ts" setup>
-import type { ModsetMod } from '@/models/Repository';
-import { useHashStore } from '@/store/hash';
+import type { Modset, ModsetMod } from '@/models/Repository';
+import { useHashStore, type ICacheItem } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
-import type { HashResponseItem } from '@/util/system/hashes.js';
 import { computed } from 'vue';
-import Popper from 'vue3-popper';
+import ModListItem from './ModListItem.vue';
 interface Props {
-    mods: Array<string>;
+    mods: Array<ModsetMod>;
     tree: boolean;
     modsetId: string;
 }
-
-const props = defineProps<Props>();
-function outdated(modName: string) {
-    const cache = useHashStore().cache.find((cache) => cache.id === props.modsetId);
-    return (
-        cache?.missing
-            .map((hashItem: HashResponseItem) => hashItem.file.split('\\').includes(modName))
-            .includes(true) ||
-        cache?.outdated.map((hashItem: HashResponseItem) => hashItem.file.split('\\').includes(modName)).includes(true)
-    );
-}
-
-const orderedMods = computed(() => {
-    const unorderedMods = props.mods;
-    return unorderedMods.sort((a, b) => a.localeCompare(b));
+const tmpCache = useRepoStore().modsetCache;
+const hashCache = computed(() => useHashStore().cache.find((item: ICacheItem) => item.id === props.modsetId));
+const modsetCache = computed(() => {
+    if (tmpCache === null) return;
+    return tmpCache.find((item: Modset) => item.id === props.modsetId);
 });
-
-function getModSize(modName: string): { size: string; path: string } {
-    const modsetCache = useRepoStore().modsetCache;
-    if (modsetCache === null)
-        return { size: '0', path: `${useRepoStore().currentRepository?.downloadDirectoryPath}\\${modName}` };
-    const cacheData = modsetCache.find((cacheModset) => cacheModset.id === props.modsetId);
-    const mod = cacheData?.mods.find((mod: ModsetMod) => mod.name === modName);
-    if (mod !== undefined) {
-        return {
-            size: mod.size !== undefined ? Number(mod.size / 10e5).toFixed(2) + ' MB' : '0',
-            path: `${useRepoStore().currentRepository?.downloadDirectoryPath}\\${modName}`,
-        };
-    }
-    return { size: '0', path: `${useRepoStore().currentRepository?.downloadDirectoryPath}\\${modName}` };
-}
+const props = defineProps<Props>();
+const orderedMods = Array.from(props.mods.map(mode => mode.name)).sort((a, b) => a.localeCompare(b));
 </script>
 
 <style lang="scss" scoped>
 .modlist {
-    --tooltip-font-size: 0.9em;
     list-style-type: none;
     padding: 0;
     list-style: none;
@@ -79,15 +43,6 @@ function getModSize(modName: string): { size: string; path: string } {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    .modlist__mod {
-        background: var(--c-surf-3);
-        width: fit-content;
-        border-radius: 999px;
-        padding-inline: 0.5rem;
-        padding-block: 0.25rem;
-        margin-inline: 0.25rem;
-        margin-block: 0.25rem;
-    }
 }
 .tree {
     &:before {

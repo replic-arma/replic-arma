@@ -1,3 +1,4 @@
+import { useRepository } from '@/composables/useRepository';
 import {
     RepositoryType,
     type File,
@@ -5,6 +6,7 @@ import {
     type Modset,
     type ModsetMod
 } from '@/models/Repository';
+import { ERROR_CODE_INTERNAL, InternalError } from '@/util/Errors';
 import { checkHashes, HASHING_PROGRESS, type HashResponse } from '@/util/system/hashes';
 import { ReplicWorker } from '@/util/worker';
 import { defineStore } from 'pinia';
@@ -39,7 +41,7 @@ export const useHashStore = defineStore('hash', () => {
 
     async function getHashes() {
         const settings = useSettingsStore().settings;
-        if (settings === null) throw Error('Settings null');
+        if (settings === null) throw new InternalError(ERROR_CODE_INTERNAL.CONFIG_NOT_LOADED_ACCESS);
         if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (getHashes)');
         return await checkHashes(
             currentHashRepo.value.type ?? RepositoryType.A3S,
@@ -64,24 +66,25 @@ export const useHashStore = defineStore('hash', () => {
                 ...hashData
             });
             const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
-            let currentHashRepoModsetCache = toRaw(
-                useRepoStore().modsetCache?.filter((cacheModset: Modset) => neededModsets.includes(cacheModset.id))
+            let currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
+                neededModsets.includes(cacheModset.id)
             );
             if (currentHashRepoModsetCache === undefined || currentHashRepoModsetCache.length === 0) {
-                console.log(`No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
-                await useRepoStore().updateModsetCache(currentHashRepo.value.id);
-                currentHashRepoModsetCache = toRaw(
-                    useRepoStore().modsetCache?.filter((cacheModset: Modset) => neededModsets.includes(cacheModset.id))
+                console.info(`No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
+                const { updateCache } = useRepository(currentHashRepo.value.id);
+                await updateCache();
+                currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
+                    neededModsets.includes(cacheModset.id)
                 );
             }
             if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
             const cached = toRaw(cache.value.find(cacheValue => cacheValue.id === currentHashRepo.value?.id));
             for (const modset of currentHashRepo.value.modsets) {
-                const modsetCache = toRaw(
-                    currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id)
+                const modsetCache = currentHashRepoModsetCache.find(
+                    (cacheModset: Modset) => cacheModset.id === modset.id
                 );
                 if (cached === undefined || modsetCache === undefined) throw new Error('cache empty!');
-                const modsetFiles = modsetCache.mods?.flatMap((mod: ModsetMod) => mod.files);
+                const modsetFiles = toRaw(modsetCache).mods?.flatMap((mod: ModsetMod) => mod.files);
                 const outdated = await ReplicWorker.isFileIn(modsetFiles as File[], cached.outdated);
                 const missing = await ReplicWorker.isFileIn(modsetFiles as File[], cached.missing);
                 const complete = await ReplicWorker.isFileIn(modsetFiles as File[], cached.complete);

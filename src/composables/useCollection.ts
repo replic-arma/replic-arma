@@ -5,7 +5,6 @@ import { useHashStore } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
 import { launchCollection } from '@/util/system/game';
 import { computedEager, type MaybeRef } from '@vueuse/core';
-import { storeToRefs } from 'pinia';
 import { computed, isRef, ref, unref, watch } from 'vue';
 import { useRepoStore } from '../store/repo';
 
@@ -15,7 +14,9 @@ export function useCollection(repoID: MaybeRef<string>, collectionID: MaybeRef<s
     const repoStore = useRepoStore();
     const downloadStore = useDownloadStore();
     const hashStore = useHashStore();
-    const { reposInitialized } = storeToRefs(repoStore);
+    const reposInitialized = computedEager(() => {
+        return repoStore.repos !== null;
+    });
     const loading = ref(true);
     const loadingError = ref(null as unknown);
     const isDownloading = computedEager(() => {

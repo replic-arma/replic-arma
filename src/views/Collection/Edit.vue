@@ -29,16 +29,12 @@
             </div>
         </div>
         <button class="button" @click="saveCollection()" v-t="'save'"></button>
-        <div class="collection__modlist" @click="toggle()">
+        <div class="collection__modlist" @click="toggle()" v-show="Object.keys(model.modsets).length > 0">
             <span v-t="'show_all_mods'"></span>
             <mdicon v-if="!listOpen" name="chevron-up"></mdicon>
             <mdicon v-if="listOpen" name="chevron-down"></mdicon>
         </div>
-        <CollectionModlist
-            v-show="Object.keys(model.modsets).length > 0 && listOpen"
-            :model="model"
-            :repository="repository"
-        ></CollectionModlist>
+        <CollectionModlist v-show="listOpen" :model="model" :repository="repository"></CollectionModlist>
     </div>
 </template>
 

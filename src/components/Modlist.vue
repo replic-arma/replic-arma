@@ -21,11 +21,10 @@ interface Props {
     tree: boolean;
     modsetId: string;
 }
-const tmpCache = useRepoStore().modsetCache;
 const hashCache = computed(() => useHashStore().cache.find((item: ICacheItem) => item.id === props.modsetId));
 const modsetCache = computed(() => {
-    if (tmpCache === null) return;
-    return tmpCache.find((item: Modset) => item.id === props.modsetId);
+    if (useRepoStore().modsetCache === null) return;
+    return useRepoStore().modsetCache!.find((item: Modset) => item.id === props.modsetId);
 });
 const props = defineProps<Props>();
 </script>
@@ -58,7 +57,7 @@ const props = defineProps<Props>();
     li {
         margin: 0;
         padding: 0 1.5em; /* indentation + .5em */
-        line-height: 2em; /* default list item's `line-height` */
+        margin-block: 0.5em; /* default list item's `line-height` */
         font-weight: bold;
         position: relative;
     }

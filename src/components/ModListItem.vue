@@ -14,8 +14,10 @@
 </template>
 
 <script lang="ts" setup>
+import { useRepository } from '@/composables/useRepository';
 import type { Modset, ModsetMod } from '@/models/Repository';
 import type { ICacheItem } from '@/store/hash';
+import { useRouteStore } from '@/store/route';
 import type { HashResponseItem } from '@/util/system/hashes';
 import { computedEager } from '@vueuse/core';
 import { computed, type PropType } from 'vue';
@@ -32,7 +34,7 @@ const props = defineProps({
         required: true
     }
 });
-
+const { repository } = useRepository(useRouteStore().currentRepoID ?? '');
 const isOutdated = computed(() => {
     if (props.hashCache === undefined) return true;
     return (
@@ -58,7 +60,7 @@ const size = computed(() => {
 });
 
 const path = computed(() => {
-    return `\\${props.name}`;
+    return `${repository.value?.downloadDirectoryPath}\\${props.name}`;
 });
 </script>
 
@@ -71,5 +73,6 @@ const path = computed(() => {
     padding-block: 0.25rem;
     margin-inline: 0.25rem;
     margin-block: 0.25rem;
+    font-weight: bold;
 }
 </style>

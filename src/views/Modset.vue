@@ -44,13 +44,13 @@
 <script lang="ts" setup>
 import { useRouteStore } from '@/store/route';
 import { computed } from 'vue';
-import Status from '../components/util/Status.vue';
-import Downloads from '../components/download/Downloads.vue';
-import Subnavi from '../components/util/Subnavi.vue';
+import Status from '@/components/util/Status.vue';
+import Downloads from '@/components/download/Downloads.vue';
+import Subnavi from '@/components/util/Subnavi.vue';
 import { useModset } from '@/composables/useModset';
 import { DownloadStatus } from '@/models/Download';
 import { HashStatus } from '@/models/Repository';
-import Loader from '../components/util/Loader.vue';
+import Loader from '@/components/util/Loader.vue';
 const { modset, status, progress, downloadModset, size, updateFiles, files, updateSize, playModset, loading } =
     useModset(useRouteStore().currentRepoID ?? '', useRouteStore().currentModsetID ?? '');
 

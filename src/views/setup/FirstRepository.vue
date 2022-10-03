@@ -118,7 +118,7 @@ function addRepo() {
             autoConfigModel.value = '';
             router.push('/');
         })
-        .catch((error) => {
+        .catch(error => {
             console.log(error);
             loading.value = false;
             errorMsg.value = error;

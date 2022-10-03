@@ -15,32 +15,22 @@
                         <input class="txt__input" type="text" name="collectionName" v-model="collectionName" />
                     </div>
                 </div>
-                <button class="button" v-once @click="addCollection" v-t="'collection.add'"></button>
+                <button class="button" v-once @click="add" v-t="'collection.add'"></button>
             </div>
         </div>
     </Teleport>
 </template>
 <script lang="ts" setup>
-import { useRepoStore } from '@/store/repo';
+import { useRepository } from '@/composables/useRepository';
 import { useRouteStore } from '@/store/route';
-import { notify } from '@kyvg/vue3-notification';
 import { ref } from 'vue';
 const collectionName = ref('');
 const isOpen = ref(false);
-function addCollection() {
+const { addCollection } = useRepository(useRouteStore().currentRepoID ?? '');
+async function add() {
     if (collectionName.value === null) return;
-    useRepoStore()
-        .addCollection(useRouteStore().currentRepoID ?? '', { name: collectionName.value, modsets: {} })
-        .then(() => {
-            useRepoStore().save();
-            isOpen.value = false;
-        });
-
-    notify({
-        title: 'Added Collection',
-        text: `Added new Collection ${collectionName.value}`,
-        type: 'success',
-    });
+    await addCollection({ name: collectionName.value, modsets: {} });
+    isOpen.value = false;
 }
 </script>
 <style lang="scss" scoped>

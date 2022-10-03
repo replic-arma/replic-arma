@@ -7,7 +7,6 @@ import { launchModset } from '@/util/system/game';
 import type { HashResponseItem } from '@/util/system/hashes';
 import { notify } from '@kyvg/vue3-notification';
 import { computedEager, type MaybeRef } from '@vueuse/core';
-import { storeToRefs } from 'pinia';
 import { computed, isRef, ref, unref, watch } from 'vue';
 import { useRepoStore } from '../store/repo';
 
@@ -18,7 +17,9 @@ export function useModset(repoID: MaybeRef<string>, modsetID: MaybeRef<string>) 
     const downloadStore = useDownloadStore();
     const hashStore = useHashStore();
     const modsetCache = repoStore.modsetCache;
-    const { reposInitialized } = storeToRefs(repoStore);
+    const reposInitialized = computedEager(() => {
+        return repoStore.repos !== null;
+    });
     const loading = ref(true);
     const loadingError = ref(null as unknown);
     const isDownloading = computedEager(() => {
@@ -69,7 +70,8 @@ export function useModset(repoID: MaybeRef<string>, modsetID: MaybeRef<string>) 
                 (downloadStore.current!.received / 10e5 / (downloadStore.current!.size / 10e8)) * 100
             ).toFixed(0);
         } else {
-            if (isChecking.value && hashStore.current === null) return 0;
+            if (isChecking.value) return 0;
+            if (hashStore.current === null) return 0;
             const { checkedFiles, filesToCheck } = hashStore.current as IHashItem;
             return Math.floor((checkedFiles / filesToCheck) * 100);
         }

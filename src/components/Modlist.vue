@@ -1,8 +1,8 @@
 <template>
     <ul class="modlist" :class="tree ? 'tree' : 'list'">
         <ModListItem
-            v-for="(modName, index) of orderedMods"
-            :name="modName"
+            v-for="(mod, index) of mods"
+            :name="mod.name"
             :hash-cache="hashCache"
             :modset-cache="modsetCache"
             :key="index"
@@ -28,7 +28,6 @@ const modsetCache = computed(() => {
     return tmpCache.find((item: Modset) => item.id === props.modsetId);
 });
 const props = defineProps<Props>();
-const orderedMods = Array.from(props.mods.map(mode => mode.name)).sort((a, b) => a.localeCompare(b));
 </script>
 
 <style lang="scss" scoped>

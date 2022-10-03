@@ -39,7 +39,7 @@ export const useRepoStore = defineStore('repo', () => {
             mods
         });
         repo.modsets = repo.modsets.map((modset: Modset) => {
-            return { ...modset, id: uuidv4() };
+            return { ...modset, id: uuidv4(), mods: modset.mods.sort((a, b) => a.name.localeCompare(b.name)) };
         });
         const repoId = uuidv4();
         const repoC: IReplicArmaRepository = {

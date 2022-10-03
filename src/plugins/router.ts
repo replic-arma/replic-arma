@@ -4,11 +4,11 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
-        component: () => import('../views/RepoList.vue')
+        component: () => import('../views/Repositories.vue')
     },
     {
         path: '/repo/:repoId',
-        component: () => import('../views/Repo.vue'),
+        component: () => import('../views/Repository.vue'),
         children: [
             {
                 path: 'modsets',

@@ -24,9 +24,9 @@
                     </li>
                 </ul>
             </div>
-            <!-- <div class="collection-mods__local-mods">
+            <div class="collection-mods__local-mods">
                 <span>Local Mods</span>
-            </div> -->
+            </div>
         </div>
         <button class="button" @click="saveCollection()" v-t="'save'"></button>
         <div class="collection__modlist" @click="toggle()">
@@ -124,7 +124,7 @@ function toggle() {
 
 .collection-mods {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 1rem;
     .item-group {
         padding: 0;

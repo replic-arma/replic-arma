@@ -77,26 +77,6 @@ unsafe extern "system" fn get_msg_callback(code: i32, w_param: WPARAM, l_param: 
     CallNextHookEx(HHOOK(0), code, w_param, l_param)
 }
 
-#[cfg(target_os = "windows")]
-unsafe extern "system" fn call_wnd_callback(
-    code: i32,
-    w_param: WPARAM,
-    l_param: LPARAM,
-) -> LRESULT {
-    let cwp = *(l_param.0 as *mut CWPSTRUCT);
-    if cwp.message == WM_EXITSIZEMOVE {
-        let mut rect = RECT::default();
-        if GetWindowRect(cwp.hwnd, &mut rect as *mut RECT).as_bool() {
-            let width = rect.right - rect.left;
-            let height = rect.bottom - rect.top;
-
-            SetWindowPos(cwp.hwnd, HWND(0), 0, 0, width + 1, height + 1, SWP_NOMOVE);
-            SetWindowPos(cwp.hwnd, HWND(0), 0, 0, width, height, SWP_NOMOVE);
-        }
-    }
-    CallNextHookEx(HHOOK(0), code, w_param, l_param)
-}
-
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // let a3s_repo = A3SRepository::from_auto_config(String::from(
     //     "http://a3s.gruppe-adler.de/mods/.a3s/autoconfig",
@@ -155,21 +135,29 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                         HINSTANCE::default(),
                         thread_id,
                     );
-                    SetWindowsHookExW(
-                        WH_CALLWNDPROC,
-                        Some(call_wnd_callback),
-                        HINSTANCE::default(),
-                        thread_id,
-                    );
                 }
             }
         })
         .on_window_event(|event| {
             if let tauri::WindowEvent::Moved(_) = event.event() {
-                // let win = event.window();
-                // TODO: call NotifyParentWindowPositionChanged here
-                // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
-                // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
+                let win = event.window();
+                win.with_webview(|webview| {
+                    #[cfg(target_os = "linux")]
+                    {}
+
+                    #[cfg(windows)]
+                    unsafe {
+                        // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
+                        // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
+                        webview
+                            .controller()
+                            .NotifyParentWindowPositionChanged()
+                            .unwrap();
+                    }
+
+                    #[cfg(target_os = "macos")]
+                    unsafe {}
+                });
             }
         })
         // .build(tauri::generate_context!())

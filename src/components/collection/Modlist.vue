@@ -1,8 +1,12 @@
 <template>
     <div class="modlist">
         <div>
-            <DLCList :model="model" :tree="tree"></DLCList>
-            <LocalModList :model="model" :tree="tree"></LocalModList>
+            <DLCList v-if="model.dlc !== undefined && model.dlc.length > 0" :model="model" :tree="tree"></DLCList>
+            <LocalModList
+                v-if="model.localMods !== undefined && model.localMods.length > 0"
+                :model="model"
+                :tree="tree"
+            ></LocalModList>
 
             <CollectionModsetList
                 v-for="(modset, index) of modsets"

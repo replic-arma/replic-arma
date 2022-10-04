@@ -1,4 +1,4 @@
-import type { Collection, GameServer, Modset, ModsetMod, IReplicArmaRepository } from '@/models/Repository';
+import type { Collection, GameServer, IReplicArmaRepository, Modset, ModsetMod } from '@/models/Repository';
 import type { GameLaunchSettings } from '@/models/Settings';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
@@ -14,7 +14,7 @@ export async function launchCollection(collection: Collection, repoId: string) {
         repo!.launchOptions,
         getModDlcString(
             repo?.downloadDirectoryPath ?? '',
-            filterMods(repoId, Object.values(collection.modsets).flat()),
+            [...filterMods(repoId, Object.values(collection.modsets).flat()), ...(collection.dlc ?? [])],
             collection.dlc ?? []
         )
     );

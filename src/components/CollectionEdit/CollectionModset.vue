@@ -1,5 +1,5 @@
 <template>
-    <div class="replic-checkbox" v-if="modset !== undefined">
+    <li class="replic-checkbox" v-if="modset !== undefined">
         <label class="replic-checkbox__thumb" :for="'check-' + modset.name" @click="update()">
             <mdicon v-if="model === 1" name="check" />
             <mdicon v-if="model === -1" name="minus" />
@@ -8,7 +8,7 @@
             ><span>{{ modset.name }}</span></label
         >
         <CollectionModsetModlist :modset="modset" :collection="collection" />
-    </div>
+    </li>
 </template>
 <script lang="ts" setup>
 import type { Collection, Modset, ModsetMod } from '@/models/Repository';
@@ -61,9 +61,6 @@ async function update() {
     &__label {
         cursor: pointer;
     }
-    &__label span {
-        margin-inline-start: 1rem;
-    }
     &__thumb {
         content: '';
         block-size: 2rem;
@@ -73,6 +70,7 @@ async function update() {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        margin-inline-end: 1rem;
         cursor: pointer;
     }
     &:hover &__folder {

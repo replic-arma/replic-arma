@@ -7,9 +7,13 @@ export interface File {
     sha1: string;
 }
 
-export interface ModsetMod {
+export interface Mod {
     mod_type: string;
     name: string;
+    path?: string;
+}
+
+export interface ModsetMod extends Mod {
     allow_compat?: boolean;
     files?: File[];
     outdatedFiles?: [];
@@ -53,7 +57,7 @@ export interface Collection {
     description?: string;
     modsets: ModsetMap;
     dlc?: Array<string>;
-    localMods?: Array<ModsetMod>;
+    localMods?: Array<Mod>;
     launchOptions?: GameLaunchSettings;
 }
 
@@ -83,13 +87,13 @@ export interface ReplicArmaRepositoryError {
 export enum RepositoryType {
     A3S = 'A3S',
     SWIFTY = 'swifty',
-    LOCAL = 'local',
+    LOCAL = 'local'
 }
 
 export enum HashStatus {
     OUTDATED = 'outdated',
     READY = 'ready',
-    CHECKING = 'checking',
+    CHECKING = 'checking'
 }
 export interface IReplicArmaRepository extends Repository {
     id: string;

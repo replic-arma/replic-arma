@@ -1,35 +1,29 @@
 <template>
-    <div class="replic-checkbox">
-        <label class="replic-checkbox__thumb" :for="'check-' + label"><mdicon v-if="model" name="check" /></label>
-        <input class="replic-checkbox__check" type="checkbox" :id="'check-' + label" v-model="model" />
-        <label class="replic-checkbox__label" :for="'check-' + label"
-            ><span>{{ label }}</span></label
+    <div class="replic-checkbox" v-if="mod !== undefined">
+        <label class="replic-checkbox__thumb" :for="'check-' + mod.name" @click="update()">
+            <mdicon name="check" />
+        </label>
+        <label class="replic-checkbox__label" :for="'check-' + mod.name" @click="update()"
+            ><span>{{ mod.name }}</span></label
         >
     </div>
 </template>
 <script lang="ts" setup>
-import type { Collection } from '@/models/Repository';
-import { ref, watch } from 'vue';
+import type { Collection, Mod } from '@/models/Repository';
+import { ref } from 'vue';
 interface Props {
-    label: string;
-    id: string;
-    default: boolean;
-    model: Collection;
+    mod: Mod;
+    collection: Collection;
 }
 const props = defineProps<Props>();
-const model = ref(props.default);
-const collection = ref(props.model);
-watch(model, async newModel => {
-    if (newModel) {
-        if (collection.value.dlc === undefined) collection.value.dlc = [];
-        collection.value.dlc?.push(props.id);
-    } else {
-        collection.value.dlc = collection.value.dlc?.filter((dlc: string) => dlc !== props.id);
-    }
-});
+const collection = ref(props.collection);
+
+async function update() {
+    collection.value.localMods = collection.value.localMods?.filter((mod: Mod) => mod.path !== props.mod.path);
+}
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .replic-checkbox {
     display: flex;
     align-items: center;
@@ -46,9 +40,6 @@ watch(model, async newModel => {
     &__label {
         cursor: pointer;
     }
-    &__label span {
-        margin-inline-start: 1rem;
-    }
     &__thumb {
         content: '';
         block-size: 2rem;
@@ -58,6 +49,7 @@ watch(model, async newModel => {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        margin-inline-end: 1rem;
         cursor: pointer;
     }
     &:hover &__folder {

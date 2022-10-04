@@ -1,32 +1,36 @@
 <template>
-    <ul class="modlist" :class="tree ? 'tree' : 'list'">
-        <ModListItem
-            v-for="(mod, index) of mods"
-            :name="mod.name"
-            :hash-cache="hashCache"
-            :modset-cache="modsetCache"
-            :key="index"
-        ></ModListItem>
-    </ul>
+    <div v-if="model.localMods !== undefined">
+        <div class="modset-list">
+            <span
+                >Local Mods <span>({{ model.localMods.length }})</span></span
+            >
+        </div>
+        <ul class="modlist" :class="tree ? 'tree' : 'list'">
+            <Mod
+                v-for="(mod, index) of model.localMods"
+                :name="mod.name"
+                :path="mod.path"
+                :key="index"
+                :display-icon="true"
+            ></Mod>
+        </ul>
+    </div>
 </template>
 
 <script lang="ts" setup>
-import type { Modset, ModsetMod } from '@/models/Repository';
-import { useHashStore, type ICacheItem } from '@/store/hash';
-import { useRepoStore } from '@/store/repo';
-import { computed } from 'vue';
-import ModListItem from './ModListItem.vue';
-interface Props {
-    mods: Array<ModsetMod>;
-    tree: boolean;
-    modsetId: string;
-}
-const hashCache = computed(() => useHashStore().cache.find((item: ICacheItem) => item.id === props.modsetId));
-const modsetCache = computed(() => {
-    if (useRepoStore().modsetCache === null) return;
-    return useRepoStore().modsetCache!.find((item: Modset) => item.id === props.modsetId);
+import type { Collection } from '@/models/Repository';
+import type { PropType } from 'vue';
+import Mod from './Mod.vue';
+
+defineProps({
+    model: {
+        type: Object as PropType<Collection>,
+        required: true
+    },
+    tree: {
+        type: Boolean
+    }
 });
-const props = defineProps<Props>();
 </script>
 
 <style lang="scss" scoped>
@@ -79,6 +83,22 @@ const props = defineProps<Props>();
         height: auto;
         top: 1em; /* (line-height/2) */
         bottom: 0;
+    }
+}
+.modset-list {
+    width: 100%;
+    padding-block-start: 1rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    margin-inline-end: 0.5rem;
+    gap: 1rem;
+    &::after {
+        content: '';
+        height: 2px;
+        background: grey;
+        width: 100%;
+        margin-top: auto;
+        margin-bottom: auto;
     }
 }
 </style>

@@ -1,16 +1,18 @@
 <template>
-    <div class="modset-list">
-        <span
-            >{{ model.name }} <span>({{ model.mods.length }})</span></span
-        >
+    <div>
+        <div class="modset-list">
+            <span
+                >{{ model.name }} <span>({{ model.mods.length }})</span></span
+            >
+        </div>
+        <ModModsetList :mods="model.mods" :tree="tree" :modset-id="model.id"></ModModsetList>
     </div>
-    <Modlist :mods="model.mods" :tree="tree" :modset-id="model.id"></Modlist>
 </template>
 
 <script lang="ts" setup>
 import type { Modset } from '@/models/Repository';
 import type { PropType } from 'vue';
-import Modlist from './Modlist.vue';
+import ModModsetList from '../ModModsetList.vue';
 
 defineProps({
     model: {

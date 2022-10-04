@@ -49,9 +49,6 @@ watch(model, async newModel => {
         display: flex;
         align-items: center;
     }
-    &__label span {
-        margin-inline-start: 1rem;
-    }
     &__thumb {
         content: '';
         block-size: 1rem;
@@ -63,6 +60,7 @@ watch(model, async newModel => {
         justify-content: center;
         cursor: pointer;
         color: var(--c-surf-2);
+        margin-inline-start: 1rem;
     }
 }
 .active {

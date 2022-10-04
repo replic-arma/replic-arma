@@ -5,9 +5,13 @@
             <div class="collection-mods__modset">
                 <span>Modsets</span>
                 <ul class="item-group">
-                    <li class="item item-modset" v-for="(modset, i) of repository.modsets" :key="i">
-                        <CollectionModset :modset="modset" :collection="model" />
-                    </li>
+                    <CollectionModset
+                        class="item item-modset"
+                        v-for="(modset, i) of repository.modsets"
+                        :key="i"
+                        :modset="modset"
+                        :collection="model"
+                    />
                 </ul>
             </div>
             <div class="collection-mods__dlc">
@@ -26,6 +30,18 @@
             </div>
             <div class="collection-mods__local-mods">
                 <span>Local Mods</span>
+                <ul class="item-group">
+                    <LocalMod
+                        class="item item-modset"
+                        v-for="(mod, i) of model.localMods"
+                        :key="i"
+                        :mod="mod"
+                        :collection="model"
+                    />
+                </ul>
+                <div class="add-button">
+                    <mdicon name="plus" role="button" @click="openDialog"></mdicon>
+                </div>
             </div>
         </div>
         <button class="button" @click="saveCollection()" v-t="'save'"></button>
@@ -34,19 +50,22 @@
             <mdicon v-if="!listOpen" name="chevron-up"></mdicon>
             <mdicon v-if="listOpen" name="chevron-down"></mdicon>
         </div>
-        <CollectionModlist v-show="listOpen" :model="model" :repository="repository"></CollectionModlist>
+        <Modlist v-show="listOpen" :model="model" :repository="repository"></Modlist>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { useRepoStore } from '@/store/repo';
 import { ref, type PropType } from 'vue';
-import CollectionModset from '@/components/collection/CollectionModset.vue';
 import { notify } from '@kyvg/vue3-notification';
-import CollectionDLC from '@/components/collection/CollectionDLC.vue';
 import Loader from '@/components/util/Loader.vue';
-import CollectionModlist from '@/components/collection/CollectionModlist.vue';
 import type { Collection, IReplicArmaRepository } from '@/models/Repository';
+import { open } from '@tauri-apps/api/dialog';
+import LocalMod from '../../components/CollectionEdit/LocalMod.vue';
+import CollectionModset from '../../components/CollectionEdit/CollectionModset.vue';
+import CollectionDLC from '../../components/CollectionEdit/CollectionDLC.vue';
+import Modlist from '../../components/Collection/Modlist.vue';
+
 const props = defineProps({
     model: {
         type: Object as PropType<Collection>,
@@ -76,6 +95,20 @@ async function saveCollection() {
 
 function toggle() {
     listOpen.value = !listOpen.value;
+}
+const collection = ref(props.model);
+function openDialog(): void {
+    open({ directory: true, multiple: true }).then(filepaths => {
+        if (filepaths === null) return;
+        if (!collection.value.localMods === undefined) collection.value.localMods = [];
+        (filepaths as string[]).forEach(filepath => {
+            collection.value.localMods!.push({
+                name: filepath.split('\\').pop() ?? '',
+                path: filepath,
+                mod_type: 'mod'
+            });
+        });
+    });
 }
 </script>
 

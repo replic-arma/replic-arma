@@ -1,6 +1,7 @@
 <template>
     <rtransition />
     <notifications position="bottom left" />
+    <OnlineStatus></OnlineStatus>
 </template>
 
 <style lang="scss">
@@ -12,6 +13,7 @@ import { watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useSettingsStore } from './store/settings';
+import OnlineStatus from './components/util/OnlineStatus.vue';
 const { locale } = useI18n({ useScope: 'global' });
 const router = useRouter();
 const store = useSettingsStore();

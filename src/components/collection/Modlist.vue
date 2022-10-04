@@ -1,7 +1,15 @@
 <template>
     <div class="modlist">
         <div>
-            <ModsetList v-for="(modset, index) of modsets" :key="index" :model="modset" :tree="tree"></ModsetList>
+            <DLCList :model="model" :tree="tree"></DLCList>
+            <LocalModList :model="model" :tree="tree"></LocalModList>
+
+            <CollectionModsetList
+                v-for="(modset, index) of modsets"
+                :key="index"
+                :model="modset"
+                :tree="tree"
+            ></CollectionModsetList>
         </div>
         <Tooltip :text="'Toggle Tree'">
             <div role="button" @click="toggleTree()">
@@ -16,7 +24,9 @@
 import type { Collection, IReplicArmaRepository, Modset, ModsetMod } from '@/models/Repository';
 import { computed } from '@vue/reactivity';
 import { ref, type PropType } from 'vue';
-import ModsetList from '../ModsetList.vue';
+import LocalModList from '../LocalModList.vue';
+import CollectionModsetList from '@/components/Collection/CollectionModsetList.vue';
+import DLCList from '../DLCList.vue';
 const props = defineProps({
     model: {
         type: Object as PropType<Collection>,
@@ -48,8 +58,6 @@ const modsets = computed(() => {
 
 <style lang="scss" scoped>
 .modlist {
-    position: relative;
-    width: 100%;
     display: grid;
     grid-template-columns: 1fr auto;
 }

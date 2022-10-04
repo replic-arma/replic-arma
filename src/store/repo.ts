@@ -60,7 +60,7 @@ export const useRepoStore = defineStore('repo', () => {
                 await updateRepository();
             }
             useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
-            await useHashStore().addToQueue(repo);
+            // await useHashStore().addToQueue(repo);
         });
     });
 

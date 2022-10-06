@@ -42,6 +42,7 @@ hyper = { version = "0.14", features = ["full"] }
 hyper-tls = "0.5.0"
 filetime = "0.2.15"
 tauri-plugin-deep-link = { git = "https://github.com/FabianLars/tauri-plugin-deep-link", rev = "3c5f001f5d4feedfe92693202af3986adab71740" }
+declarative-discord-rich-presence = { git = "https://github.com/KPidS/declarative-discord-rich-presence", rev = "bbe5f1193c595f195e8b61c055a552bf65d70eef" }
 once_cell = "1.13"
 rs-zsync = { git = "https://github.com/replic-arma/rs-zsync", branch = "file-map-test" }
 

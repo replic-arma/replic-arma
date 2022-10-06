@@ -18,12 +18,17 @@ use std::path::PathBuf;
 
 use crate::commands::repo::file_check;
 use crate::commands::{
+    discord::discord_set_activity,
     repo::{download, get_repo, pause_download},
     util::{dir_exists, file_exists, get_a3_dir},
 };
 use tauri::{api::path::app_dir, async_runtime::Mutex, Manager};
 use util::methods::load_t;
 
+use declarative_discord_rich_presence::{
+    activity::{Activity, Assets, Timestamps},
+    DeclarativeDiscordIpcClient,
+};
 use state::ReplicArmaState;
 
 #[cfg(target_os = "windows")]
@@ -112,6 +117,11 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 handle.emit_all("scheme-request-received", request).unwrap();
             })
             .unwrap();
+            app.manage(DeclarativeDiscordIpcClient::new(&String::from(
+                "1027352671289622580",
+            )));
+            let client = app.state::<DeclarativeDiscordIpcClient>();
+            client.enable();
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -121,7 +131,8 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             file_exists,
             dir_exists,
             get_a3_dir,
-            file_check
+            file_check,
+            discord_set_activity
         ])
         .on_page_load(|window, _| {
             #[cfg(target_os = "windows")]

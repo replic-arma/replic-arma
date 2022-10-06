@@ -67,6 +67,14 @@ export class JSONMap<K extends string | number, V> extends Map<K, V> {
     }
 }
 
+export interface ConnectionSettings {
+    config_url: string;
+    host_url: string;
+    protocol: 'http' | 'https' | 'ftp';
+    username?: string;
+    password?: string;
+    port?: string;
+}
 export interface Repository {
     open_repository_schema: number;
     name: string;
@@ -78,6 +86,7 @@ export interface Repository {
     download_server?: DownloadServer;
     collections: Array<Collection>;
     config_url: string | undefined;
+    connection?: ConnectionSettings;
 }
 
 export interface ReplicArmaRepositoryError {

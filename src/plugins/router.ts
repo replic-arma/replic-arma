@@ -49,16 +49,8 @@ const routes: Array<RouteRecordRaw> = [
         ]
     },
     {
-        path: '/setup/moddirectory',
-        component: () => import('../views/setup/ModDirectory.vue')
-    },
-    {
-        path: '/setup/executable',
-        component: () => import('../views/setup/Executable.vue')
-    },
-    {
-        path: '/setup/firstRepository',
-        component: () => import('../views/setup/FirstRepository.vue')
+        path: '/setup',
+        component: () => import('../views/Setup.vue')
     },
     {
         path: '/:pathMatch(.*)*',

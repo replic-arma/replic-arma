@@ -1,7 +1,7 @@
 <template>
     <Loader v-if="loading" />
     <div v-else-if="collection === null">
-        <span>Could not load collection</span>
+        <span v-t="'empty_states.collection_not_found.title'"></span>
     </div>
     <div class="collection" v-else>
         <div class="collection__heading">
@@ -27,9 +27,9 @@
 import { useRouteStore } from '@/store/route';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import Loader from '../components/util/Loader.vue';
-import Downloads from '../components/download/Downloads.vue';
-import Subnavi from '../components/util/Subnavi.vue';
+import Loader from '@/components/util/Loader.vue';
+import Downloads from '@/components/download/Downloads.vue';
+import Subnavi from '@/components/util/Subnavi.vue';
 import { useCollection } from '@/composables/useCollection';
 
 const { collection, repository, loading, playCollection } = useCollection(

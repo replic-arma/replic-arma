@@ -92,5 +92,23 @@
         "outdated": "Outdated Files",
         "size": "Size"
     },
-    "show_all_mods": "Show all Mods"
+    "show_all_mods": "Show all Mods",
+    "empty_states": {
+        "repository_not_found": {
+            "title": "Could not find repository"
+        },
+        "modset_not_found": {
+            "title": "Could not find modset"
+        },
+        "collection_not_found": {
+            "title": "Could not find collection"
+        },
+        "server_not_found": {
+            "title": "Could not find server"
+        }
+    },
+    "setup": "Setup",
+    "next": "Next",
+    "general_mod_directory": "This seems to be the first time launching Replic Arma. First you need to specify where you want to store your mods (Don't worry you can change it later).",
+    "first_repository": "Now it's time to add your first Repository."
 }

@@ -3,6 +3,7 @@ import * as mdijs from '@mdi/js';
 import mdiVue from 'mdi-vue/v3';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
+import VueMatomo from 'vue-matomo';
 import App from './App.vue';
 import LoaderVue from './components/util/Loader.vue';
 import TooltipVue from './components/util/Tooltip.vue';
@@ -13,8 +14,8 @@ import { useDownloadStore } from './store/download';
 import { useHashStore } from './store/hash';
 import { useRepoStore } from './store/repo';
 import { useSettingsStore } from './store/settings';
+import { updateActivity } from './util/system/discord';
 
-import VueMatomo from 'vue-matomo';
 const app = createApp(App);
 app.component('rtransition', TransitionVue);
 app.component('loader', LoaderVue);
@@ -31,7 +32,6 @@ useSettingsStore();
 useRepoStore();
 useHashStore();
 useDownloadStore();
-
 app.use(VueMatomo, {
     host: 'https://analytics.gruppe-adler.de',
     siteId: 2,
@@ -52,3 +52,5 @@ app.use(VueMatomo, {
     trackSiteSearch: false,
     crossOrigin: undefined
 });
+
+updateActivity();

@@ -2,6 +2,7 @@
     <rtransition />
     <notifications position="bottom left" />
     <OnlineStatus></OnlineStatus>
+    <DeepLink></DeepLink>
 </template>
 
 <style lang="scss">
@@ -14,6 +15,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useSettingsStore } from './store/settings';
 import OnlineStatus from './components/util/OnlineStatus.vue';
+import DeepLink from './components/DeepLink.vue';
 const { locale } = useI18n({ useScope: 'global' });
 const router = useRouter();
 const store = useSettingsStore();
@@ -23,7 +25,7 @@ watch(
     async newModel => {
         if (newModel !== null) {
             if (newModel !== null && (newModel.downloadDirectoryPath === '' || newModel.gamePath === '')) {
-                await router.push('/setup/moddirectory');
+                await router.push('/setup');
             }
             if (newModel.theme !== undefined) {
                 document.documentElement.setAttribute('data-theme', newModel.theme);

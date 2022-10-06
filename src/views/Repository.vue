@@ -1,7 +1,7 @@
 <template>
     <Loader v-if="loading" />
     <div v-else-if="repository === null">
-        <span>Could not load repository</span>
+        <span v-t="'empty_states.repository_not_found.title'"></span>
     </div>
     <div class="repo-view" v-else>
         <div class="repo-view__heading">

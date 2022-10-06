@@ -1,7 +1,7 @@
 <template>
     <Loader v-if="loading" />
     <div v-else-if="modset === null">
-        <span>Could not load modset</span>
+        <span v-t="'empty_states.modset_not_found.title'"></span>
     </div>
     <div class="modset" v-else>
         <div class="modset__heading">

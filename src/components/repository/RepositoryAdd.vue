@@ -73,7 +73,7 @@ function addRepo() {
         })
         .catch(error => {
             // status.value = false;
-            console.log(error);
+            console.debug(error);
             loading.value = false;
             errorMsg.value = error;
         });

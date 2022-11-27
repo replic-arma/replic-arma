@@ -10,6 +10,9 @@
             </Tooltip>
             <h1>{{ repository.name }}</h1>
             <div class="icon-group">
+                <Tooltip text="Share Repository">
+                    <mdicon name="share" size="35" @click="shareRepository()" />
+                </Tooltip>
                 <Tooltip text="Downloads" position="bottom">
                     <Downloads />
                 </Tooltip>
@@ -34,6 +37,8 @@ import Settings from '@/components/Repository/Settings.vue';
 import Downloads from '@/components/download/Downloads.vue';
 import { useRepository } from '@/composables/useRepository';
 import { useRouteStore } from '@/store/route';
+import { useDeepLink } from '@/composables/useDeepLink';
+import { notify } from '@kyvg/vue3-notification';
 const { repository, recalcRepository, loading } = useRepository(useRouteStore().currentRepoID ?? '');
 const subnaviItems = computed(() => {
     return [
@@ -42,6 +47,17 @@ const subnaviItems = computed(() => {
         { label: 'server.title', link: '/repo/' + repository.value?.id + '/servers' }
     ];
 });
+
+function shareRepository() {
+    const { createDeepLink } = useDeepLink();
+    if (repository.value === null) return;
+    console.log(createDeepLink(repository.value));
+    notify({
+        title: 'Copied Share link',
+        text: `The link has been copied to your clipboard`,
+        type: 'success'
+    });
+}
 </script>
 
 <style lang="scss" scoped>
@@ -60,7 +76,7 @@ const subnaviItems = computed(() => {
         }
         .icon-group {
             display: grid;
-            grid-template-columns: 3rem 3rem 3rem;
+            grid-template-columns: 3rem 3rem 3rem 3rem;
             align-items: center;
             justify-content: center;
             color: var(--c-text-3);

@@ -28,7 +28,7 @@ export const useHashStore = defineStore('hash', () => {
     const queue = ref([] as Array<IHashItem>);
     const cache = ref([] as Array<ICacheItem>);
     async function addToQueue(repo: IReplicArmaRepository) {
-        console.info(`Repository ${repo.name} has been queued`);
+        console.debug(`Repository ${repo.name} has been queued`);
         queue.value.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
         if (current.value === null) {
             next();
@@ -52,72 +52,74 @@ export const useHashStore = defineStore('hash', () => {
     }
 
     async function next() {
-        if (queue.value.length > 0) {
-            const firstElement = queue.value.splice(0, 1)[0];
-            if (firstElement === undefined) throw new Error('Queue empty');
-            current.value = firstElement;
-            if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (next)');
-            current.value.filesToCheck = currentHashRepo.value.files.length;
-            window.performance.mark(current.value.repoId);
-            console.info(`Started hash calc for repo ${currentHashRepo.value.name}`);
-            const hashData = await getHashes();
-            cache.value.push({
-                id: currentHashRepo.value.id,
-                ...hashData
-            });
-            const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
-            let currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
+        if (queue.value.length === 0) return;
+        const firstElement = queue.value.splice(0, 1)[0];
+        if (firstElement === undefined) throw new Error('Queue empty');
+        current.value = firstElement;
+        if (currentHashRepo.value === undefined) {
+            console.warn('Current hash repo not set (next). It probably got deleted while in queue');
+            return;
+        }
+        current.value.filesToCheck = currentHashRepo.value.files.length;
+        window.performance.mark(current.value.repoId);
+        console.debug(`Started hash calc for repo ${currentHashRepo.value.name}`);
+        const hashData = await getHashes();
+        console.log(hashData);
+        cache.value.push({
+            id: currentHashRepo.value.id,
+            ...hashData
+        });
+        const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
+        let currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
+            neededModsets.includes(cacheModset.id)
+        );
+        if (currentHashRepoModsetCache === undefined || currentHashRepoModsetCache.length === 0) {
+            console.debug(`No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
+            const { updateCache } = useRepository(currentHashRepo.value.id);
+            await updateCache();
+            currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
                 neededModsets.includes(cacheModset.id)
             );
-            if (currentHashRepoModsetCache === undefined || currentHashRepoModsetCache.length === 0) {
-                console.info(`No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
-                const { updateCache } = useRepository(currentHashRepo.value.id);
-                await updateCache();
-                currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
-                    neededModsets.includes(cacheModset.id)
-                );
-            }
-            if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
-            const cached = toRaw(cache.value.find(cacheValue => cacheValue.id === currentHashRepo.value?.id));
-            for (const modset of currentHashRepo.value.modsets) {
-                const modsetCache = currentHashRepoModsetCache.find(
-                    (cacheModset: Modset) => cacheModset.id === modset.id
-                );
-                if (cached === undefined || modsetCache === undefined) throw new Error('cache empty!');
-                const modsetFiles = toRaw(modsetCache).mods?.flatMap((mod: ModsetMod) => mod.files);
-                const outdated = await ReplicWorker.isFileIn(modsetFiles as File[], cached.outdated);
-                const missing = await ReplicWorker.isFileIn(modsetFiles as File[], cached.missing);
-                const complete = await ReplicWorker.isFileIn(modsetFiles as File[], cached.complete);
-                const extra = await ReplicWorker.isFileIn(modsetFiles as File[], cached.extra);
-                cache.value.push({
-                    id: modset.id,
-                    outdated,
-                    missing,
-                    extra,
-                    complete
-                });
-            }
-            console.info(
-                `Finished hash calc for repo ${currentHashRepo.value.name} after ${
-                    window.performance.measure('repository', current.value.repoId).duration
-                }`
-            );
-            current.value = null;
-            next();
         }
+        if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
+        for (const modset of currentHashRepo.value.modsets) {
+            const modsetCache = currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id);
+            if (hashData === undefined || modsetCache === undefined) throw new Error('cache empty!');
+            const modsetFiles = toRaw(modsetCache).mods?.flatMap((mod: ModsetMod) => mod.files);
+            const outdated = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.outdated);
+            const missing = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.missing);
+            const complete = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.complete);
+            const extra = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.extra);
+            cache.value.push({
+                id: modset.id,
+                outdated,
+                missing,
+                extra,
+                complete
+            });
+        }
+        console.debug(
+            `Finished hash calc for repo ${currentHashRepo.value.name} after ${
+                window.performance.measure('repository', current.value.repoId).duration
+            }`
+        );
+        current.value = null;
+        next();
     }
 
-    HASHING_PROGRESS.addEventListener('hash_calculated', () => {
+    HASHING_PROGRESS.addEventListener('hash_calculated', e => {
         const current = useHashStore().current;
         if (current !== null) {
             current.checkedFiles += 1;
+            console.debug(`Hash [${current?.checkedFiles}/${current?.filesToCheck}]`, e.detail.absolutePath);
         }
     });
 
-    HASHING_PROGRESS.addEventListener('zsync_completed', () => {
+    HASHING_PROGRESS.addEventListener('zsync_completed', e => {
         const current = useHashStore().current;
         if (current !== null) {
             current.checkedFiles += 1;
+            console.debug(`Zsync [${current?.checkedFiles}/${current?.filesToCheck}]`, e.detail.filename);
         }
     });
 

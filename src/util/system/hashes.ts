@@ -1,10 +1,10 @@
+import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
+import type { Event as TauriEvent } from '@tauri-apps/api/helpers/event';
 import TypedEventTarget from '../TypedEventTarget';
 import { fileExists, removeFile } from './fs';
-import { invoke } from '@tauri-apps/api';
-import type { Event as TauriEvent } from '@tauri-apps/api/helpers/event';
 export interface HashResponseItem {
-    completed_size: number;
+    current_size: number;
     file: string;
     percentage: number;
     size: number;

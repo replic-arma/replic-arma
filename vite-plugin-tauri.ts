@@ -1,10 +1,10 @@
-import type { Plugin, ResolvedConfig } from 'vite';
+import * as core from '@actions/core';
 import TauriCli from '@tauri-apps/cli';
+import { exec, type ExecOptionsWithStringEncoding } from 'child_process';
 import type { AddressInfo, Server } from 'net';
 import { basename, dirname, join, relative } from 'path';
 import glob from 'tiny-glob';
-import * as core from '@actions/core';
-import { exec, type ExecOptionsWithStringEncoding } from 'child_process';
+import type { Plugin, ResolvedConfig } from 'vite';
 
 interface BuildOptions {
     debug?: boolean;
@@ -82,7 +82,7 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
                     if (options?.dev?.target !== undefined) {
                         cliArgs.push('--target', options.dev.target);
                     }
-                    console.log(devPath);
+                    console.debug(devPath);
                     return TauriCli.run(
                         [
                             'dev',

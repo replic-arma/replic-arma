@@ -1,13 +1,14 @@
+import { useModset } from '@/composables/useModset';
 import { DownloadStatus, type DownloadItem } from '@/models/Download';
 import { RepositoryType, type IReplicArmaRepository, type Modset } from '@/models/Repository';
 import { downloadFiles, DOWNLOAD_PROGRESS } from '@/util/system/download';
+import type { HashResponseItem } from '@/util/system/hashes';
+import { notify } from '@kyvg/vue3-notification';
+import { sep } from '@tauri-apps/api/path';
 import { defineStore, storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useHashStore } from './hash';
 import { useRepoStore } from './repo';
-import { sep } from '@tauri-apps/api/path';
-import { notify } from '@kyvg/vue3-notification';
-import type { HashResponseItem } from '@/util/system/hashes';
 export const useDownloadStore = defineStore('download', () => {
     const current = ref(null as null | DownloadItem);
     const queue = ref([] as Array<DownloadItem>);
@@ -22,16 +23,11 @@ export const useDownloadStore = defineStore('download', () => {
     );
 
     async function addToDownloadQueue(modset: Modset, repoId: string) {
-        const cacheData = useHashStore().cache.find(cacheItem => cacheItem.id === modset.id);
-        if (cacheData === undefined) return;
-        const filesToDownload = [...cacheData.missing, ...cacheData.outdated];
-        const totalSize = filesToDownload
-            .map((item: HashResponseItem) => item.size)
-            .reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0);
+        const { updateSize } = useModset(repoId, modset.id);
         queue.value.push({
             item: modset,
             status: DownloadStatus.QUEUED,
-            size: totalSize,
+            size: updateSize.value,
             received: 0,
             repoId
         });

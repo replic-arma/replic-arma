@@ -1,20 +1,33 @@
+import type { IReplicArmaRepository } from '@/models/Repository';
+
+export interface DeepLinkContent {
+    connection: {
+        config_url: string;
+        host_url: string;
+        protocol: string;
+    };
+    info: unknown;
+    version: number;
+    creationDate: string;
+}
+
 export function useDeepLink() {
-    function createDeepLink() {
+    function createDeepLink(repository: IReplicArmaRepository) {
         const data = {
             connection: {
-                config_url: 'Test',
-                host_url: 'http://gruppe-adler.de',
+                config_url: repository.config_url,
+                host_url: '',
                 protocol: 'http'
             },
             info: {},
             version: 1,
-            creationDate: '2022-05-10'
+            creationDate: Date.now()
         };
         const encodedData = btoa(JSON.stringify(data));
         return `replicarma://${encodedData}`;
     }
 
-    function parse(data: { payload: string }) {
+    function parse(data: { payload: string }): DeepLinkContent {
         const url = new URL(data.payload);
         validate(url);
         const content = url.pathname.replaceAll('/', '');
@@ -23,7 +36,7 @@ export function useDeepLink() {
 
     function validate(url: URL) {
         if (url.protocol !== 'replicarma:') {
-            // TODO throw error
+            throw new Error('Protocol is not replicarma:');
         }
     }
 

@@ -113,15 +113,15 @@ async function spawnProcess(
 ) {
     const command = new Command('run-game', ['/C', 'start', '', path, mods, launchOptions, connection], spawnOptions);
     command.on('close', data => {
-        console.log(`command finished with code ${data.code} and signal ${data.signal}`);
+        console.debug(`command finished with code ${data.code} and signal ${data.signal}`);
     });
 
     command.on('error', error => console.error(`command error: "${error}"`));
-    command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-    command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
+    command.stdout.on('data', line => console.debug(`command stdout: "${line}"`));
+    command.stderr.on('data', line => console.debug(`command stderr: "${line}"`));
 
     const child = await command.spawn();
-    console.log('pid:', child.pid);
+    console.debug('pid:', child.pid);
 }
 
 export async function getA3PathRegistry(): Promise<string> {

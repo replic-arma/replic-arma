@@ -60,7 +60,7 @@ const props = defineProps<Props>();
 
 const progress = computed(() => {
     if (useDownloadStore().current === null) return 0;
-    return Number(
+    return +Number(
         (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
     ).toFixed(0);
 });

@@ -74,7 +74,7 @@ const status = computed(() => {
 const progress = computed(() => {
     const [id] = currentModsetId.value.split('_');
     if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) {
-        return Number(
+        return +Number(
             (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
         ).toFixed(0);
     } else {

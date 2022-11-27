@@ -29,13 +29,14 @@
                 </template>
             </div>
         </div>
-        <!-- <pre>
+        <pre>
             Size: {{ size }} GB 
+            Update Size {{ updateSize }} GB
+            Update Files Count {{ updateFiles.length }}
+            Files Count: {{ files.length }}
             Files: {{ files }}
-            Update Size {{ updateSize }}
-            Update Files {{ updateFiles.length }}
-            Files {{ updateFiles }}
-        </pre> -->
+            Update Files {{ updateFiles }}
+        </pre>
         <Subnavi v-if="modset !== undefined" :subnaviItems="subnaviItems"></Subnavi>
         <router-view :model="modset" />
     </div>

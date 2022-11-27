@@ -3,9 +3,7 @@
         <div class="repos__heading">
             <h1 v-t="'repositories'"></h1>
             <div class="icon-group">
-                <Tooltip text="Downloads" position="bottom">
-                    <Downloads />
-                </Tooltip>
+                <Downloads />
                 <Tooltip text="Reload Repositories">
                     <mdicon name="refresh" size="35" v-once @click="reloadRepos" />
                 </Tooltip>

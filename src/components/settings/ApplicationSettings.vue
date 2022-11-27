@@ -93,17 +93,18 @@
 <script lang="ts" setup>
 import { useSettingsStore } from '@/store/settings';
 import { clearModsetCache } from '@/util/system/modset_cache';
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import PathSelectorVue from '../util/PathSelector.vue';
 import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
 import { notify } from '@kyvg/vue3-notification';
 import About from './About.vue';
 import Launch from './Launch.vue';
-const settings = useSettingsStore().settings;
-function saveSettings() {
-    useSettingsStore().settings = settings;
-    useSettingsStore().save();
+const settingsStore = useSettingsStore();
+const settings = toRaw(settingsStore.settings);
+async function saveSettings() {
+    settingsStore.settings = settings;
+    await settingsStore.save();
     notify({
         title: 'Saved Settings',
         text: 'Changes have been saved to your disk',
@@ -119,7 +120,7 @@ async function clearCache() {
     });
 }
 async function resetSettings() {
-    await useSettingsStore().reset();
+    await settingsStore.reset();
     notify({
         title: 'Reset Settings',
         text: 'Settings have been reset to default',

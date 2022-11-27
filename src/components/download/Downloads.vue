@@ -1,13 +1,13 @@
 <template>
-    <mdicon name="download" role="button" size="35" @click="isOpen = true" />
+    <Tooltip text="Downloads" position="bottom">
+        <mdicon name="download" role="button" size="35" @click="isOpen = true" />
+    </Tooltip>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">
                 <mdicon role="button" name="close" size="45" @click="isOpen = false" />
                 <h1 v-t="'downloads'"></h1>
-                <keep-alive>
-                    <DownloadProgess />
-                </keep-alive>
+                <DownloadProgess />
             </div>
             <ul class="download-items">
                 <DownloadItemVue v-if="downloadItem !== null" :downloadItem="downloadItem" />

@@ -83,7 +83,7 @@ export function useRepository(repoID: MaybeRef<string>) {
             if (repository.value.config_url === undefined) throw new Error('Repository has no autoconfig');
             const repoData = await getRepoFromURL(`${repository.value.config_url}autoconfig`);
             if (repoData.revision !== repository.value.revision) {
-                console.info(
+                console.debug(
                     `Update for Repository ${repository.value.name} detected. Old revision ${repository.value.revision} new revision ${repoData.revision}`
                 );
             }
@@ -94,7 +94,7 @@ export function useRepository(repoID: MaybeRef<string>) {
         if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
         if (repository.value.config_url === undefined) throw new Error('Repository has no autoconfig');
         const repoData = await getRepoFromURL(`${repository.value.config_url}autoconfig`);
-        console.info(`Updating Repository ${repoData.name}`);
+        console.debug(`Updating Repository ${repoData.name}`);
         await clearModsetCache(unref(repoID));
         await updateModsets(repoData);
         await updateCollections();
@@ -102,7 +102,7 @@ export function useRepository(repoID: MaybeRef<string>) {
         repository.value.build_date = repoData.build_date;
         repository.value.revision = repoData.revision;
         await repoStore.save();
-        console.info(`Updating Repository ${repoData.name} finished`);
+        console.debug(`Updating Repository ${repoData.name} finished`);
     }
 
     async function updateModsets(repoData: Repository) {

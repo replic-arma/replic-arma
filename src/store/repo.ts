@@ -5,6 +5,7 @@ import { DEFAULT_LAUNCH_CONFIG } from '@/util/system/config';
 import { loadModsetCache } from '@/util/system/modset_cache';
 import { getRepoFromURL, loadRepos, saveRepos } from '@/util/system/repos';
 import { ReplicWorker } from '@/util/worker';
+import { notify } from '@kyvg/vue3-notification';
 import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 import { ref } from 'vue';
@@ -46,22 +47,27 @@ export const useRepoStore = defineStore('repo', () => {
             downloadDirectoryPath: useSettingsStore().settings?.downloadDirectoryPath ?? ''
         };
         repos.value?.push(repoC as IReplicArmaRepository);
+        notify({
+            title: 'Added Repository',
+            text: `Repository ${repoC.name} has been added`,
+            type: 'success'
+        });
         const { updateCache } = useRepository(repoId);
         await updateCache();
         await save();
         await useHashStore().addToQueue(repoC as IReplicArmaRepository);
     }
 
-    loadRepos().then((reposdata: Array<IReplicArmaRepository>) => {
+    loadRepos().then(async (reposdata: Array<IReplicArmaRepository>) => {
         repos.value = reposdata;
-        reposdata.forEach(async (repo: IReplicArmaRepository) => {
+        for (const repo of reposdata) {
             const { updateRepository, checkRevisionChanged } = useRepository(repo.id);
             if (await checkRevisionChanged()) {
                 await updateRepository();
             }
             useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
-            // await useHashStore().addToQueue(repo);
-        });
+            await useHashStore().addToQueue(repo);
+        }
     });
 
     async function recalcRepositories() {

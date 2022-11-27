@@ -12,15 +12,18 @@
     </Teleport>
 </template>
 <script lang="ts" setup>
-import { useDeepLink } from '@/composables/useDeepLink';
+import { useDeepLink, type DeepLinkContent } from '@/composables/useDeepLink';
+import { useRepoStore } from '@/store/repo';
 import { DEEP_LINK } from '@/util/system/deep-link';
 import { ref } from 'vue';
 const isOpen = ref(false);
-const content = ref(null);
+const content = ref(null as null | DeepLinkContent);
 DEEP_LINK.removeEventListener('deep_link_received', () => {});
 DEEP_LINK.addEventListener('deep_link_received', data => {
     isOpen.value = true;
     content.value = parseDeepLink(data.detail);
+    if (content.value === null) return;
+    useRepoStore().addRepo(`${content.value.connection.config_url}autoconfig`);
 });
 const { parseDeepLink } = useDeepLink();
 </script>

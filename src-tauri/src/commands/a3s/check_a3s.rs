@@ -181,7 +181,7 @@ pub async fn check_a3s(
     );
 
     // dbg!(completed_files);
-    // println!("Outdated: {:?}", outdated_files);y
+    println!("Outdated: {:?}", outdated_files);
     // println!("Missing: {:?}", missing_files);
 
     Ok(FileCheckResult {

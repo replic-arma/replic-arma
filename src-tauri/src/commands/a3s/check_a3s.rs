@@ -2,9 +2,10 @@ use std::path::Path;
 
 use anyhow::anyhow;
 use anyhow::Result;
-use futures::future;
+use futures::StreamExt;
 use rayon::prelude::{ParallelBridge, ParallelIterator};
 use rs_zsync::{file_maker::FileMaker, meta_file::MetaFile};
+use tauri::async_runtime::TokioJoinHandle;
 use tauri::Window;
 use tokio::fs;
 
@@ -121,7 +122,15 @@ pub async fn check_a3s(
         .collect();
 
     // create zsync tasks for outdated files
-    let zsync_tasks = outdated.into_iter().map(|(fci, _)| {
+    let hash_con = *state.number_hash_concurrent.lock().await;
+
+    #[allow(clippy::type_complexity)]
+    let zsync_check_fnmut: Box<
+        dyn Send
+            + FnMut(
+                (FileCheckInput, &(String, i64)),
+            ) -> TokioJoinHandle<std::result::Result<RepoFile, anyhow::Error>>,
+    > = Box::new(|(fci, _)| {
         let url2 = url.clone();
         let path_prefix2 = path_prefix.clone();
         let inner_window = window.clone();
@@ -155,15 +164,18 @@ pub async fn check_a3s(
         })
     });
 
+    let zsync_tasks = futures::stream::iter(outdated)
+        .map(zsync_check_fnmut)
+        .buffer_unordered(hash_con);
     // collect outdated files via executing all the tasks
-    let zsync_results = future::join_all(zsync_tasks).await;
-    let outdated_files: Vec<RepoFile> = zsync_results
-        .into_iter()
-        .partition::<Vec<_>, _>(|x| x.is_ok() && x.as_ref().unwrap().is_ok())
-        .0 // only successfull tasks
-        .into_iter()
-        .map(|f| f.unwrap().unwrap())
-        .collect();
+    let zsync_results = zsync_tasks.filter_map(|f| async move {
+        if let Ok(Ok(rf)) = f {
+            Some(rf)
+        } else {
+            None
+        }
+    });
+    let outdated_files = zsync_results.collect::<Vec<_>>().await;
 
     let missing_size: u64 = missing_files.iter().map(|f| f.size).sum();
     let outdated_size: f64 = outdated_files.iter().map(|f| f.current_size).sum();
@@ -181,7 +193,7 @@ pub async fn check_a3s(
     );
 
     // dbg!(completed_files);
-    println!("Outdated: {:?}", outdated_files);
+    // println!("Outdated: {:?}", outdated_files);
     // println!("Missing: {:?}", missing_files);
 
     Ok(FileCheckResult {

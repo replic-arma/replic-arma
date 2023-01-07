@@ -12,22 +12,17 @@ use hyper::Body;
 use hyper::Client;
 use hyper::HeaderMap;
 use hyper::Uri;
-use hyper::{
-    header::{ETAG, LAST_MODIFIED, RANGE},
-    Request,
-};
+use hyper::{header::RANGE, Request};
 use hyper_tls::HttpsConnector;
 use std::{
     ffi::{OsStr, OsString},
-    fs::{File, OpenOptions},
+    fs::File,
     io::Write,
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::async_runtime::Mutex;
 use url::Url;
-
-use crate::state::ReplicArmaState;
 
 pub(crate) fn get_header_value(
     headers: &HeaderMap<HeaderValue>,
@@ -44,10 +39,10 @@ pub(crate) fn get_header_value(
 }
 
 #[async_trait]
-pub trait Downloader {
+pub trait Downloader: Send + Sync {
     async fn download_file(
         &self,
-        state: &tauri::State<'_, ReplicArmaState>,
+        downloading_state: &Mutex<Option<bool>>,
         total_written_bytes: &Arc<Mutex<usize>>,
         url: Url,
         destination: &Path,
@@ -55,13 +50,15 @@ pub trait Downloader {
 
     async fn download_partial(
         &self,
-        state: &tauri::State<'_, ReplicArmaState>,
+        downloading_state: &Mutex<Option<bool>>,
         total_written_bytes: &Arc<Mutex<usize>>,
         url: Url,
         range: (usize, usize),
     ) -> Result<Vec<u8>>;
 
     async fn download_file_simple(&self, url: Url, destination: &Path) -> Result<()>;
+
+    fn clone_box(&self) -> Box<dyn Downloader>;
 }
 
 fn append_ext(ext: impl AsRef<OsStr>, path: PathBuf) -> PathBuf {
@@ -72,7 +69,7 @@ fn append_ext(ext: impl AsRef<OsStr>, path: PathBuf) -> PathBuf {
 }
 
 async fn download_file<C>(
-    state: &tauri::State<'_, ReplicArmaState>,
+    downloading_state: &Mutex<Option<bool>>,
     total_written_bytes: &Arc<Mutex<usize>>,
     client: Client<C>,
     url: Url,
@@ -100,7 +97,7 @@ where
         *total_written_bytes.lock().await += chunk_len;
         bytes_written_complete += chunk_len;
 
-        let keep_downloading = (*state.downloading.lock().await).unwrap_or(true);
+        let keep_downloading = (*downloading_state.lock().await).unwrap_or(true);
         if !keep_downloading {
             break;
         }
@@ -109,7 +106,7 @@ where
 }
 
 async fn download_file_partial<C>(
-    state: &tauri::State<'_, ReplicArmaState>,
+    downloading_state: &Mutex<Option<bool>>,
     total_written_bytes: &Arc<Mutex<usize>>,
     client: Client<C>,
     url: Url,
@@ -145,7 +142,7 @@ where
         *total_written_bytes.lock().await += chunk_len;
         bytes_written_complete += chunk_len;
 
-        let keep_downloading = (*state.downloading.lock().await).unwrap_or(true);
+        let keep_downloading = (*downloading_state.lock().await).unwrap_or(true);
         if !keep_downloading {
             break;
         }
@@ -173,6 +170,7 @@ where
     Ok(())
 }
 
+#[derive(Clone)]
 pub struct HttpDownloader {
     client: Client<HttpConnector>,
 }
@@ -189,14 +187,21 @@ impl HttpDownloader {
 impl Downloader for HttpDownloader {
     async fn download_file(
         &self,
-        state: &tauri::State<'_, ReplicArmaState>,
+        downloading_state: &Mutex<Option<bool>>,
         window: &Arc<Mutex<usize>>,
         url: Url,
         destination: &Path,
     ) -> Result<()> {
         // Client is cheap to clone and cloning is the recommended way to share a Client.
         // The underlying connection pool will be reused.
-        Ok(download_file(state, window, self.client.clone(), url, destination).await?)
+        Ok(download_file(
+            downloading_state,
+            window,
+            self.client.clone(),
+            url,
+            destination,
+        )
+        .await?)
     }
 
     async fn download_file_simple(&self, url: Url, destination: &Path) -> Result<()> {
@@ -205,18 +210,27 @@ impl Downloader for HttpDownloader {
 
     async fn download_partial(
         &self,
-        state: &tauri::State<'_, ReplicArmaState>,
+        downloading_state: &Mutex<Option<bool>>,
         total_written_bytes: &Arc<Mutex<usize>>,
         url: Url,
         range: (usize, usize),
     ) -> Result<Vec<u8>> {
-        Ok(
-            download_file_partial(state, total_written_bytes, self.client.clone(), url, range)
-                .await?,
+        Ok(download_file_partial(
+            downloading_state,
+            total_written_bytes,
+            self.client.clone(),
+            url,
+            range,
         )
+        .await?)
+    }
+
+    fn clone_box(&self) -> Box<dyn Downloader> {
+        Box::new(self.clone())
     }
 }
 
+#[derive(Clone)]
 pub struct HttpsDownloader {
     client: Client<HttpsConnector<HttpConnector>>,
 }
@@ -233,14 +247,21 @@ impl HttpsDownloader {
 impl Downloader for HttpsDownloader {
     async fn download_file(
         &self,
-        state: &tauri::State<'_, ReplicArmaState>,
+        downloading_state: &Mutex<Option<bool>>,
         window: &Arc<Mutex<usize>>,
         url: Url,
         destination: &Path,
     ) -> Result<()> {
         // Client is cheap to clone and cloning is the recommended way to share a Client.
         // The underlying connection pool will be reused.
-        Ok(download_file(state, window, self.client.clone(), url, destination).await?)
+        Ok(download_file(
+            downloading_state,
+            window,
+            self.client.clone(),
+            url,
+            destination,
+        )
+        .await?)
     }
 
     async fn download_file_simple(&self, url: Url, destination: &Path) -> Result<()> {
@@ -249,15 +270,23 @@ impl Downloader for HttpsDownloader {
 
     async fn download_partial(
         &self,
-        state: &tauri::State<'_, ReplicArmaState>,
+        downloading_state: &Mutex<Option<bool>>,
         total_written_bytes: &Arc<Mutex<usize>>,
         url: Url,
         range: (usize, usize),
     ) -> Result<Vec<u8>> {
-        Ok(
-            download_file_partial(state, total_written_bytes, self.client.clone(), url, range)
-                .await?,
+        Ok(download_file_partial(
+            downloading_state,
+            total_written_bytes,
+            self.client.clone(),
+            url,
+            range,
         )
+        .await?)
+    }
+
+    fn clone_box(&self) -> Box<dyn Downloader> {
+        Box::new(self.clone())
     }
 }
 

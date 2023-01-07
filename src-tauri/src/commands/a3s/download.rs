@@ -1,9 +1,9 @@
-use std::fs::{File, OpenOptions};
+use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
-use std::os::windows::prelude::FileExt;
 use std::path::Path;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
+use futures::StreamExt;
 use rs_zsync::file_maker::FilePart;
 use rs_zsync::meta_file::MetaFile;
 use tauri::{async_runtime::Mutex, Window};
@@ -17,6 +17,11 @@ use crate::{
     commands::utils::download_client::{Downloader, HttpDownloader, HttpsDownloader},
     state::ReplicArmaState,
 };
+
+enum FileToDownload {
+    NewFile(String),
+    PartialFile(String),
+}
 
 use super::check_a3s::get_zsync;
 
@@ -33,7 +38,7 @@ pub async fn download_a3s(
     println!("{}", connection_info);
 
     // Send/Sync required by tauri::command
-    let downloader: Box<dyn Downloader + Send + Sync> = match connection_info.scheme() {
+    let downloader: Box<dyn Downloader> = match connection_info.scheme() {
         "http" => Box::new(HttpDownloader::new()),
         "https" => Box::new(HttpsDownloader::new()),
         "ftp" => todo!(),
@@ -58,87 +63,82 @@ pub async fn download_a3s(
         }
     });
 
-    // NOT THREADSAFE (I think :P)
-    //files.into_iter().for_each(|file| {
+    let num_connections = *state.number_dl_concurrent.lock().await;
 
-    for file in new_files {
-        let url = connection_info.join(&file)?;
-        let target_file = target_dir.join(file.clone());
-        let mut target_path = target_file.clone();
-        target_path.pop();
+    let mut files_to_dl: Vec<FileToDownload> = new_files
+        .iter()
+        .map(|f| FileToDownload::NewFile(f.to_string()))
+        .collect();
 
-        println!("Downloading: {} to {}", url, target_file.display());
+    files_to_dl.extend(
+        partial_files
+            .iter()
+            .map(|f| FileToDownload::PartialFile(f.to_string())),
+    );
 
-        fs::create_dir_all(target_path).await?;
+    if num_connections > 1 {
+        let buffer = futures::stream::iter(files_to_dl)
+            .map(|ftdl| {
+                let downloading_state = state.downloading.clone();
+                let connection_info = connection_info.clone();
+                let target_dir = target_dir.clone();
+                let downloader = downloader.clone_box();
+                let written_bytes = written_bytes.clone();
+                let window = window.clone();
+                let downloading = downloading.clone();
 
-        downloader
-            .download_file(&state, &written_bytes, url, &target_file)
-            .await?;
-        if (*state.downloading.lock().await).unwrap_or(true) {
-            window.emit("download_finished", file).unwrap();
-        } else {
-            *downloading.lock().await = false; // Should be already false???
-            break;
-        }
-    }
+                let fut_dl = download_file_match(
+                    ftdl,
+                    connection_info,
+                    target_dir,
+                    downloader,
+                    downloading_state,
+                    written_bytes,
+                    window,
+                    downloading,
+                );
 
-    for file in partial_files {
-        let url = connection_info.join(&file)?;
-        let (ranges, mf) = get_zsync_ranges(
-            connection_info.as_str(),
-            &file,
-            target_dir.to_str().unwrap_or_default(),
-        )
-        .await?;
-        let target_file = target_dir.join(file.clone());
+                tokio::spawn(fut_dl)
+            })
+            .buffer_unordered(num_connections);
 
-        let mut part_file = target_file.to_str().unwrap_or_default().to_owned();
-        part_file.push_str(".part");
-        {
-            let mut inp = BufReader::new(File::open(target_file.clone())?);
-
-            let mut out = BufWriter::new(File::create(&part_file)?);
-
-            let mut inner_buf = vec![0_u8; mf.blocksize];
-
-            for range in ranges {
-                if range.file_offset != -1 {
-                    inner_buf.resize(mf.blocksize, 0);
-                    inp.seek(SeekFrom::Start(range.file_offset as u64))?;
-                    let n = inp.read(&mut inner_buf)?;
-                    inner_buf.resize(n, 0);
-                    out.write_all(&inner_buf)?;
-                } else {
-                    let buf = downloader
-                        .download_partial(
-                            &state,
-                            &written_bytes,
-                            url.clone(),
-                            (range.start_offset, range.end_offset),
-                        )
-                        .await?;
-                    if !(*state.downloading.lock().await).unwrap_or(true) {
-                        *downloading.lock().await = false; // Should be already false???
-                        break;
-                    }
-
-                    out.write_all(&buf)?;
+        buffer
+            .for_each(|r| async {
+                match r {
+                    Ok(_) => {}
+                    Err(err) => println!("DL Error: {}", err),
                 }
-
-                // out.write_all()
-            }
+            })
+            .await;
+    } else {
+        for file in new_files {
+            dl_new_file(
+                &connection_info,
+                file,
+                &target_dir,
+                &downloader,
+                &state.downloading,
+                &written_bytes,
+                &window,
+                &downloading,
+            )
+            .await?;
         }
-        if (*state.downloading.lock().await).unwrap_or(true) {
-            fs::remove_file(&target_file).await?;
-            fs::rename(part_file, target_file).await?;
 
-            window.emit("download_finished", file).unwrap();
-        } else {
-            *downloading.lock().await = false; // Should be already false???
-            break;
+        for file in partial_files {
+            dl_part_file(
+                &connection_info,
+                file,
+                &target_dir,
+                &downloader,
+                &state.downloading,
+                &written_bytes,
+                &downloading,
+                &window,
+            )
+            .await?;
         }
     }
-
     let mut dl_completed = false;
     if *downloading.lock().await {
         dl_completed = true;
@@ -147,6 +147,140 @@ pub async fn download_a3s(
     *downloading.lock().await = false;
 
     Ok(dl_completed)
+}
+
+async fn download_file_match(
+    ftdl: FileToDownload,
+    connection_info: Url,
+    target_dir: PathBuf,
+    downloader: Box<dyn Downloader>,
+    downloading_state: Arc<Mutex<Option<bool>>>,
+    written_bytes: Arc<Mutex<usize>>,
+    window: Window,
+    downloading: Arc<Mutex<bool>>,
+) -> Result<bool, anyhow::Error> {
+    match ftdl {
+        FileToDownload::NewFile(new_file) => {
+            dl_new_file(
+                &connection_info,
+                new_file,
+                &target_dir,
+                &downloader,
+                &downloading_state,
+                &written_bytes,
+                &window,
+                &downloading,
+            )
+            .await
+        }
+        FileToDownload::PartialFile(part_file) => {
+            dl_part_file(
+                &connection_info,
+                part_file,
+                &target_dir,
+                &downloader,
+                &downloading_state,
+                &written_bytes,
+                &downloading,
+                &window,
+            )
+            .await
+        }
+    }
+}
+
+async fn dl_part_file(
+    connection_info: &Url,
+    file: String,
+    target_dir: &PathBuf,
+    downloader: &Box<dyn Downloader>,
+    downloading_state: &Arc<Mutex<Option<bool>>>,
+    written_bytes: &Arc<Mutex<usize>>,
+    downloading: &Arc<Mutex<bool>>,
+    window: &Window,
+) -> Result<bool, anyhow::Error> {
+    let url = connection_info.join(&file)?;
+    let (ranges, mf) = get_zsync_ranges(
+        connection_info.as_str(),
+        &file,
+        target_dir.to_str().unwrap_or_default(),
+    )
+    .await?;
+    let target_file = target_dir.join(file.clone());
+    let mut part_file = target_file.to_str().unwrap_or_default().to_owned();
+    part_file.push_str(".part");
+    {
+        let mut inp = BufReader::new(File::open(target_file.clone())?);
+
+        let mut out = BufWriter::new(File::create(&part_file)?);
+
+        let mut inner_buf = vec![0_u8; mf.blocksize];
+
+        for range in ranges {
+            if range.file_offset != -1 {
+                inner_buf.resize(mf.blocksize, 0);
+                inp.seek(SeekFrom::Start(range.file_offset as u64))?;
+                let n = inp.read(&mut inner_buf)?;
+                inner_buf.resize(n, 0);
+                out.write_all(&inner_buf)?;
+            } else {
+                let buf = downloader
+                    .download_partial(
+                        downloading_state,
+                        written_bytes,
+                        url.clone(),
+                        (range.start_offset, range.end_offset),
+                    )
+                    .await?;
+                if !(*downloading_state.lock().await).unwrap_or(true) {
+                    *downloading.lock().await = false; // Should be already false???
+                    break;
+                }
+
+                out.write_all(&buf)?;
+            }
+
+            // out.write_all()
+        }
+    }
+    if (*downloading_state.lock().await).unwrap_or(true) {
+        fs::remove_file(&target_file).await?;
+        fs::rename(part_file, target_file).await?;
+
+        window.emit("download_finished", file).unwrap();
+    } else {
+        *downloading.lock().await = false; // Should be already false???
+        return Ok(false);
+    }
+    Ok(true)
+}
+
+async fn dl_new_file(
+    connection_info: &Url,
+    file: String,
+    target_dir: &PathBuf,
+    downloader: &Box<dyn Downloader>,
+    downloading_state: &Arc<Mutex<Option<bool>>>,
+    written_bytes: &Arc<Mutex<usize>>,
+    window: &Window,
+    downloading: &Arc<Mutex<bool>>,
+) -> Result<bool, anyhow::Error> {
+    let url = connection_info.join(&file)?;
+    let target_file = target_dir.join(file.clone());
+    let mut target_path = target_file.clone();
+    target_path.pop();
+    println!("Downloading: {} to {}", url, target_file.display());
+    fs::create_dir_all(target_path).await?;
+    downloader
+        .download_file(downloading_state, written_bytes, url, &target_file)
+        .await?;
+    if (*downloading_state.lock().await).unwrap_or(true) {
+        window.emit("download_finished", file).unwrap();
+    } else {
+        *downloading.lock().await = false; // Should be already false???
+        return Ok(false);
+    }
+    Ok(true)
 }
 
 pub async fn get_zsync_ranges(

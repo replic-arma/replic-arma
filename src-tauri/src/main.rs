@@ -15,6 +15,8 @@ mod util;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Arc;
+use std::thread::available_parallelism;
 
 use crate::commands::repo::file_check;
 use crate::commands::{
@@ -25,21 +27,17 @@ use crate::commands::{
 use tauri::{api::path::app_dir, async_runtime::Mutex, Manager};
 use util::methods::load_t;
 
-use declarative_discord_rich_presence::{
-    activity::{Activity, Assets, Timestamps},
-    DeclarativeDiscordIpcClient,
-};
+use declarative_discord_rich_presence::DeclarativeDiscordIpcClient;
 use state::ReplicArmaState;
 
 #[cfg(target_os = "windows")]
 use windows::Win32::{
-    Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, RECT, WPARAM},
+    Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
     UI::{
         Input::KeyboardAndMouse::SetFocus,
         WindowsAndMessaging::{
-            CallNextHookEx, GetWindowRect, GetWindowThreadProcessId, SetWindowPos,
-            SetWindowsHookExW, CWPSTRUCT, HHOOK, MSG, SWP_NOMOVE, WH_CALLWNDPROC, WH_GETMESSAGE,
-            WM_EXITSIZEMOVE, WM_NCLBUTTONDOWN,
+            CallNextHookEx, GetWindowThreadProcessId, SetWindowsHookExW, HHOOK, MSG, WH_GETMESSAGE,
+            WM_NCLBUTTONDOWN,
         },
     },
 };
@@ -64,10 +62,14 @@ fn init_state(app_dir: PathBuf) -> anyhow::Result<ReplicArmaState> {
         }
     };
 
+    let num_logical_cores = available_parallelism().unwrap().get();
+
     let state = ReplicArmaState {
         data_dir: Box::new(app_dir),
         known_hashes: Mutex::new(hashes),
-        downloading: Mutex::new(None),
+        downloading: Arc::new(Mutex::new(None)),
+        number_dl_concurrent: Arc::new(Mutex::new(num_logical_cores)),
+        number_hash_concurrent: Arc::new(Mutex::new(num_logical_cores)),
     };
 
     Ok(state)
@@ -105,10 +107,13 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             let app_dir = app_dir(&app.config()).expect("Couldn't get app dir path!");
             app.manage(init_state(app_dir.clone()).unwrap_or_else(|_| {
                 println!("Error during init state! Using default state!");
+                let num_logical_cores = available_parallelism().unwrap().get();
                 ReplicArmaState {
                     data_dir: Box::new(app_dir),
                     known_hashes: Mutex::new(HashMap::new()),
-                    downloading: Mutex::new(None),
+                    downloading: Arc::new(Mutex::new(None)),
+                    number_dl_concurrent: Arc::new(Mutex::new(num_logical_cores)),
+                    number_hash_concurrent: Arc::new(Mutex::new(num_logical_cores)),
                 }
             }));
             let handle = app.handle();

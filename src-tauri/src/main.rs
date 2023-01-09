@@ -68,7 +68,6 @@ fn init_state(app_dir: PathBuf) -> anyhow::Result<ReplicArmaState> {
         data_dir: Box::new(app_dir),
         known_hashes: Mutex::new(hashes),
         downloading: Arc::new(Mutex::new(None)),
-        number_dl_concurrent: Arc::new(Mutex::new(num_logical_cores)),
         number_hash_concurrent: Arc::new(Mutex::new(num_logical_cores)),
     };
 
@@ -112,7 +111,6 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     data_dir: Box::new(app_dir),
                     known_hashes: Mutex::new(HashMap::new()),
                     downloading: Arc::new(Mutex::new(None)),
-                    number_dl_concurrent: Arc::new(Mutex::new(num_logical_cores)),
                     number_hash_concurrent: Arc::new(Mutex::new(num_logical_cores)),
                 }
             }));

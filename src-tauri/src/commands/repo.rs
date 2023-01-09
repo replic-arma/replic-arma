@@ -59,6 +59,7 @@ pub async fn download(
     target_path: String,
     new_files: Vec<String>,
     partial_files: Vec<String>,
+    number_connections: u32,
 ) -> JSResult<String> {
     let dl_completed = download_wrapper(
         window,
@@ -68,6 +69,7 @@ pub async fn download(
         target_path,
         new_files,
         partial_files,
+        number_connections as usize,
     )
     .await?;
     if dl_completed {
@@ -85,6 +87,7 @@ pub async fn download_wrapper(
     target_path: String,
     new_files: Vec<String>,
     partial_files: Vec<String>,
+    number_connections: usize,
 ) -> Result<bool> {
     let target_dir = PathBuf::from_str(&target_path)?;
     download_files(
@@ -95,6 +98,7 @@ pub async fn download_wrapper(
         target_dir,
         new_files,
         partial_files,
+        number_connections,
     )
     .await
 }
@@ -107,10 +111,20 @@ async fn download_files(
     target_dir: PathBuf,
     new_files: Vec<String>,
     partial_files: Vec<String>,
+    number_connections: usize,
 ) -> Result<bool> {
     return match repo_type {
         RepoType::A3S => {
-            download_a3s(window, state, url, target_dir, new_files, partial_files).await
+            download_a3s(
+                window,
+                state,
+                url,
+                target_dir,
+                new_files,
+                partial_files,
+                number_connections,
+            )
+            .await
         }
         RepoType::Swifty => todo!(),
     };

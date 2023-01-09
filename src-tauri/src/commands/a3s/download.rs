@@ -32,6 +32,7 @@ pub async fn download_a3s(
     target_dir: PathBuf,
     new_files: Vec<String>,
     partial_files: Vec<String>,
+    number_connections: usize,
 ) -> Result<bool> {
     let connection_info = Url::parse(&url)?;
     //println!("{:?}", files);
@@ -63,8 +64,6 @@ pub async fn download_a3s(
         }
     });
 
-    let num_connections = *state.number_dl_concurrent.lock().await;
-
     let mut files_to_dl: Vec<FileToDownload> = new_files
         .iter()
         .map(|f| FileToDownload::NewFile(f.to_string()))
@@ -76,7 +75,7 @@ pub async fn download_a3s(
             .map(|f| FileToDownload::PartialFile(f.to_string())),
     );
 
-    if num_connections > 1 {
+    if number_connections > 1 {
         let buffer = futures::stream::iter(files_to_dl)
             .map(|ftdl| {
                 let downloading_state = state.downloading.clone();
@@ -100,7 +99,7 @@ pub async fn download_a3s(
 
                 tokio::spawn(fut_dl)
             })
-            .buffer_unordered(num_connections);
+            .buffer_unordered(number_connections);
 
         buffer
             .for_each(|r| async {

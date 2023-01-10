@@ -215,7 +215,7 @@ async fn dl_part_file(
 
         let mut inner_buf = vec![0_u8; mf.blocksize];
 
-        for range in ranges {
+        for (i, range) in ranges.iter().enumerate() {
             if range.file_offset != -1 {
                 inner_buf.resize(mf.blocksize, 0);
                 inp.seek(SeekFrom::Start(range.file_offset as u64))?;
@@ -236,7 +236,7 @@ async fn dl_part_file(
                     break;
                 }
 
-                out.write_all(&buf)?;
+                out.write_all(&buf[range.offset..(range.offset + range.block_length)])?;
             }
 
             // out.write_all()

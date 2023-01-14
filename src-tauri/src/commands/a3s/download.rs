@@ -4,8 +4,7 @@ use std::path::Path;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use futures::StreamExt;
-use rs_zsync::file_maker::FilePart;
-use rs_zsync::meta_file::MetaFile;
+use rs_zsync::file_maker::FileMaker;
 use tauri::{async_runtime::Mutex, Window};
 use tokio::{fs, task, time::sleep};
 use url::Url;
@@ -199,7 +198,7 @@ async fn dl_part_file(
     window: &Window,
 ) -> Result<bool, anyhow::Error> {
     let url = connection_info.join(&file)?;
-    let (ranges, mf) = get_zsync_ranges(
+    let fm = get_zsync_ranges(
         connection_info.as_str(),
         &file,
         target_dir.to_str().unwrap_or_default(),
@@ -207,39 +206,88 @@ async fn dl_part_file(
     .await?;
     let target_file = target_dir.join(file.clone());
     let mut part_file = target_file.to_str().unwrap_or_default().to_owned();
+
+    let mut range_queue = false;
+    let mut range_list = Vec::new();
+    let mut range = 0;
+    let mut data = Vec::new();
+
     part_file.push_str(".part");
     {
         let mut inp = BufReader::new(File::open(target_file.clone())?);
 
         let mut out = BufWriter::new(File::create(&part_file)?);
 
-        let mut inner_buf = vec![0_u8; mf.blocksize];
+        let mut inner_buf = vec![0_u8; fm.metafile.blocksize];
 
-        for (i, range) in ranges.iter().enumerate() {
-            if range.file_offset != -1 {
-                inner_buf.resize(mf.blocksize, 0);
-                inp.seek(SeekFrom::Start(range.file_offset as u64))?;
+        for (i, file_offset) in fm.file_map.iter().enumerate() {
+            let file_offset = *file_offset;
+            if file_offset != -1 {
+                inner_buf.resize(fm.metafile.blocksize, 0);
+                inp.seek(SeekFrom::Start(file_offset as u64))?;
                 let n = inp.read(&mut inner_buf)?;
                 inner_buf.resize(n, 0);
                 out.write_all(&inner_buf)?;
             } else {
-                let buf = downloader
-                    .download_partial(
-                        downloading_state,
-                        written_bytes,
-                        url.clone(),
-                        (range.start_offset, range.end_offset),
-                    )
-                    .await?;
+                if !range_queue {
+                    range_list = fm.range_look_up(i);
+                    if !range_list.is_empty() {
+                        range_queue = true;
+                    }
+                    range = range_list.len();
+
+                    let start_offset = range_list[0].0;
+                    let end_offset = range_list[range_list.len() - 1].1;
+
+                    dbg!(
+                        "Partial download ({}) [{},{}]",
+                        target_file.display(),
+                        start_offset,
+                        end_offset
+                    );
+
+                    data = downloader
+                        .download_partial(
+                            downloading_state,
+                            written_bytes,
+                            url.clone(),
+                            (start_offset as usize, end_offset as usize),
+                        )
+                        .await?;
+
+                    if data.is_empty() {
+                        break;
+                    }
+                }
+
                 if !(*downloading_state.lock().await).unwrap_or(true) {
                     *downloading.lock().await = false; // Should be already false???
                     break;
                 }
 
-                out.write_all(&buf[range.offset..(range.offset + range.block_length)])?;
-            }
+                let block_length = FileMaker::calc_block_length(
+                    i as i32,
+                    fm.metafile.blocksize as i32,
+                    fm.metafile.length as i32,
+                );
 
-            // out.write_all()
+                let offset = (range - range_list.len()) * fm.metafile.blocksize;
+
+                if
+                //offset >= 0 &&
+                offset <= data.len()
+                    && block_length >= 0
+                    && block_length <= (data.len() as i32 - offset as i32)
+                {
+                    out.write_all(&data[offset..(offset + block_length as usize)])?;
+                }
+
+                range_list.remove(0);
+
+                if range_list.is_empty() {
+                    range_queue = false;
+                }
+            }
         }
     }
     if (*downloading_state.lock().await).unwrap_or(true) {
@@ -282,11 +330,7 @@ async fn dl_new_file(
     Ok(true)
 }
 
-pub async fn get_zsync_ranges(
-    url: &str,
-    file: &str,
-    path_prefix: &str,
-) -> Result<(Vec<FilePart>, MetaFile)> {
+pub async fn get_zsync_ranges(url: &str, file: &str, path_prefix: &str) -> Result<FileMaker> {
     let mut fm = get_zsync(url, file, path_prefix).await?;
 
     let mut file_path = path_prefix.to_string();
@@ -294,5 +338,5 @@ pub async fn get_zsync_ranges(
 
     fm.map_matcher(Path::new(&file_path));
 
-    Ok((fm.file_maker(), fm.metafile))
+    Ok(fm)
 }

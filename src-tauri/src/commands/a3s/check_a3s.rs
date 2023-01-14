@@ -31,12 +31,6 @@ pub async fn check_a3s(
 
     known_hashes.retain(|file, _| Path::new(&file).exists());
 
-    // for file in file_input.clone() {
-    //     if file.file.ends_with("cba_settings.sqf") {
-    //         dbg!("File Input: {:?}", file.clone());
-    //     }
-    // }
-
     // add path  to every file name
     let mut file_input_prefixed: Vec<FileCheckInput> = Vec::with_capacity(file_input.len());
     file_input.into_iter().for_each(|f| {

@@ -2494,7 +2494,7 @@ dependencies = [
 [[package]]
 name = "rs-zsync"
 version = "0.1.0"
-source = "git+https://github.com/replic-arma/rs-zsync?branch=file-map-test#b4d1b514e87788a6fd234d727857b51438a6baf4"
+source = "git+https://github.com/replic-arma/rs-zsync?branch=file-map-test#41fdb503a3e56ced8f35b169da0154c44a4538f5"
 dependencies = [
  "chrono",
  "md4",

@@ -121,8 +121,9 @@ where
     let req = Request::get(uri.clone())
         .header(RANGE, format!("bytes={}-{}", range.0, range.1))
         .body(Body::empty())?;
-    dbg!(format!("Request Debug: {:?}", req));
+    // dbg!(format!("Request Debug: {:?}", req));
     let mut res = client.request(req).await?;
+    // dbg!(format!("Response Debug: {:?}", res));
 
     if !(get_header_value(res.headers(), ACCEPT_RANGES).unwrap_or_default() != "none") {
         return Err(anyhow!("Server not configured for range requests!"));

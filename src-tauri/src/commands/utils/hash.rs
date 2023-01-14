@@ -20,7 +20,7 @@ pub fn check_update(known_hash: KnownHash) -> Result<FileHash> {
             time_modified,
             size: 0,
         })
-    } else if known_hash.time_modified < time_modified {
+    } else if known_hash.time_modified != time_modified {
         Ok(FileHash {
             path: known_hash.path,
             hash: compute_hash(path)?,

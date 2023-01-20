@@ -15,6 +15,7 @@ import { useHashStore } from './store/hash';
 import { useRepoStore } from './store/repo';
 import { useSettingsStore } from './store/settings';
 import { updateActivity } from './util/system/discord';
+import { initLogger } from './util/system/logger';
 
 const app = createApp(App);
 app.component('rtransition', TransitionVue);
@@ -32,25 +33,26 @@ useSettingsStore();
 useRepoStore();
 useHashStore();
 useDownloadStore();
-app.use(VueMatomo, {
-    host: 'https://analytics.gruppe-adler.de',
-    siteId: 2,
-    trackerFileName: 'matomo',
-    router,
-    enableLinkTracking: true,
-    requireConsent: true,
-    trackInitialView: true,
-    disableCookies: false,
-    requireCookieConsent: false,
-    enableHeartBeatTimer: true,
-    heartBeatTimerInterval: 15,
-    debug: true,
-    userId: undefined,
-    cookieDomain: undefined,
-    domains: undefined,
-    preInitActions: [],
-    trackSiteSearch: false,
-    crossOrigin: undefined
-});
+// app.use(VueMatomo, {
+//     host: 'https://analytics.gruppe-adler.de',
+//     siteId: 2,
+//     trackerFileName: 'matomo',
+//     router,
+//     enableLinkTracking: true,
+//     requireConsent: true,
+//     trackInitialView: true,
+//     disableCookies: false,
+//     requireCookieConsent: false,
+//     enableHeartBeatTimer: true,
+//     heartBeatTimerInterval: 15,
+//     debug: true,
+//     userId: undefined,
+//     cookieDomain: undefined,
+//     domains: undefined,
+//     preInitActions: [],
+//     trackSiteSearch: false,
+//     crossOrigin: undefined
+// });
 
 updateActivity();
+initLogger();

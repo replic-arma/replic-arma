@@ -40,8 +40,8 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
             // prevent user from opening browser
             return {
                 server: {
-                    open: false,
-                },
+                    open: false
+                }
             };
         },
         configureServer(server) {
@@ -62,7 +62,7 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
         },
         async buildStart() {
             if (config.command === 'serve') {
-                listeningHTTPServer.then((httpServer) => {
+                listeningHTTPServer.then(httpServer => {
                     const devPath = getServerURL(httpServer, config);
 
                     const cliArgs: string[] = [];
@@ -82,15 +82,14 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
                     if (options?.dev?.target !== undefined) {
                         cliArgs.push('--target', options.dev.target);
                     }
-                    console.debug(devPath);
                     return TauriCli.run(
                         [
                             'dev',
                             '--config',
                             JSON.stringify({
-                                build: { devPath },
+                                build: { devPath }
                             }),
-                            ...cliArgs,
+                            ...cliArgs
                         ],
                         undefined
                     );
@@ -131,9 +130,9 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
                     'build',
                     '--config',
                     JSON.stringify({
-                        build: { distDir },
+                        build: { distDir }
                     }),
-                    ...cliArgs,
+                    ...cliArgs
                 ],
                 undefined
             );
@@ -145,7 +144,7 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
             const artifactsLookupPattern = `./src-tauri/target/release/*/*/!(linuxdeploy)*.{${[
                 ...macOSExts,
                 linuxExts,
-                windowsExts,
+                windowsExts
             ].join(',')}}`;
 
             core.debug(`Looking for artifacts using this pattern: ${artifactsLookupPattern}`);
@@ -160,7 +159,7 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
             const artifacts = [...artifacts1, ...artifacts2];
             let i = 0;
             for (const artifact of artifacts) {
-                if (artifact.endsWith('.app') && !artifacts.some((a) => a.endsWith('.app.tar.gz'))) {
+                if (artifact.endsWith('.app') && !artifacts.some(a => a.endsWith('.app.tar.gz'))) {
                     await execCmd('tar', ['czf', `${artifact}.tar.gz`, '-C', dirname(artifact), basename(artifact)]);
                     artifacts[i] += '.tar.gz';
                 } else if (artifact.endsWith('.app')) {
@@ -190,7 +189,7 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
                     });
                 });
             }
-        },
+        }
     };
 }
 

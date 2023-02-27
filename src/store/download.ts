@@ -3,12 +3,14 @@ import { DownloadStatus, type DownloadItem } from '@/models/Download';
 import { RepositoryType, type IReplicArmaRepository, type Modset } from '@/models/Repository';
 import { downloadFiles, DOWNLOAD_PROGRESS } from '@/util/system/download';
 import type { HashResponseItem } from '@/util/system/hashes';
+import { logDebug, logInfo, LogType } from '@/util/system/logger';
 import { notify } from '@kyvg/vue3-notification';
 import { sep } from '@tauri-apps/api/path';
 import { defineStore, storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useHashStore } from './hash';
 import { useRepoStore } from './repo';
+import { useSettingsStore } from './settings';
 export const useDownloadStore = defineStore('download', () => {
     const current = ref(null as null | DownloadItem);
     const queue = ref([] as Array<DownloadItem>);
@@ -46,6 +48,7 @@ export const useDownloadStore = defineStore('download', () => {
             );
         }
         if (current.value !== null) {
+            logInfo(LogType.DOWNLOAD, `[${current.value.repoId}] ${current.value.item.name} Download started`);
             notify({
                 title: 'Download started',
                 text: `The download of Modset ${current.value.item?.name} has started`,
@@ -64,10 +67,13 @@ export const useDownloadStore = defineStore('download', () => {
                 repo.download_server?.url,
                 `${repo.downloadDirectoryPath}${sep}`,
                 cacheData.missing.map((item: HashResponseItem) => item.file),
-                cacheData.outdated.map((item: HashResponseItem) => item.file)
+                cacheData.outdated.map((item: HashResponseItem) => item.file),
+                useSettingsStore().settings?.maxConnections ?? 10
             );
             if (res !== DownloadStatus.PAUSED) {
+                current.value.status = DownloadStatus.FINISHED;
                 finished.value.push(current.value);
+                logInfo(LogType.DOWNLOAD, `[${current.value.repoId}] ${current.value.item.name} Download finished`);
                 notify({
                     title: 'Download finished',
                     text: `The download of Modset ${current.value.item?.name} has been completed`,
@@ -79,18 +85,15 @@ export const useDownloadStore = defineStore('download', () => {
             }
         }
     }
-
     DOWNLOAD_PROGRESS.addEventListener('download_report', data => {
-        const current = useDownloadStore().current;
-        if (current !== null) {
-            current.received += data.detail.size;
+        if (current.value !== null) {
+            current.value.received += data.detail.size;
             useDownloadStore().speeds.push(data.detail.size);
         }
     });
 
+    const { cache } = storeToRefs(useHashStore());
     DOWNLOAD_PROGRESS.addEventListener('download_finished', data => {
-        const { current } = storeToRefs(useDownloadStore());
-        const { cache } = storeToRefs(useHashStore());
         if (current.value !== null) {
             const cacheData = cache.value.find(cacheItem => cacheItem.id === current.value?.item.id);
             if (cacheData !== undefined) {
@@ -100,6 +103,7 @@ export const useDownloadStore = defineStore('download', () => {
                 cacheData.outdated = cacheData.outdated.filter(
                     (path: HashResponseItem) => path.file !== data.detail.path
                 );
+                logDebug(LogType.DOWNLOAD, `[${current.value.repoId}] ${data.detail.path}`);
             }
         }
     });

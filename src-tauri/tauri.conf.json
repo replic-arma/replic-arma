@@ -70,8 +70,6 @@
                 "title": "ReplicArma",
                 "width": 1280,
                 "height": 1000,
-                "minHeight": 1000,
-                "minWidth": 1080,
                 "resizable": true,
                 "fullscreen": false
             }

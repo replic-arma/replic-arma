@@ -69,7 +69,8 @@
         "maxMem": "Max Memory",
         "cpuCount": "CPU Count",
         "exThreads": "ExThreads",
-        "skipIntro": "Skip Intro"
+        "skipIntro": "Skip Intro",
+        "max_connections": "Maximale Anzahl an gleichzeitigen Verbindungen"
     },
     "remove": "Entfernen",
     "save": "Speichern",

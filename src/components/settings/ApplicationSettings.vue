@@ -39,6 +39,21 @@
                                     <option value="25">25 MB/s</option>
                                 </select>
                             </div> -->
+                            <div class="application-settings__maxConnections">
+                                <label for="maxConnections" v-t="'settings.max_connections'"></label>
+                                <select class="select" name="maxConnections" v-model="settings.maxConnections">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
                             <div class="application-settings__language">
                                 <label for="language" v-t="'language'"></label>
                                 <select class="select" name="language" v-model="settings.language">
@@ -141,6 +156,10 @@ const isOpen = ref(false);
         flex-direction: column;
     }
     &__language {
+        display: flex;
+        flex-direction: column;
+    }
+    &__maxConnections {
         display: flex;
         flex-direction: column;
     }

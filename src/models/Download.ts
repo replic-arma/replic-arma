@@ -4,6 +4,7 @@ export enum DownloadStatus {
     PAUSED = 'paused',
     DOWNLOADING = 'downloading',
     QUEUED = 'queued',
+    FINISHED = 'finished'
 }
 
 export interface DownloadItem {

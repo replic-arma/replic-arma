@@ -66,7 +66,7 @@ export const useRepoStore = defineStore('repo', () => {
                 await updateRepository();
             }
             useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
-            await useHashStore().addToQueue(repo);
+            useHashStore().addToQueue(repo);
         }
     });
 
@@ -75,7 +75,7 @@ export const useRepoStore = defineStore('repo', () => {
         useHashStore().cache = [];
         repos.value.forEach(async (repo: IReplicArmaRepository) => {
             const { recalcRepository } = useRepository(repo.id);
-            await recalcRepository();
+            recalcRepository();
         });
     }
 

@@ -27,7 +27,8 @@
         "ready": "Ready",
         "play": "Play",
         "checking": "Checking",
-        "unknown": "Unknown"
+        "unknown": "Unknown",
+        "finished": "Finished"
     },
     "server": {
         "title": "Server",
@@ -67,7 +68,8 @@
         "maxMem": "Max Memory",
         "cpuCount": "CPU Count",
         "exThreads": "ExThreads",
-        "skipIntro": "Skip Intro"
+        "skipIntro": "Skip Intro",
+        "max_connections": "Maximum number of connections"
     },
     "remove": "Remove",
     "save": "Save",

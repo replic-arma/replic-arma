@@ -15,6 +15,7 @@
             <span class="download-item__time" v-if="downloadItem.status !== 'paused'">~{{ remaining }} left</span>
             <span class="download-item__time" v-else v-t="'status.paused'"></span>
         </div>
+        <div v-else-if="downloadItem.status === 'finished'" class="download-item__status"></div>
         <div v-else>
             <div class="download-item__status">
                 <div class="download-item__queue-wrapper">
@@ -87,13 +88,13 @@ const remaining = computed(() => {
 
 const repo = computed(() => {
     if (props.downloadItem === null) return null;
-    const repo = useRepoStore().repos?.find((repo) => repo.id === props.downloadItem.repoId);
+    const repo = useRepoStore().repos?.find(repo => repo.id === props.downloadItem.repoId);
     return repo;
 });
 
 const cacheData = computed(() => {
     if (props.downloadItem === null) return null;
-    const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === props.downloadItem.item.id);
+    const cacheData = useHashStore().cache.find(cacheItem => cacheItem.id === props.downloadItem.item.id);
     if (cacheData === undefined) return null;
     return cacheData;
 });

@@ -64,7 +64,6 @@ const router = createRouter({
 });
 router.beforeEach((to, from, next) => {
     useRouteStore().switchRoute(to);
-
     next();
 });
 export default router;

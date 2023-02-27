@@ -3,7 +3,6 @@ import * as mdijs from '@mdi/js';
 import mdiVue from 'mdi-vue/v3';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
-import VueMatomo from 'vue-matomo';
 import App from './App.vue';
 import LoaderVue from './components/util/Loader.vue';
 import TooltipVue from './components/util/Tooltip.vue';

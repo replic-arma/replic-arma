@@ -29,14 +29,6 @@
                 </template>
             </div>
         </div>
-        <pre>
-            Size: {{ size }} GB 
-            Update Size {{ updateSize }} GB
-            Update Files Count {{ updateFiles.length }}
-            Files Count: {{ files.length }}
-            Files: {{ files }}
-            Update Files {{ updateFiles }}
-        </pre>
         <Subnavi v-if="modset !== undefined" :subnaviItems="subnaviItems"></Subnavi>
         <router-view :model="modset" />
     </div>
@@ -46,14 +38,16 @@
 import { useRouteStore } from '@/store/route';
 import { computed } from 'vue';
 import Status from '@/components/util/Status.vue';
-import Downloads from '@/components/download/Downloads.vue';
+import Downloads from '@/components/Download/Downloads.vue';
 import Subnavi from '@/components/util/Subnavi.vue';
 import { useModset } from '@/composables/useModset';
 import { DownloadStatus } from '@/models/Download';
 import { HashStatus } from '@/models/Repository';
 import Loader from '@/components/util/Loader.vue';
-const { modset, status, progress, downloadModset, size, updateFiles, files, updateSize, playModset, loading } =
-    useModset(useRouteStore().currentRepoID ?? '', useRouteStore().currentModsetID ?? '');
+const { modset, status, progress, downloadModset, playModset, loading } = useModset(
+    useRouteStore().currentRepoID ?? '',
+    useRouteStore().currentModsetID ?? ''
+);
 
 const subnaviItems = computed(() => {
     return [

@@ -24,7 +24,9 @@ use crate::commands::{
     repo::{download, get_repo, pause_download},
     util::{dir_exists, file_exists, get_a3_dir},
 };
+use log::LevelFilter;
 use tauri::{api::path::app_dir, async_runtime::Mutex, Manager};
+use tauri_plugin_log::LogTarget;
 use util::methods::load_t;
 
 use declarative_discord_rich_presence::DeclarativeDiscordIpcClient;
@@ -174,6 +176,13 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 });
             }
         })
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .level(LevelFilter::Debug)
+                .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+                .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
+                .build(),
+        )
         // .build(tauri::generate_context!())
         // .expect("error while running tauri application")
         .run(tauri::generate_context!())

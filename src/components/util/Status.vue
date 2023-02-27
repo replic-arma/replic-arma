@@ -4,7 +4,13 @@
             <mdicon name="loading" spin />
         </template>
         <span v-t="'status.' + status"></span>
-        <template v-if="progress !== null && (status === HashStatus.CHECKING || status === DownloadStatus.DOWNLOADING)">
+        <template
+            v-if="
+                progress !== null &&
+                (status === HashStatus.CHECKING || status === DownloadStatus.DOWNLOADING) &&
+                !isNaN(progress)
+            "
+        >
             <span>...{{ progress }}%</span>
         </template>
     </div>

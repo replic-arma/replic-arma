@@ -8,11 +8,14 @@ import {
 } from '@/models/Repository';
 import { ERROR_CODE_INTERNAL, InternalError } from '@/util/Errors';
 import { checkHashes, HASHING_PROGRESS, type HashResponse } from '@/util/system/hashes';
+import { logDebug, logInfo, LogType, logWarn } from '@/util/system/logger';
 import { ReplicWorker } from '@/util/worker';
+
 import { defineStore } from 'pinia';
 import { computed, ref, toRaw } from 'vue';
 import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
+
 export interface IHashItem {
     repoId: string;
     filesToCheck: number;
@@ -27,8 +30,9 @@ export const useHashStore = defineStore('hash', () => {
     const current = ref(null as null | IHashItem);
     const queue = ref([] as Array<IHashItem>);
     const cache = ref([] as Array<ICacheItem>);
+    const alreadyCheckedCache = ref([] as Array<string>);
     async function addToQueue(repo: IReplicArmaRepository) {
-        console.debug(`Repository ${repo.name} has been queued`);
+        logInfo(LogType.HASH, `Repository ${repo.name} has been queued`);
         queue.value.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
         if (current.value === null) {
             next();
@@ -57,14 +61,13 @@ export const useHashStore = defineStore('hash', () => {
         if (firstElement === undefined) throw new Error('Queue empty');
         current.value = firstElement;
         if (currentHashRepo.value === undefined) {
-            console.warn('Current hash repo not set (next). It probably got deleted while in queue');
+            logWarn(LogType.HASH, 'Current hash repo not set (next). It probably got deleted while in queue');
             return;
         }
         current.value.filesToCheck = currentHashRepo.value.files.length;
         window.performance.mark(current.value.repoId);
-        console.debug(`Started hash calc for repo ${currentHashRepo.value.name}`);
+        logInfo(LogType.HASH, `Started hash calc for repo ${currentHashRepo.value.name}`);
         const hashData = await getHashes();
-        console.log(hashData);
         cache.value.push({
             id: currentHashRepo.value.id,
             ...hashData
@@ -74,7 +77,7 @@ export const useHashStore = defineStore('hash', () => {
             neededModsets.includes(cacheModset.id)
         );
         if (currentHashRepoModsetCache === undefined || currentHashRepoModsetCache.length === 0) {
-            console.debug(`No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
+            logDebug(LogType.HASH, `No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
             const { updateCache } = useRepository(currentHashRepo.value.id);
             await updateCache();
             currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
@@ -98,36 +101,47 @@ export const useHashStore = defineStore('hash', () => {
                 complete
             });
         }
-        console.debug(
+        logInfo(
+            LogType.HASH,
             `Finished hash calc for repo ${currentHashRepo.value.name} after ${
                 window.performance.measure('repository', current.value.repoId).duration
             }`
         );
         current.value = null;
+        alreadyCheckedCache.value = [];
         next();
     }
 
     HASHING_PROGRESS.addEventListener('hash_calculated', e => {
-        const current = useHashStore().current;
-        if (current !== null) {
-            current.checkedFiles += 1;
-            console.debug(`Hash [${current?.checkedFiles}/${current?.filesToCheck}]`, e.detail.absolutePath);
+        if (current.value !== null && !alreadyCheckedCache.value.includes(e.detail.absolutePath)) {
+            current.value.checkedFiles += 1;
+            alreadyCheckedCache.value.push(e.detail.absolutePath);
+            logDebug(
+                LogType.HASH,
+                `[${current.value.checkedFiles}/${current.value.filesToCheck}] [${current.value.repoId}] ${e.detail.absolutePath}`
+            );
         }
     });
 
+    HASHING_PROGRESS.addEventListener('hash_failed', e => {
+        logDebug(LogType.HASH, `${e.detail.absolutePath}`);
+    });
+
     HASHING_PROGRESS.addEventListener('zsync_completed', e => {
-        const current = useHashStore().current;
-        if (current !== null) {
-            current.checkedFiles += 1;
-            console.debug(`Zsync [${current?.checkedFiles}/${current?.filesToCheck}]`, e.detail.filename);
+        if (current.value !== null && !alreadyCheckedCache.value.includes(e.detail.filename)) {
+            current.value.checkedFiles += 1;
+            alreadyCheckedCache.value.push(e.detail.filename);
+            logDebug(
+                LogType.ZSYNC,
+                `[${current.value.checkedFiles}/${current.value.filesToCheck}] [${current.value.repoId}] ${e.detail.filename}`
+            );
         }
     });
 
     HASHING_PROGRESS.addEventListener('outdated_file_count', data => {
-        const current = useHashStore().current;
-        if (current !== null) {
-            current.checkedFiles = 0;
-            current.filesToCheck = data.detail.count;
+        if (current.value !== null) {
+            current.value.checkedFiles = 0;
+            current.value.filesToCheck = data.detail.count;
         }
     });
 

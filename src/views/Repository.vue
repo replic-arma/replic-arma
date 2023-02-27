@@ -34,11 +34,12 @@ import SubnaviVue from '@/components/util/Subnavi.vue';
 import Loader from '@/components/util/Loader.vue';
 import { computed } from '@vue/runtime-core';
 import Settings from '@/components/Repository/Settings.vue';
-import Downloads from '@/components/download/Downloads.vue';
+import Downloads from '@/components/Download/Downloads.vue';
 import { useRepository } from '@/composables/useRepository';
 import { useRouteStore } from '@/store/route';
 import { useDeepLink } from '@/composables/useDeepLink';
 import { notify } from '@kyvg/vue3-notification';
+import { writeTextClipboard } from '@/util/system/clipboard';
 const { repository, recalcRepository, loading } = useRepository(useRouteStore().currentRepoID ?? '');
 const subnaviItems = computed(() => {
     return [
@@ -51,7 +52,7 @@ const subnaviItems = computed(() => {
 function shareRepository() {
     const { createDeepLink } = useDeepLink();
     if (repository.value === null) return;
-    console.log(createDeepLink(repository.value));
+    writeTextClipboard(createDeepLink(repository.value));
     notify({
         title: 'Copied Share link',
         text: `The link has been copied to your clipboard`,

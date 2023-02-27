@@ -89,6 +89,7 @@ export function useRepository(repoID: MaybeRef<string>) {
             }
             return repoData.revision !== repository.value.revision;
         }
+        return false;
     }
     async function updateRepository() {
         if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);

@@ -1,7 +1,7 @@
 <template>
     <li class="repo">
         <img class="repo__img" v-once :src="repository.image" />
-        <span class="repo__name" v-once>{{ repository.name }}</span>
+        <h5 class="title-md" v-once>{{ repository.name }}</h5>
         <div class="repo__status">
             <Status :status="status" :progress="progress"></Status>
         </div>
@@ -117,11 +117,6 @@ const currentModsetId = ref('');
     &__img {
         padding-inline-start: 1rem;
         block-size: 3rem;
-    }
-
-    &__name {
-        font-weight: bold;
-        font-size: 14pt;
     }
 
     &__status {

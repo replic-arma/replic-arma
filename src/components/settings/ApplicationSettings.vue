@@ -11,12 +11,20 @@
                     <Tab title="General">
                         <div class="application-settings" v-if="settings !== null">
                             <PathSelectorVue
-                                :pathSelector="{ label: 'a3exe', name: 'a3exe' }"
+                                :pathSelector="{
+                                    label: 'a3exe',
+                                    name: 'a3exe',
+                                    placeholder: 'C:\\Program Files\\Steam\\steamapps\common\\Arma 3\\arma3_x64.exe'
+                                }"
                                 :pathSelectorOptions="{}"
                                 v-model="settings.gamePath"
                             ></PathSelectorVue>
                             <PathSelectorVue
-                                :pathSelector="{ label: 'mod_directory', name: 'modDirectory' }"
+                                :pathSelector="{
+                                    label: 'mod_directory',
+                                    name: 'modDirectory',
+                                    placeholder: 'C:\\Documents\\Arma3Mods'
+                                }"
                                 :pathSelectorOptions="{ directory: true }"
                                 v-model="settings.downloadDirectoryPath"
                             ></PathSelectorVue>
@@ -31,6 +39,21 @@
                                     <option value="25">25 MB/s</option>
                                 </select>
                             </div> -->
+                            <div class="application-settings__maxConnections">
+                                <label for="maxConnections" v-t="'settings.max_connections'"></label>
+                                <select class="select" name="maxConnections" v-model="settings.maxConnections">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
                             <div class="application-settings__language">
                                 <label for="language" v-t="'language'"></label>
                                 <select class="select" name="language" v-model="settings.language">
@@ -85,21 +108,22 @@
 <script lang="ts" setup>
 import { useSettingsStore } from '@/store/settings';
 import { clearModsetCache } from '@/util/system/modset_cache';
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import PathSelectorVue from '../util/PathSelector.vue';
 import Tabs from '../util/Tabs.vue';
 import Tab from '../util/Tab.vue';
-import Launch from './Launch.vue';
 import { notify } from '@kyvg/vue3-notification';
 import About from './About.vue';
-const settings = useSettingsStore().settings;
-function saveSettings() {
-    useSettingsStore().settings = settings;
-    useSettingsStore().save();
+import Launch from './Launch.vue';
+const settingsStore = useSettingsStore();
+const settings = toRaw(settingsStore.settings);
+async function saveSettings() {
+    settingsStore.settings = settings;
+    await settingsStore.save();
     notify({
         title: 'Saved Settings',
         text: 'Changes have been saved to your disk',
-        type: 'success',
+        type: 'success'
     });
 }
 async function clearCache() {
@@ -107,15 +131,15 @@ async function clearCache() {
     notify({
         title: 'Cleared Modset cache',
         text: 'Cleared old Modset cache',
-        type: 'success',
+        type: 'success'
     });
 }
 async function resetSettings() {
-    await useSettingsStore().reset();
+    await settingsStore.reset();
     notify({
         title: 'Reset Settings',
         text: 'Settings have been reset to default',
-        type: 'success',
+        type: 'success'
     });
 }
 const isOpen = ref(false);
@@ -132,6 +156,10 @@ const isOpen = ref(false);
         flex-direction: column;
     }
     &__language {
+        display: flex;
+        flex-direction: column;
+    }
+    &__maxConnections {
         display: flex;
         flex-direction: column;
     }

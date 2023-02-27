@@ -11,22 +11,25 @@
     },
     "dependencies": {
         "@kyvg/vue3-notification": "^2.3.4",
-        "@tauri-apps/api": "^1.0.2",
+        "@tauri-apps/api": "^1.2.0",
         "@vueuse/core": "^8.0.0",
         "mdi-vue": "^3.0.12",
         "pako": "^2.0.4",
         "pinia": "^2.0.16",
-        "uuid": "^8.3.2",
+        "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log",
+        "uuid": "^9.0.0",
         "vue": "^3.2.37",
         "vue-i18n": "^9.1.10",
-        "vue-router": "^4.1.2"
+        "vue-matomo": "^4.2.0",
+        "vue-router": "^4.1.2",
+        "vue3-popper": "^1.5.0"
     },
     "devDependencies": {
         "@actions/core": "^1.9.0",
         "@actions/github": "^5.0.3",
         "@intlify/vite-plugin-vue-i18n": "^5.0.0",
         "@rushstack/eslint-patch": "^1.1.0",
-        "@tauri-apps/cli": "^1.0.5",
+        "@tauri-apps/cli": "^1.2.3",
         "@types/node": "^16.11.25",
         "@types/pako": "^1.0.3",
         "@types/uuid": "^8.3.4",
@@ -42,7 +45,7 @@
         "sass": "^1.49.9",
         "tiny-glob": "^0.2.9",
         "typescript": "~4.5.5",
-        "vite": "^2.9.14",
+        "vite": "^3.1.4",
         "vue-tsc": "^0.31.4"
     }
 }

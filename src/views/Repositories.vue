@@ -3,9 +3,7 @@
         <div class="repos__heading">
             <h1 v-t="'repositories'"></h1>
             <div class="icon-group">
-                <Tooltip text="Downloads" position="bottom">
-                    <Downloads />
-                </Tooltip>
+                <Downloads />
                 <Tooltip text="Reload Repositories">
                     <mdicon name="refresh" size="35" v-once @click="reloadRepos" />
                 </Tooltip>
@@ -23,23 +21,17 @@
 </template>
 
 <script lang="ts" setup>
-import RepositoryItem from '@/components/repository/RepositoryItem.vue';
-import RepositoryAdd from '../components/repository/RepositoryAdd.vue';
+import RepositoryItem from '@/components/Repository/RepositoryItem.vue';
+import RepositoryAdd from '@/components/Repository/RepositoryAdd.vue';
 import Loader from '@/components/util/Loader.vue';
 import { useRepoStore } from '../store/repo';
 import { computed } from '@vue/runtime-core';
-import Downloads from '../components/download/Downloads.vue';
-import ApplicationSettings from '../components/settings/ApplicationSettings.vue';
+import Downloads from '@/components/Download/Downloads.vue';
+import ApplicationSettings from '@/components/Settings/ApplicationSettings.vue';
 import Tooltip from '../components/util/Tooltip.vue';
-import { notify } from '@kyvg/vue3-notification';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
     useRepoStore().recalcRepositories();
-    notify({
-        title: 'Reloading Repository',
-        text: 'Checking for Updates and recalculating the status',
-        type: 'success',
-    });
 }
 </script>
 

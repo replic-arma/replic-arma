@@ -12,13 +12,13 @@ rust-version = "1.57"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.0.4", features = [] }
+tauri-build = { version = "1.2.1", features = [] }
 
 [dependencies]
 directories = "4.0.1"
 serde_json = "1.0.72"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.0.5", features = ["api-all"] }
+tauri = { version = "1.2.4", features = ["api-all"] }
 jaded = { version = "0.3.0", features = ["derive", "renaming" ] }
 flate2 = { version = "1.0.17", features = ["zlib"], default-features = false }
 byteorder = "1.3.1"
@@ -42,7 +42,11 @@ hyper = { version = "0.14", features = ["full"] }
 hyper-tls = "0.5.0"
 filetime = "0.2.15"
 tauri-plugin-deep-link = { git = "https://github.com/FabianLars/tauri-plugin-deep-link", rev = "3c5f001f5d4feedfe92693202af3986adab71740" }
+tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+declarative-discord-rich-presence = { git = "https://github.com/KPidS/declarative-discord-rich-presence", rev = "bbe5f1193c595f195e8b61c055a552bf65d70eef" }
 once_cell = "1.13"
+rs-zsync = { git = "https://github.com/replic-arma/rs-zsync", branch = "file-map-test" }
+log = "^0.4"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.10.1"

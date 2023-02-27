@@ -1,27 +1,38 @@
-import type { IReplicArmaRepository, File, Modset, ModsetMod } from '@/models/Repository';
+import { useRepository } from '@/composables/useRepository';
+import {
+    RepositoryType,
+    type File,
+    type IReplicArmaRepository,
+    type Modset,
+    type ModsetMod
+} from '@/models/Repository';
+import { ERROR_CODE_INTERNAL, InternalError } from '@/util/Errors';
+import { checkHashes, HASHING_PROGRESS, type HashResponse } from '@/util/system/hashes';
+import { logDebug, logInfo, LogType, logWarn } from '@/util/system/logger';
+import { ReplicWorker } from '@/util/worker';
+
 import { defineStore } from 'pinia';
+import { computed, ref, toRaw } from 'vue';
 import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
-import { computed, ref, toRaw } from 'vue';
-import { ReplicWorker } from '@/util/worker';
-import { checkHashes, HASHING_PROGRESS } from '@/util/system/hashes';
+
 export interface IHashItem {
     repoId: string;
     filesToCheck: number;
     checkedFiles: number;
 }
-export interface ICacheItem {
+
+export interface ICacheItem extends HashResponse {
     id: string;
-    checkedFiles: string[][];
-    outdatedFiles: string[];
-    missingFiles: string[];
 }
+
 export const useHashStore = defineStore('hash', () => {
     const current = ref(null as null | IHashItem);
     const queue = ref([] as Array<IHashItem>);
     const cache = ref([] as Array<ICacheItem>);
+    const alreadyCheckedCache = ref([] as Array<string>);
     async function addToQueue(repo: IReplicArmaRepository) {
-        console.info(`Repository ${repo.name} has been queued`);
+        logInfo(LogType.HASH, `Repository ${repo.name} has been queued`);
         queue.value.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
         if (current.value === null) {
             next();
@@ -34,80 +45,109 @@ export const useHashStore = defineStore('hash', () => {
 
     async function getHashes() {
         const settings = useSettingsStore().settings;
-        if (settings === null) throw Error('Settings null');
+        if (settings === null) throw new InternalError(ERROR_CODE_INTERNAL.CONFIG_NOT_LOADED_ACCESS);
         if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (getHashes)');
-        const reponse = await checkHashes(
+        return await checkHashes(
+            currentHashRepo.value.type ?? RepositoryType.A3S,
             `${currentHashRepo.value.downloadDirectoryPath ?? ''}\\`,
-            currentHashRepo.value.files.map((file: File) => file.path)
+            currentHashRepo.value.files.map((file: File) => [file.path, file.sha1, file.size]),
+            currentHashRepo.value.download_server?.url ?? ''
         );
-        return {
-            checkedFiles: (reponse[0] as string[][]) ?? [],
-            missingFiles: (reponse[1] as unknown as string[]) ?? [],
-        };
     }
 
     async function next() {
-        if (queue.value.length > 0) {
-            const firstElement = queue.value.splice(0, 1)[0];
-            if (firstElement === undefined) throw new Error('Queue empty');
-            current.value = firstElement;
-            if (currentHashRepo.value === undefined) throw new Error('Current hash repo not set (next)');
-            current.value.filesToCheck = currentHashRepo.value.files.length;
-            const hashData = await getHashes();
-            const wantedFiles = toRaw(currentHashRepo.value.files).filter(
-                (file) => !hashData.missingFiles.includes(file.path)
-            );
-            const outDatedFiles = await ReplicWorker.getFileChanges(wantedFiles, hashData.checkedFiles);
-            cache.value.push({
-                id: currentHashRepo.value.id,
-                checkedFiles: hashData.checkedFiles,
-                outdatedFiles: outDatedFiles,
-                missingFiles: hashData.missingFiles,
-            });
-            const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
-            let currentHashRepoModsetCache = toRaw(
-                useRepoStore().modsetCache?.filter((cacheModset: Modset) => neededModsets.includes(cacheModset.id))
-            );
-            if (currentHashRepoModsetCache === undefined || currentHashRepoModsetCache.length === 0) {
-                console.log(`No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
-                await useRepoStore().updateModsetCache(currentHashRepo.value.id);
-                currentHashRepoModsetCache = toRaw(
-                    useRepoStore().modsetCache?.filter((cacheModset: Modset) => neededModsets.includes(cacheModset.id))
-                );
-            }
-            if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
-            const cached = toRaw(cache.value.find((cacheValue) => cacheValue.id === currentHashRepo.value?.id));
-            for (const modset of currentHashRepo.value.modsets) {
-                const modsetCache = toRaw(
-                    currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id)
-                );
-                if (cached?.checkedFiles === undefined || modsetCache === undefined) throw new Error('cache empty!');
-                const modsetFiles = modsetCache.mods?.flatMap((mod: ModsetMod) => mod.files);
-                const outDatedFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.outdatedFiles);
-                const missingFiles = await ReplicWorker.isFileIn(modsetFiles as File[], cached?.missingFiles);
-                cache.value.push({
-                    id: modset.id,
-                    checkedFiles: cached?.checkedFiles,
-                    outdatedFiles: outDatedFiles,
-                    missingFiles,
-                });
-            }
-            console.info(`Finished hash calc for repo ${currentHashRepo.value.name}`);
-            current.value = null;
-            next();
+        if (queue.value.length === 0) return;
+        const firstElement = queue.value.splice(0, 1)[0];
+        if (firstElement === undefined) throw new Error('Queue empty');
+        current.value = firstElement;
+        if (currentHashRepo.value === undefined) {
+            logWarn(LogType.HASH, 'Current hash repo not set (next). It probably got deleted while in queue');
+            return;
         }
+        current.value.filesToCheck = currentHashRepo.value.files.length;
+        window.performance.mark(current.value.repoId);
+        logInfo(LogType.HASH, `Started hash calc for repo ${currentHashRepo.value.name}`);
+        const hashData = await getHashes();
+        cache.value.push({
+            id: currentHashRepo.value.id,
+            ...hashData
+        });
+        const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
+        let currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
+            neededModsets.includes(cacheModset.id)
+        );
+        if (currentHashRepoModsetCache === undefined || currentHashRepoModsetCache.length === 0) {
+            logDebug(LogType.HASH, `No Modset Cache for Repo ${currentHashRepo.value.name} found. Updating Cache.`);
+            const { updateCache } = useRepository(currentHashRepo.value.id);
+            await updateCache();
+            currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
+                neededModsets.includes(cacheModset.id)
+            );
+        }
+        if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
+        for (const modset of currentHashRepo.value.modsets) {
+            const modsetCache = currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id);
+            if (hashData === undefined || modsetCache === undefined) throw new Error('cache empty!');
+            const modsetFiles = toRaw(modsetCache).mods?.flatMap((mod: ModsetMod) => mod.files);
+            const outdated = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.outdated);
+            const missing = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.missing);
+            const complete = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.complete);
+            const extra = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.extra);
+            cache.value.push({
+                id: modset.id,
+                outdated,
+                missing,
+                extra,
+                complete
+            });
+        }
+        logInfo(
+            LogType.HASH,
+            `Finished hash calc for repo ${currentHashRepo.value.name} after ${
+                window.performance.measure('repository', current.value.repoId).duration
+            }`
+        );
+        current.value = null;
+        alreadyCheckedCache.value = [];
+        next();
     }
 
-    HASHING_PROGRESS.addEventListener('hash_calculated', () => {
-        const current = useHashStore().current;
-        if (current !== null) {
-            current.checkedFiles += 1;
+    HASHING_PROGRESS.addEventListener('hash_calculated', e => {
+        if (current.value !== null && !alreadyCheckedCache.value.includes(e.detail.absolutePath)) {
+            current.value.checkedFiles += 1;
+            alreadyCheckedCache.value.push(e.detail.absolutePath);
+            logDebug(
+                LogType.HASH,
+                `[${current.value.checkedFiles}/${current.value.filesToCheck}] [${current.value.repoId}] ${e.detail.absolutePath}`
+            );
+        }
+    });
+
+    HASHING_PROGRESS.addEventListener('hash_failed', e => {
+        logDebug(LogType.HASH, `${e.detail.absolutePath}`);
+    });
+
+    HASHING_PROGRESS.addEventListener('zsync_completed', e => {
+        if (current.value !== null && !alreadyCheckedCache.value.includes(e.detail.filename)) {
+            current.value.checkedFiles += 1;
+            alreadyCheckedCache.value.push(e.detail.filename);
+            logDebug(
+                LogType.ZSYNC,
+                `[${current.value.checkedFiles}/${current.value.filesToCheck}] [${current.value.repoId}] ${e.detail.filename}`
+            );
+        }
+    });
+
+    HASHING_PROGRESS.addEventListener('outdated_file_count', data => {
+        if (current.value !== null) {
+            current.value.checkedFiles = 0;
+            current.value.filesToCheck = data.detail.count;
         }
     });
 
     return {
         addToQueue,
         current,
-        cache,
+        cache
     };
 });

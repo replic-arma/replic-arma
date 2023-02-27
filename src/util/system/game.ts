@@ -1,11 +1,12 @@
-import type { Collection, GameServer, Modset, File, ModsetMod, IReplicArmaRepository } from '@/models/Repository';
+import type { Collection, GameServer, IReplicArmaRepository, Modset, ModsetMod } from '@/models/Repository';
 import type { GameLaunchSettings } from '@/models/Settings';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 import { useSettingsStore } from '@/store/settings';
 import { invoke } from '@tauri-apps/api';
-import { sep } from '@tauri-apps/api/path';
+import { dirname, sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
+import type { HashResponseItem } from './hashes';
 
 export async function launchCollection(collection: Collection, repoId: string) {
     const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === repoId);
@@ -13,7 +14,7 @@ export async function launchCollection(collection: Collection, repoId: string) {
         repo!.launchOptions,
         getModDlcString(
             repo?.downloadDirectoryPath ?? '',
-            filterMods(repoId, Object.values(collection.modsets).flat()),
+            [...filterMods(repoId, Object.values(collection.modsets).flat()), ...(collection.dlc ?? [])],
             collection.dlc ?? []
         )
     );
@@ -46,6 +47,9 @@ export async function launchGame(
     const settings = useSettingsStore().settings;
     if (settings === null) throw new Error('No settings, cannot launch the game');
     if (settings.gamePath === null) throw new Error('Game Executable not set, cannot launch the game');
+    if (launchOptions.battleye) {
+        settings.gamePath = `${await dirname(settings.gamePath)}${sep}arma3battleye.exe`;
+    }
     await spawnProcess(
         settings.gamePath,
         modDlcString,
@@ -56,10 +60,11 @@ export async function launchGame(
 }
 
 function filterMods(repoId: string, modNames: string[]) {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === repoId);
+    const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === repoId);
     if (cacheData === undefined) return modNames;
-    if (cacheData.missingFiles.length > 0) {
-        return modNames.filter((modName: string) => !cacheData.missingFiles.includes(modName));
+    if (cacheData.missing.length > 0) {
+        const missingMods = cacheData.missing.map((mod: HashResponseItem) => mod.file);
+        return modNames.filter((modName: string) => !missingMods.includes(modName));
     }
     return modNames;
 }
@@ -107,16 +112,16 @@ async function spawnProcess(
     spawnOptions: SpawnOptions
 ) {
     const command = new Command('run-game', ['/C', 'start', '', path, mods, launchOptions, connection], spawnOptions);
-    command.on('close', (data) => {
-        console.log(`command finished with code ${data.code} and signal ${data.signal}`);
+    command.on('close', data => {
+        console.debug(`command finished with code ${data.code} and signal ${data.signal}`);
     });
 
-    command.on('error', (error) => console.error(`command error: "${error}"`));
-    command.stdout.on('data', (line) => console.log(`command stdout: "${line}"`));
-    command.stderr.on('data', (line) => console.log(`command stderr: "${line}"`));
+    command.on('error', error => console.error(`command error: "${error}"`));
+    command.stdout.on('data', line => console.debug(`command stdout: "${line}"`));
+    command.stderr.on('data', line => console.debug(`command stderr: "${line}"`));
 
     const child = await command.spawn();
-    console.log('pid:', child.pid);
+    console.debug('pid:', child.pid);
 }
 
 export async function getA3PathRegistry(): Promise<string> {

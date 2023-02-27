@@ -1,89 +1,55 @@
 <template>
-    <div class="collection">
-        <template v-if="collection !== undefined && repository !== undefined">
-            <div class="collection__heading">
-                <Tooltip text="Go Back">
-                    <mdicon name="chevron-left" size="45" @click="goToRepo()" />
+    <Loader v-if="loading" />
+    <div v-else-if="collection === null">
+        <span v-t="'empty_states.collection_not_found.title'"></span>
+    </div>
+    <div class="collection" v-else>
+        <div class="collection__heading">
+            <Tooltip text="Go Back">
+                <mdicon name="chevron-left" size="45" @click="goToRepo()" />
+            </Tooltip>
+            <h1>{{ collection.name }}</h1>
+            <div class="icon-group">
+                <Tooltip text="Downloads" position="bottom">
+                    <Downloads />
                 </Tooltip>
-                <h1>{{ collection.name }}</h1>
-                <div class="icon-group">
-                    <Tooltip text="Downloads" position="bottom">
-                        <Downloads />
-                    </Tooltip>
-                    <button class="button" v-t="'play'" @click="play()">
-                        <mdicon name="play" />
-                    </button>
-                    <button class="button" v-t="'save'" @click="saveCollection()"></button>
-                </div>
+                <button class="button" v-t="'play'" @click="playCollection()">
+                    <mdicon name="play" />
+                </button>
             </div>
-
-            <div class="collection-mods">
-                <div class="collection-mods__modset">
-                    <span>Modsets</span>
-                    <ul class="item-group">
-                        <li class="item item-modset" v-for="(modset, i) of repository.modsets" :key="i">
-                            <CollectionModset :modset="modset" :collection="collection" />
-                        </li>
-                    </ul>
-                </div>
-                <div class="collection-mods__dlc">
-                    <span>DLC</span>
-                    <ul class="item-group">
-                        <li class="item" v-for="(label, key, index) in dlc" :key="index">
-                            <CollectionDLC
-                                :label="label"
-                                :id="key"
-                                :default="collection.dlc?.includes(key) ?? false"
-                                :open="false"
-                            />
-                        </li>
-                    </ul>
-                </div>
-                <!-- <div class="collection-mods__local-mods">
-                <span>Local Mods</span>
-            </div> -->
-            </div>
-            <CollectionModlist></CollectionModlist>
-        </template>
-        <Loader v-else />
+        </div>
+        <Subnavi v-if="collection !== undefined" :subnaviItems="subnaviItems"></Subnavi>
+        <router-view :model="collection" :repository="repository" />
     </div>
 </template>
 
 <script lang="ts" setup>
-import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
-import { ref, computed } from 'vue';
-import CollectionModset from '../components/collection/CollectionModset.vue';
-import { launchCollection } from '@/util/system/game';
-import { notify } from '@kyvg/vue3-notification';
-import CollectionDLC from '../components/collection/CollectionDLC.vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import Loader from '../components/util/Loader.vue';
-import Downloads from '../components/download/Downloads.vue';
-import CollectionModlist from '../components/collection/CollectionModlist.vue';
-const collection = computed(() => useRepoStore().currentCollection);
-const repository = computed(() => useRepoStore().currentRepository);
-const dlc = ref({
-    contact: 'Contact',
-    csla: 'CSLA Iron Curtain',
-    GM: 'Global Mobilization - Cold War Germany',
-    vn: 'S.O.G. Prairie Fire',
-    ws: 'Western Sahara',
+import Loader from '@/components/util/Loader.vue';
+import Downloads from '@/components/download/Downloads.vue';
+import Subnavi from '@/components/util/Subnavi.vue';
+import { useCollection } from '@/composables/useCollection';
+
+const { collection, repository, loading, playCollection } = useCollection(
+    useRouteStore().currentRepoID ?? '',
+    useRouteStore().currentCollectionID ?? ''
+);
+
+const subnaviItems = computed(() => {
+    return [
+        {
+            label: 'mods',
+            link: `/repo/${useRouteStore().currentRepoID}/collection/${useRouteStore().currentCollectionID}/mods`
+        },
+        {
+            label: 'edit',
+            link: `/repo/${useRouteStore().currentRepoID}/collection/${useRouteStore().currentCollectionID}/edit`
+        }
+    ];
 });
 const router = useRouter();
-async function saveCollection() {
-    await useRepoStore().save();
-    notify({
-        title: 'Saved Collection',
-        text: `Saved Collection ${collection.value!.name}`,
-        type: 'success',
-    });
-}
-
-async function play() {
-    if (useRepoStore().currentCollection === undefined) return;
-    await launchCollection(useRepoStore().currentCollection!, useRouteStore().currentRepoID ?? '');
-}
 
 function goToRepo() {
     router.push('/repo/' + useRouteStore().currentRepoID + '/collections');
@@ -104,7 +70,6 @@ function goToRepo() {
         h1 {
             margin: 0;
             font-weight: bold;
-            color: #333333;
         }
         .icon-group {
             display: flex;

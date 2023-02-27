@@ -4,13 +4,19 @@
             <div v-for="(s, i) in displayedSpeeds" :key="i" :style="`--speed: ${s};`"></div>
         </div>
         <span
-            >Current <span class="download-progress__unit">{{ formatSpeed(stats.cur) }}</span></span
+            ><span v-t="'download-stats.current'"></span>&nbsp;<span class="download-progress__unit">{{
+                formatSpeed(stats.cur)
+            }}</span></span
         >
         <span
-            >Peak <span class="download-progress__unit">{{ formatSpeed(stats.max) }}</span></span
+            ><span v-t="'download-stats.peak'"></span>&nbsp;<span class="download-progress__unit">{{
+                formatSpeed(stats.max)
+            }}</span></span
         >
         <span
-            >Average <span class="download-progress__unit">{{ formatSpeed(stats.avg) }}</span></span
+            ><span v-t="'download-stats.average'"></span>&nbsp;<span class="download-progress__unit">{{
+                formatSpeed(stats.avg)
+            }}</span></span
         >
     </div>
 </template>
@@ -25,10 +31,10 @@ const displayedMax = ref(10);
 const stats = ref({
     avg: 0,
     max: 0,
-    cur: 0,
+    cur: 0
 });
 
-watch(useDownloadStore().speeds, (currentValue) => {
+watch(useDownloadStore().speeds, currentValue => {
     displayedSpeeds.value = currentValue.slice(-100);
     displayedMax.value = Math.max(...displayedSpeeds.value);
 
@@ -36,7 +42,7 @@ watch(useDownloadStore().speeds, (currentValue) => {
         stats.value = {
             cur: currentValue[currentValue.length - 1] ?? 0,
             max: Math.max(...currentValue),
-            avg: Math.floor(currentValue.reduce((prev, cur) => prev + cur, 0) / currentValue.length),
+            avg: Math.floor(currentValue.reduce((prev, cur) => prev + cur, 0) / currentValue.length)
         };
         useDownloadStore().stats = stats.value;
     }
@@ -58,7 +64,6 @@ function formatSpeed(speed: number): string {
     text-align: end;
     position: relative;
     padding-block-end: 0.5rem;
-    color: var(--base-black);
 
     &__graph {
         grid-area: canvas;

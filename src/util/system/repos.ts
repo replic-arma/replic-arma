@@ -1,6 +1,5 @@
 import type { IReplicArmaRepository, Repository } from '@/models/Repository';
 import { invoke } from '@tauri-apps/api';
-import { appDir } from '@tauri-apps/api/path';
 import { compress, uncompress } from './compress';
 import { ensureAppDir, fileExists, readBinaryFile, writeBinaryFile } from './fs';
 

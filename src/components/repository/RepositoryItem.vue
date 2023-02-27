@@ -1,7 +1,7 @@
 <template>
     <li class="repo">
         <img class="repo__img" v-once :src="repository.image" />
-        <span class="repo__name" v-once>{{ repository.name }}</span>
+        <h5 class="title-md" v-once>{{ repository.name }}</h5>
         <div class="repo__status">
             <Status :status="status" :progress="progress"></Status>
         </div>
@@ -36,7 +36,7 @@ import type { IHashItem } from '@/store/hash';
 import { computed, onMounted, ref } from 'vue';
 import Status from '../util/Status.vue';
 import { launchModset } from '@/util/system/game';
-import type { Collection, IReplicArmaRepository } from '@/models/Repository';
+import { HashStatus, type Collection, type IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import PlayButton from '../PlayButton.vue';
 
@@ -47,37 +47,36 @@ const props = defineProps<Props>();
 const status = computed(() => {
     const [id, type] = currentModsetId.value.split('_');
     if (type === '1') {
-        const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === id);
-        if (cacheData === undefined) return 'checking';
-        if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) return 'downloading';
-        if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
-            return 'outdated';
+        const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === id);
+        if (cacheData === undefined) return HashStatus.CHECKING;
+        if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id)
+            return useDownloadStore().current?.status;
+        if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
+            return HashStatus.OUTDATED;
         }
-        return 'ready';
     } else {
         const collection = props.repository.collections.find((collection: Collection) => collection.id === id);
-        const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === props.repository.id);
-        if (cacheData === undefined) return 'checking';
-        if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
-            return 'outdated';
+        const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === props.repository.id);
+        if (cacheData === undefined) return HashStatus.CHECKING;
+        if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
+            return HashStatus.OUTDATED;
         }
         if (collection !== undefined) {
             for (const modsetId of Object.keys(collection.modsets)) {
                 if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modsetId)
-                    return 'downloading';
+                    return useDownloadStore().current?.status;
             }
         }
-        return 'ready';
     }
+    return HashStatus.READY;
 });
 
 const progress = computed(() => {
-    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === currentModsetId.value) {
-        return Number(
-            Number(
-                (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
-            ).toFixed(0)
-        );
+    const [id] = currentModsetId.value.split('_');
+    if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id) {
+        return +Number(
+            (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
+        ).toFixed(0);
     } else {
         if (useHashStore().current === null || useHashStore().current?.repoId !== props.repository.id) return 0;
         const { checkedFiles, filesToCheck } = useHashStore().current as IHashItem;
@@ -86,11 +85,11 @@ const progress = computed(() => {
 });
 
 onMounted(() => {
-    if (props.repository.modsets.length === 0) return '';
+    if (props.repository.modsets.length === 0 || props.repository.modsets[0] == null) return '';
     currentModsetId.value = props.repository.modsets[0].id + '_1' ?? '';
 });
 function play() {
-    const [id, type] = currentModsetId.value.split('_');
+    const [id] = currentModsetId.value.split('_');
     if (id === undefined) return '';
     launchModset(id, props.repository.id);
 }
@@ -102,25 +101,22 @@ const currentModsetId = ref('');
     inline-size: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 4rem 1fr 0.5fr 1fr 0.5fr 10%;
-    padding-inline-start: 1rem;
+    grid-template-columns: 5rem 1fr 0.5fr 0.5fr 0.5fr 10%;
+
     align-items: center;
     justify-content: center;
     background: var(--c-surf-4);
     box-shadow: var(--shadow-1);
     border-radius: 12px;
     overflow: hidden;
+    text-overflow: ellipsis;
     &:hover {
-        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
+        // box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }
 
     &__img {
+        padding-inline-start: 1rem;
         block-size: 3rem;
-    }
-
-    &__name {
-        font-weight: bold;
-        font-size: 14pt;
     }
 
     &__status {

@@ -5,10 +5,10 @@
             <small class="collection__description">{{ collection.description }}</small>
         </div>
         <span class="repo__status" :class="`status--${status}`">
-            <status :status="status" :progress="0"></status>
+            <Status :status="status" :progress="0"></Status>
         </span>
         <PlayButton @play="play()"></PlayButton>
-        <router-link :to="'./collection/' + collection.id" class="collection__open button">
+        <router-link :to="'./collection/' + collection.id + '/mods'" class="collection__open button">
             <mdicon name="folder-open-outline"></mdicon>
         </router-link>
     </li>
@@ -32,9 +32,9 @@ async function play() {
 }
 
 const status = computed(() => {
-    const cacheData = useHashStore().cache.find((cacheModset) => cacheModset.id === useRouteStore().currentRepoID);
+    const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === useRouteStore().currentRepoID);
     if (cacheData === undefined) return 'checking';
-    if (cacheData.outdatedFiles.length > 0 || cacheData.missingFiles.length > 0) {
+    if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
         return 'outdated';
     }
     for (const modsetId of Object.keys(props.collection.modsets)) {
@@ -107,6 +107,7 @@ const status = computed(() => {
     &__info {
         display: grid;
         padding-inline-start: 1rem;
+        gap: 1rem;
     }
 
     &__description {

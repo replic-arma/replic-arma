@@ -15,9 +15,9 @@ export interface SubnaviItem {
     link: string;
 }
 interface Props {
-    subnaviItems: Array<any>;
+    subnaviItems: Array<SubnaviItem>;
 }
-const props = defineProps<Props>();
+defineProps<Props>();
 watch(useRoute(), () => {
     nextTick(() => routeChanged());
 });

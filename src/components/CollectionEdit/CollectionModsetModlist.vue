@@ -9,7 +9,7 @@
             <div class="replic-dialog__content">
                 <div class="collection-modlist__mods" v-if="modset !== undefined && collection !== undefined">
                     <CollectionModsetModlistMod
-                        v-for="(mod, i) of modset.mods"
+                        v-for="(mod, i) of orderedMods"
                         :label="mod.name"
                         :key="i"
                         :default="collection.modsets![props.modset.id]?.includes(mod.name) ?? false"
@@ -22,9 +22,8 @@
     </Teleport>
 </template>
 <script lang="ts" setup>
-import type { Modset, Collection, ModsetMod } from '@/models/Repository';
-import { useRepoStore } from '@/store/repo';
-import { ref } from 'vue';
+import type { Modset, Collection } from '@/models/Repository';
+import { computed, ref } from 'vue';
 import CollectionModsetModlistMod from './CollectionModsetModlistMod.vue';
 interface Props {
     modset: Modset;
@@ -32,26 +31,33 @@ interface Props {
 }
 const props = defineProps<Props>();
 const isOpen = ref(false);
+const collectionData = ref(props.collection);
 function addMod(modName: string) {
-    if (props.collection.modsets !== undefined && props.modset.id in props.collection.modsets) {
-        props.collection.modsets![props.modset.id] = [
-            ...(props.collection.modsets![props.modset.id] ?? []),
-            ...[modName],
+    if (collectionData.value.modsets !== undefined && props.modset.id in collectionData.value.modsets) {
+        collectionData.value.modsets![props.modset.id] = [
+            ...(collectionData.value.modsets![props.modset.id] ?? []),
+            ...[modName]
         ];
     } else {
-        useRepoStore().currentCollection!.modsets = {
-            ...useRepoStore().currentCollection!.modsets,
-            ...{ [props.modset.id]: [modName] },
+        collectionData.value.modsets = {
+            ...collectionData.value.modsets,
+            ...{ [props.modset.id]: [modName] }
         };
     }
 }
 function removeMod(modName: string) {
-    props.collection.modsets![props.modset.id] =
-        props.collection.modsets![props.modset.id]?.filter((modsetModName: string) => modsetModName !== modName) ?? [];
-    if (props.collection.modsets![props.modset.id]!.length === 0) {
-        delete useRepoStore().currentCollection!.modsets![props.modset.id];
+    collectionData.value.modsets![props.modset.id] =
+        collectionData.value.modsets![props.modset.id]?.filter((modsetModName: string) => modsetModName !== modName) ??
+        [];
+    if (collectionData.value.modsets![props.modset.id]!.length === 0) {
+        delete collectionData.value.modsets![props.modset.id];
     }
 }
+
+const orderedMods = computed(() => {
+    const unorderedMods = props.modset.mods;
+    return unorderedMods.sort((a, b) => a.name.localeCompare(b.name));
+});
 </script>
 <style lang="scss" scoped>
 .collection-modlist {

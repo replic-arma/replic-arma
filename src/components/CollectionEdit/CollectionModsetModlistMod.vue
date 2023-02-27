@@ -18,7 +18,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(['add', 'remove']);
 const model = ref(props.default);
-watch(model, async (newModel, oldModel) => {
+watch(model, async newModel => {
     if (newModel) {
         emit('add', props.label);
     } else {
@@ -49,9 +49,6 @@ watch(model, async (newModel, oldModel) => {
         display: flex;
         align-items: center;
     }
-    &__label span {
-        margin-inline-start: 1rem;
-    }
     &__thumb {
         content: '';
         block-size: 1rem;
@@ -63,6 +60,7 @@ watch(model, async (newModel, oldModel) => {
         justify-content: center;
         cursor: pointer;
         color: var(--c-surf-2);
+        margin-inline-start: 1rem;
     }
 }
 .active {

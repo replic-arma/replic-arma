@@ -10,7 +10,7 @@
                 <Tabs>
                     <Tab title="General">
                         <div class="repo-settings">
-                            <template v-if="repository">
+                            <template v-if="model">
                                 <!-- <small v-once>Build Date: {{ formatDate(repository.build_date) }}</small>
                                 <small v-once>Revision: {{ repository.revision }}</small>
                                 <small v-once>Files: {{ repository.files.length }}</small> -->
@@ -20,7 +20,7 @@
                                         <input
                                             type="text"
                                             class="replic-input__input"
-                                            v-model="repository.config_url"
+                                            v-model="model.config_url"
                                             disabled
                                         />
                                     </div>
@@ -29,10 +29,10 @@
                                     :pathSelector="{
                                         label: 'mod_directory',
                                         name: 'modDirectory',
-                                        placeholder: 'C:\\Documents\\Arma3Mods',
+                                        placeholder: 'C:\\Documents\\Arma3Mods'
                                     }"
                                     :pathSelectorOptions="{ directory: true }"
-                                    v-model="repository.downloadDirectoryPath"
+                                    v-model="model.downloadDirectoryPath"
                                 ></PathSelector>
                             </template>
                             <div class="repo-settings__buttons">
@@ -52,8 +52,8 @@
                             </div>
                         </div>
                     </Tab>
-                    <Tab title="Launch Options" v-if="repository">
-                        <Launch v-model="repository.launchOptions"></Launch>
+                    <Tab title="Launch Options" v-if="model">
+                        <Launch v-model="model.launchOptions"></Launch>
                         <div class="repo-settings__buttons">
                             <button class="button button--center" v-once @click="save()" v-t="'save'"></button>
                         </div>
@@ -66,26 +66,32 @@
 <script lang="ts" setup>
 import type { IReplicArmaRepository } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
-import { ref } from 'vue';
+import { ref, type PropType } from 'vue';
 import { useRouter } from 'vue-router';
-import Launch from './Launch.vue';
-import Tab from '../util/Tab.vue';
-import Tabs from '../util/Tabs.vue';
-import PathSelector from '../util/PathSelector.vue';
+import Tab from '@/components/util/Tab.vue';
+import Tabs from '@/components/util/Tabs.vue';
+import PathSelector from '@/components/util/PathSelector.vue';
 import { notify } from '@kyvg/vue3-notification';
 import { clearModsetCache } from '@/util/system/modset_cache';
-const repository = useRepoStore().currentRepository;
+import Launch from '../settings/Launch.vue';
+const props = defineProps({
+    modelValue: {
+        type: Object as PropType<IReplicArmaRepository>,
+        required: true
+    }
+});
+const model = ref(props.modelValue);
 const router = useRouter();
 async function removeRepo(): Promise<void> {
     useRepoStore().repos =
-        useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== repository?.id) ?? [];
+        useRepoStore().repos?.filter((repo: IReplicArmaRepository) => repo.id !== model.value?.id) ?? [];
     useRepoStore().save();
     notify({
         title: 'Removed Repository',
-        text: `Repository ${repository?.name} has been removed`,
-        type: 'success',
+        text: `Repository ${model.value?.name} has been removed`,
+        type: 'success'
     });
-    clearModsetCache(repository?.id);
+    clearModsetCache(model.value?.id);
     router.push('/');
 }
 
@@ -94,13 +100,10 @@ async function save() {
     notify({
         title: 'Saved Settings',
         text: 'Changes have been saved to your disk',
-        type: 'success',
+        type: 'success'
     });
 }
 const isOpen = ref(false);
-function formatDate(timestamp: string) {
-    return new Date(Number(timestamp) / 1000000).toLocaleDateString('de-de');
-}
 </script>
 <style lang="scss" scoped>
 .replic-dialog {

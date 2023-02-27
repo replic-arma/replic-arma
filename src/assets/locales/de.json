@@ -22,11 +22,11 @@
     "download-status": {
         "outdated": "Update verfügbar",
         "queued": "Update Ausstehend",
-        "paused": "Paused",
-        "downloading": "Downloading",
-        "ready": "Ready to play",
-        "play": "Play",
-        "checking": "Checking",
+        "paused": "Pausiert",
+        "downloading": "Herunterladen",
+        "ready": "Bereit",
+        "play": "Spielen",
+        "checking": "Prüfe",
         "unknown": "Unknown"
     },
     "server": {
@@ -34,7 +34,7 @@
         "empty": "Kein Server verfügbar"
     },
     "submit": "Speichern",
-    "ready": "Bereit zum spielen",
+    "ready": "Bereit",
     "updating": "Updating",
     "select": "Auswählen",
     "a3exe": "Arma 3 Exe",
@@ -65,9 +65,22 @@
             "dark": "Dark"
         },
         "name": "Profil",
-        "malloc": "Malloc"
+        "malloc": "Malloc",
+        "maxMem": "Max Memory",
+        "cpuCount": "CPU Count",
+        "exThreads": "ExThreads",
+        "skipIntro": "Skip Intro",
+        "max_connections": "Maximale Anzahl an gleichzeitigen Verbindungen"
     },
     "remove": "Entfernen",
     "save": "Speichern",
-    "play": "Spielen"
+    "play": "Spielen",
+    "repository_add": {
+        "fetching": "Repository abfragen",
+        "error": "Fehler beim hinzufügen des Repositories",
+        "success": "Erfolgreich Repository hinzugefügt"
+    },
+    "download": "Herunterladen",
+    "mods": "Mods",
+    "edit": "Bearbeiten"
 }

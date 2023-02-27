@@ -24,5 +24,6 @@ export interface IApplicationSettings {
     gamePath: string | null;
     downloadDirectoryPath: string | null;
     maxDownloadSpeed: number;
+    maxConnections: number;
     launchOptions: GameLaunchSettings;
 }

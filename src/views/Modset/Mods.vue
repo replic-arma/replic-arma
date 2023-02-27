@@ -1,6 +1,7 @@
 <template>
-    <div class="modset-mods">
-        <Modlist v-if="modset !== undefined" :mods="mods" :tree="tree" :modset-id="modset.id"></Modlist>
+    <Loader v-if="model == null" />
+    <div class="modset-mods" v-else>
+        <ModModsetList :mods="model.mods" :tree="tree" :modset-id="model.id"></ModModsetList>
         <Tooltip :text="'Toggle Tree'">
             <div role="button" @click="toggleTree()">
                 <mdicon name="file-tree" v-if="tree"></mdicon>
@@ -11,12 +12,16 @@
 </template>
 
 <script lang="ts" setup>
-import type { ModsetMod } from '@/models/Repository';
-import { useRepoStore } from '@/store/repo';
-import { computed, ref } from 'vue';
-import Modlist from '../components/Modlist.vue';
-const modset = computed(() => useRepoStore().currentModset);
-const mods = computed(() => useRepoStore().currentModset?.mods.map((mod: ModsetMod) => mod.name) ?? []);
+import type { Modset } from '@/models/Repository';
+import { ref, type PropType } from 'vue';
+import Loader from '@/components/util/Loader.vue';
+import ModModsetList from '@/components/ModModsetList.vue';
+defineProps({
+    model: {
+        type: Object as PropType<Modset>,
+        required: true
+    }
+});
 const tree = ref(false);
 function toggleTree() {
     tree.value = !tree.value;

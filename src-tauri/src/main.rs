@@ -15,25 +15,31 @@ mod util;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Arc;
+use std::thread::available_parallelism;
 
+use crate::commands::repo::file_check;
 use crate::commands::{
-    repo::{download, get_repo, hash_check, pause_download},
+    discord::discord_set_activity,
+    repo::{download, get_repo, pause_download},
     util::{dir_exists, file_exists, get_a3_dir},
 };
+use log::LevelFilter;
 use tauri::{api::path::app_dir, async_runtime::Mutex, Manager};
+use tauri_plugin_log::LogTarget;
 use util::methods::load_t;
 
+use declarative_discord_rich_presence::DeclarativeDiscordIpcClient;
 use state::ReplicArmaState;
 
 #[cfg(target_os = "windows")]
 use windows::Win32::{
-    Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, RECT, WPARAM},
+    Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
     UI::{
         Input::KeyboardAndMouse::SetFocus,
         WindowsAndMessaging::{
-            CallNextHookEx, GetWindowRect, GetWindowThreadProcessId, SetWindowPos,
-            SetWindowsHookExW, CWPSTRUCT, HHOOK, MSG, SWP_NOMOVE, WH_CALLWNDPROC, WH_GETMESSAGE,
-            WM_EXITSIZEMOVE, WM_NCLBUTTONDOWN,
+            CallNextHookEx, GetWindowThreadProcessId, SetWindowsHookExW, HHOOK, MSG, WH_GETMESSAGE,
+            WM_NCLBUTTONDOWN,
         },
     },
 };
@@ -58,10 +64,13 @@ fn init_state(app_dir: PathBuf) -> anyhow::Result<ReplicArmaState> {
         }
     };
 
+    let num_logical_cores = available_parallelism().unwrap().get();
+
     let state = ReplicArmaState {
         data_dir: Box::new(app_dir),
         known_hashes: Mutex::new(hashes),
-        downloading: Mutex::new(None),
+        downloading: Arc::new(Mutex::new(None)),
+        number_hash_concurrent: Arc::new(Mutex::new(num_logical_cores)),
     };
 
     Ok(state)
@@ -72,26 +81,6 @@ unsafe extern "system" fn get_msg_callback(code: i32, w_param: WPARAM, l_param: 
     let msg = *(l_param.0 as *mut MSG);
     if msg.message == WM_NCLBUTTONDOWN {
         SetFocus(msg.hwnd);
-    }
-    CallNextHookEx(HHOOK(0), code, w_param, l_param)
-}
-
-#[cfg(target_os = "windows")]
-unsafe extern "system" fn call_wnd_callback(
-    code: i32,
-    w_param: WPARAM,
-    l_param: LPARAM,
-) -> LRESULT {
-    let cwp = *(l_param.0 as *mut CWPSTRUCT);
-    if cwp.message == WM_EXITSIZEMOVE {
-        let mut rect = RECT::default();
-        if GetWindowRect(cwp.hwnd, &mut rect as *mut RECT).as_bool() {
-            let width = rect.right - rect.left;
-            let height = rect.bottom - rect.top;
-
-            SetWindowPos(cwp.hwnd, HWND(0), 0, 0, width + 1, height + 1, SWP_NOMOVE);
-            SetWindowPos(cwp.hwnd, HWND(0), 0, 0, width, height, SWP_NOMOVE);
-        }
     }
     CallNextHookEx(HHOOK(0), code, w_param, l_param)
 }
@@ -119,10 +108,12 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             let app_dir = app_dir(&app.config()).expect("Couldn't get app dir path!");
             app.manage(init_state(app_dir.clone()).unwrap_or_else(|_| {
                 println!("Error during init state! Using default state!");
+                let num_logical_cores = available_parallelism().unwrap().get();
                 ReplicArmaState {
                     data_dir: Box::new(app_dir),
                     known_hashes: Mutex::new(HashMap::new()),
-                    downloading: Mutex::new(None),
+                    downloading: Arc::new(Mutex::new(None)),
+                    number_hash_concurrent: Arc::new(Mutex::new(num_logical_cores)),
                 }
             }));
             let handle = app.handle();
@@ -131,16 +122,22 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 handle.emit_all("scheme-request-received", request).unwrap();
             })
             .unwrap();
+            app.manage(DeclarativeDiscordIpcClient::new(&String::from(
+                "1027352671289622580",
+            )));
+            let client = app.state::<DeclarativeDiscordIpcClient>();
+            client.enable();
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            hash_check,
             get_repo,
             download,
             pause_download,
             file_exists,
             dir_exists,
-            get_a3_dir
+            get_a3_dir,
+            file_check,
+            discord_set_activity
         ])
         .on_page_load(|window, _| {
             #[cfg(target_os = "windows")]
@@ -154,23 +151,38 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                         HINSTANCE::default(),
                         thread_id,
                     );
-                    SetWindowsHookExW(
-                        WH_CALLWNDPROC,
-                        Some(call_wnd_callback),
-                        HINSTANCE::default(),
-                        thread_id,
-                    );
                 }
             }
         })
         .on_window_event(|event| {
             if let tauri::WindowEvent::Moved(_) = event.event() {
-                // let win = event.window();
-                // TODO: call NotifyParentWindowPositionChanged here
-                // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
-                // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
+                let win = event.window();
+                win.with_webview(|webview| {
+                    #[cfg(target_os = "linux")]
+                    {}
+
+                    #[cfg(windows)]
+                    unsafe {
+                        // https://github.com/MicrosoftEdge/WebView2Feedback/issues/780#issuecomment-808306938
+                        // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller?view=webview2-1.0.774.44#notifyparentwindowpositionchanged
+                        webview
+                            .controller()
+                            .NotifyParentWindowPositionChanged()
+                            .unwrap();
+                    }
+
+                    #[cfg(target_os = "macos")]
+                    unsafe {}
+                });
             }
         })
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .level(LevelFilter::Debug)
+                .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+                .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
+                .build(),
+        )
         // .build(tauri::generate_context!())
         // .expect("error while running tauri application")
         .run(tauri::generate_context!())
@@ -208,6 +220,10 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod tests {
+
+    // urls:
+    // grad: http://a3s.gruppe-adler.de/mods/.a3s/autoconfig
+    // opt: http://repo.opt4.net/opt/.a3s/autoconfig
 
     use std::{path::PathBuf, str::FromStr};
 

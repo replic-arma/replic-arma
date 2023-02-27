@@ -28,7 +28,7 @@ const props = defineProps<Props>();
 
 function play() {
     if (props.server.modset === undefined) throw new Error('Server Modset undefined');
-    // launchModset(props.server.modset.id, useRouteStore().currentRepoID ?? '', props.server);
+    launchModset(props.server.modset, useRouteStore().currentRepoID ?? '', props.server);
 }
 </script>
 <style lang="scss" scoped>
@@ -46,7 +46,7 @@ function play() {
     border-radius: 12px;
     overflow: hidden;
     &:hover {
-        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
+        // box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }
 
     &__host {

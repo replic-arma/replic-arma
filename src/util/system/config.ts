@@ -20,7 +20,7 @@ export const DEFAULT_LAUNCH_CONFIG: GameLaunchSettings = {
     noLogs: false,
     customParameter: '',
     battleye: false,
-    skipIntro: false,
+    skipIntro: false
 };
 
 const DEFAULT_CONFIG: IApplicationSettings = {
@@ -30,6 +30,7 @@ const DEFAULT_CONFIG: IApplicationSettings = {
     theme: 'light',
     maxDownloadSpeed: 0,
     launchOptions: DEFAULT_LAUNCH_CONFIG,
+    maxConnections: 10
 };
 
 export async function loadConfig(): Promise<IApplicationSettings> {

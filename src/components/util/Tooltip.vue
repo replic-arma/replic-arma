@@ -9,7 +9,7 @@ interface Props {
     text: string;
     position?: string;
 }
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <style lang="scss" scoped>
@@ -22,7 +22,7 @@ const props = defineProps<Props>();
     &:before,
     &:after {
         text-transform: none;
-        font-size: 0.5em;
+        font-size: var(--tooltip-font-size, 0.5em);
         line-height: 1;
         user-select: none;
         pointer-events: none;
@@ -32,20 +32,12 @@ const props = defineProps<Props>();
     }
     &:before {
         content: '';
-        border: 5px solid transparent; /* opinion 4 */
-        z-index: 1001; /* absurdity 1 */
+        border: 5px solid transparent;
+        z-index: 1001;
     }
     &:after {
-        content: attr(tooltip); /* magic! */
-
-        /* most of the rest of this is opinion */
-        font-family: Helvetica, sans-serif;
+        content: attr(tooltip);
         text-align: center;
-
-        /* 
-    Let the content set the size of the tooltips 
-    but this will also keep them from being obnoxious
-    */
         min-width: 3em;
         max-width: 21em;
         white-space: nowrap;

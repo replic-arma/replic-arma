@@ -17,6 +17,6 @@ export const useRouteStore = defineStore('route', () => {
         currentRepoID,
         currentModsetID,
         currentCollectionID,
-        switchRoute,
+        switchRoute
     };
 });

@@ -1,29 +1,20 @@
-<template>
-    <div class="online-status">
-        <div class="online-status__bubble">
-            <div
-                class="bubble"
-                :style="`--status: ${online ? 'lightgreen' : 'red'}; --status-bg: ${
-                    online ? '0, 255, 34' : '255, 0, 0'
-                };`"
-            >
-                <span class="bubble-outer-dot">
-                    <span class="bubble-inner-dot"></span>
-                </span>
-            </div>
-        </div>
-        <div class="online-status__text">
-            <span v-if="online">Online</span>
-            <span v-else>Offline</span>
-        </div>
-    </div>
-</template>
+<template></template>
 
 <script lang="ts" setup>
-import { useNetwork, useOnline } from '@vueuse/core';
+import { notify } from '@kyvg/vue3-notification';
+import { useOnline } from '@vueuse/core';
+import { watch } from 'vue';
 
 const online = useOnline();
-const network = useNetwork();
+watch(online, () => {
+    if (online.value) return;
+    notify({
+        title: 'You are offline',
+        text: 'bla',
+        type: 'error',
+        duration: -1
+    });
+});
 </script>
 <style lang="scss" scoped>
 .online-status {

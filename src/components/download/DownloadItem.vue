@@ -5,31 +5,39 @@
             <span class="download-item__repo-name" v-if="repo !== null && repo !== undefined">{{ repo.name }}</span>
             <span class="download-item__name">{{ downloadItem.item.name }}</span>
         </div>
-        <div v-if="downloadItem.status === 'downloading' || downloadItem.status === 'paused'" class="download-item__status">
+        <div
+            v-if="downloadItem.status === 'downloading' || downloadItem.status === 'paused'"
+            class="download-item__status"
+        >
             <span class="download-item__progress">{{ progress }}%</span>
             <span class="download-item__size">{{ received }} GB / {{ size }} GB</span>
             <div class="download-item__progress-bar" :style="`--progress: ${progress}%;`"></div>
             <span class="download-item__time" v-if="downloadItem.status !== 'paused'">~{{ remaining }} left</span>
-            <span class="download-item__time" v-else>Paused</span>
+            <span class="download-item__time" v-else v-t="'status.paused'"></span>
         </div>
+        <div v-else-if="downloadItem.status === 'finished'" class="download-item__status"></div>
         <div v-else>
             <div class="download-item__status">
                 <div class="download-item__queue-wrapper">
-                    <span class="download-item__queue-label">Missing Files</span>
-                    <span class="download-item__queue-value">{{ cacheData?.missingFiles.length }}</span>
+                    <span class="download-item__queue-label" v-t="'files.delete'"></span>
+                    <span class="download-item__queue-value">{{ cacheData?.extra.length }}</span>
                 </div>
                 <div class="download-item__queue-wrapper">
-                    <span class="download-item__queue-label">Outdated Files</span>
-                    <span class="download-item__queue-value">{{ cacheData?.outdatedFiles.length }}</span>
+                    <span class="download-item__queue-label" v-t="'files.missing'"></span>
+                    <span class="download-item__queue-value">{{ cacheData?.missing.length }}</span>
                 </div>
                 <div class="download-item__queue-wrapper">
-                    <span class="download-item__queue-label">Size</span>
+                    <span class="download-item__queue-label" v-t="'files.outdated'"></span>
+                    <span class="download-item__queue-value">{{ cacheData?.outdated.length }}</span>
+                </div>
+                <div class="download-item__queue-wrapper">
+                    <span class="download-item__queue-label" v-t="'files.size'"></span>
                     <span class="download-item__queue-value">{{ size }} GB</span>
                 </div>
             </div>
         </div>
         <div class="download-item__controls">
-            <template v-if="downloadItem.status === 'downloading'">
+            <template v-if="downloadItem.status === DownloadStatus.DOWNLOADING">
                 <mdicon @click="pauseDownloadF" name="pause" />
             </template>
             <template v-else>
@@ -40,7 +48,7 @@
     </li>
 </template>
 <script lang="ts" setup>
-import type { DownloadItem } from '@/models/Download';
+import { DownloadStatus, type DownloadItem } from '@/models/Download';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
@@ -53,7 +61,7 @@ const props = defineProps<Props>();
 
 const progress = computed(() => {
     if (useDownloadStore().current === null) return 0;
-    return Number(
+    return +Number(
         (useDownloadStore().current!.received / 10e5 / (useDownloadStore().current!.size / 10e8)) * 100
     ).toFixed(0);
 });
@@ -80,19 +88,19 @@ const remaining = computed(() => {
 
 const repo = computed(() => {
     if (props.downloadItem === null) return null;
-    const repo = useRepoStore().repos?.find((repo) => repo.id === props.downloadItem.repoId);
+    const repo = useRepoStore().repos?.find(repo => repo.id === props.downloadItem.repoId);
     return repo;
 });
 
 const cacheData = computed(() => {
     if (props.downloadItem === null) return null;
-    const cacheData = useHashStore().cache.find((cacheItem) => cacheItem.id === props.downloadItem.item.id);
+    const cacheData = useHashStore().cache.find(cacheItem => cacheItem.id === props.downloadItem.item.id);
     if (cacheData === undefined) return null;
     return cacheData;
 });
 
 function startDownload() {
-    if (props.downloadItem.status === 'paused' || props.downloadItem.status === 'queued') {
+    if (props.downloadItem.status === DownloadStatus.PAUSED || props.downloadItem.status === DownloadStatus.QUEUED) {
         useDownloadStore().next();
     }
 }
@@ -110,7 +118,7 @@ async function stopDownload() {
 }
 
 async function pauseDownloadF() {
-    useDownloadStore().current!.status = 'paused';
+    useDownloadStore().current!.status = DownloadStatus.PAUSED;
     await pauseDownload();
 }
 </script>
@@ -145,7 +153,7 @@ async function pauseDownloadF() {
     &#{&}--queued {
         .download-item__status {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
         }
     }
     &__queue-wrapper {
@@ -155,7 +163,6 @@ async function pauseDownloadF() {
     &__queue-value {
         color: black;
         font-weight: bolder;
-        line-height: 0.5;
     }
     &__img {
         block-size: 3rem;
@@ -168,7 +175,6 @@ async function pauseDownloadF() {
         font-weight: bold;
         font-size: 11pt;
         opacity: 50%;
-        line-height: 0.3;
     }
     &__name {
         font-weight: bold;
@@ -180,13 +186,13 @@ async function pauseDownloadF() {
         padding-inline-end: 1.5rem;
 
         span:first-of-type {
-            border-top-left-radius: .5rem;
-            border-bottom-left-radius: .5rem;
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
         }
 
         span:last-of-type {
-            border-top-right-radius: .5rem;
-            border-bottom-right-radius: .5rem;
+            border-top-right-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
         }
 
         span {
@@ -214,7 +220,7 @@ async function pauseDownloadF() {
         grid-area: canvas;
         background: lightgrey;
         height: 0.5rem;
-        margin-block-start: .25rem;
+        margin-block-start: 0.25rem;
         border-radius: 1rem;
         position: relative;
         &::before {
@@ -233,7 +239,7 @@ async function pauseDownloadF() {
     }
 
     &__status {
-        padding-inline-end: .5rem;
+        padding-inline-end: 0.5rem;
         color: grey;
     }
 }

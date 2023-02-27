@@ -9,7 +9,7 @@ const messages = {
     },
     de: {
         ...deLocale,
-    }
+    },
 };
 const i18n = createI18n({
     legacy: false,

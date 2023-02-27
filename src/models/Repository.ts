@@ -7,9 +7,13 @@ export interface File {
     sha1: string;
 }
 
-export interface ModsetMod {
+export interface Mod {
     mod_type: string;
     name: string;
+    path?: string;
+}
+
+export interface ModsetMod extends Mod {
     allow_compat?: boolean;
     files?: File[];
     outdatedFiles?: [];
@@ -53,7 +57,7 @@ export interface Collection {
     description?: string;
     modsets: ModsetMap;
     dlc?: Array<string>;
-    localMods?: Array<ModsetMod>;
+    localMods?: Array<Mod>;
     launchOptions?: GameLaunchSettings;
 }
 
@@ -63,6 +67,14 @@ export class JSONMap<K extends string | number, V> extends Map<K, V> {
     }
 }
 
+export interface ConnectionSettings {
+    config_url: string;
+    host_url: string;
+    protocol: 'http' | 'https' | 'ftp';
+    username?: string;
+    password?: string;
+    port?: string;
+}
 export interface Repository {
     open_repository_schema: number;
     name: string;
@@ -74,18 +86,30 @@ export interface Repository {
     download_server?: DownloadServer;
     collections: Array<Collection>;
     config_url: string | undefined;
+    connection?: ConnectionSettings;
 }
 
 export interface ReplicArmaRepositoryError {
     message: string;
 }
 
+export enum RepositoryType {
+    A3S = 'A3S',
+    SWIFTY = 'swifty',
+    LOCAL = 'local'
+}
+
+export enum HashStatus {
+    OUTDATED = 'outdated',
+    READY = 'ready',
+    CHECKING = 'checking'
+}
 export interface IReplicArmaRepository extends Repository {
     id: string;
     image?: string;
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
-    type?: 'local' | 'a3s' | 'swifty';
+    type?: RepositoryType;
     launchOptions: GameLaunchSettings;
     downloadDirectoryPath: string;
 }

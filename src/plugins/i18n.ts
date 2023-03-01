@@ -5,18 +5,18 @@ import deLocale from '@/assets/locales/de.json';
 
 const messages = {
     en: {
-        ...enLocale,
+        ...enLocale
     },
     de: {
-        ...deLocale,
-    },
+        ...deLocale
+    }
 };
 const i18n = createI18n({
     legacy: false,
     globalInjection: true,
     locale: 'en',
     fallbackLocale: 'en',
-    messages,
+    messages
 });
 
 export default i18n;

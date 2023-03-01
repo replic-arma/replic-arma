@@ -28,7 +28,7 @@ import { useRouteStore } from '@/store/route';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Loader from '@/components/util/Loader.vue';
-import Downloads from '@/components/download/Downloads.vue';
+import Downloads from '@/components/Download/Downloads.vue';
 import Subnavi from '@/components/util/Subnavi.vue';
 import { useCollection } from '@/composables/useCollection';
 

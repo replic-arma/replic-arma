@@ -21,8 +21,8 @@ export interface GameLaunchSettings {
 export interface IApplicationSettings {
     language: string;
     theme: 'light' | 'dark';
-    gamePath: string | null;
-    downloadDirectoryPath: string | null;
+    gamePath: string;
+    downloadDirectoryPath: string;
     maxDownloadSpeed: number;
     maxConnections: number;
     launchOptions: GameLaunchSettings;

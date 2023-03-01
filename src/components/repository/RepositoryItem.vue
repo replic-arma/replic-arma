@@ -1,6 +1,6 @@
 <template>
     <li class="repo">
-        <img class="repo__img" v-once :src="repository.image" />
+        <!-- <img class="repo__img" v-once :src="repository.image" /> -->
         <h5 class="title-md" v-once>{{ repository.name }}</h5>
         <div class="repo__status">
             <Status :status="status" :progress="progress"></Status>
@@ -49,8 +49,8 @@ const status = computed(() => {
     if (type === '1') {
         const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === id);
         if (cacheData === undefined) return HashStatus.CHECKING;
-        if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === id)
-            return useDownloadStore().current?.status;
+        const current = useDownloadStore().current;
+        if (current !== null && current.item.id === id) return current.status;
         if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
             return HashStatus.OUTDATED;
         }
@@ -63,8 +63,8 @@ const status = computed(() => {
         }
         if (collection !== undefined) {
             for (const modsetId of Object.keys(collection.modsets)) {
-                if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modsetId)
-                    return useDownloadStore().current?.status;
+                const current = useDownloadStore().current;
+                if (current !== null && current.item.id === modsetId) return current.status;
             }
         }
     }
@@ -101,7 +101,7 @@ const currentModsetId = ref('');
     inline-size: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 5rem 1fr 0.5fr 0.5fr 0.5fr 10%;
+    grid-template-columns: 1fr 0.5fr 0.5fr 0.5fr 10%;
 
     align-items: center;
     justify-content: center;
@@ -110,6 +110,8 @@ const currentModsetId = ref('');
     border-radius: 12px;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding-inline-start: 1rem;
+
     &:hover {
         // box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }

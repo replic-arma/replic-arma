@@ -20,7 +20,7 @@
 import { getAppVersion } from '@/util/system/meta';
 import { ref } from 'vue';
 const version = ref('0.1.0');
-getAppVersion().then((v) => (version.value = v));
+getAppVersion().then(v => (version.value = v));
 </script>
 
 <style lang="scss" scoped>

@@ -73,7 +73,7 @@ import Tabs from '@/components/util/Tabs.vue';
 import PathSelector from '@/components/util/PathSelector.vue';
 import { notify } from '@kyvg/vue3-notification';
 import { clearModsetCache } from '@/util/system/modset_cache';
-import Launch from '../settings/Launch.vue';
+import Launch from '@/components/Settings/Launch.vue';
 const props = defineProps({
     modelValue: {
         type: Object as PropType<IReplicArmaRepository>,
@@ -102,6 +102,7 @@ async function save() {
         text: 'Changes have been saved to your disk',
         type: 'success'
     });
+    isOpen.value = false;
 }
 const isOpen = ref(false);
 </script>

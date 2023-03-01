@@ -1,13 +1,17 @@
 {
     "name": "replic-arma",
-    "version": "0.0.0",
+    "version": "0.1.10",
+    "displayName": "ReplicArma",
+    "repository": {
+        "url": "https://github.com/replic-arma/replic-arma",
+        "type": "git"
+    },
     "scripts": {
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview --port 5050",
         "typecheck": "vue-tsc --noEmit",
-        "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-        "release": "node scripts/release.mjs"
+        "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix"
     },
     "dependencies": {
         "@kyvg/vue3-notification": "^2.3.4",
@@ -17,6 +21,7 @@
         "pako": "^2.0.4",
         "pinia": "^2.0.16",
         "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log",
+        "typescript-event-target": "^1.0.4",
         "uuid": "^9.0.0",
         "vue": "^3.2.37",
         "vue-i18n": "^9.1.10",
@@ -25,8 +30,6 @@
         "vue3-popper": "^1.5.0"
     },
     "devDependencies": {
-        "@actions/core": "^1.9.0",
-        "@actions/github": "^5.0.3",
         "@intlify/vite-plugin-vue-i18n": "^5.0.0",
         "@rushstack/eslint-patch": "^1.1.0",
         "@tauri-apps/cli": "^1.2.3",

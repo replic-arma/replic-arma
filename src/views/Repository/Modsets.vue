@@ -2,13 +2,12 @@
     <ul class="modsets" v-if="model !== undefined">
         <ModsetItem v-for="(modset, i) of model.modsets" :key="i" :modset="modset" :modsetIndex="modset.id" />
     </ul>
-    <!-- <ModsetAdd></ModsetAdd>s -->
+    <!-- <ModsetAdd></ModsetAdd> -->
 </template>
 
 <script lang="ts" setup>
 import type { PropType } from 'vue';
-import ModsetItem from '@/components/modset/ModsetItem.vue';
-import ModsetAdd from '@/components/modset/ModsetAdd.vue';
+import ModsetItem from '@/components/Modset/ModsetItem.vue';
 import type { IReplicArmaRepository } from '@/models/Repository';
 defineProps({
     model: {

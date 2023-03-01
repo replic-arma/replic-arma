@@ -83,7 +83,10 @@ const remaining = computed(() => {
         useDownloadStore().stats!.avg;
     const minutes = Math.floor(time / 60);
     const seconds = Number(time - minutes * 60).toFixed(0);
-    return `${minutes} Minutes ${seconds} Seconds`;
+    if (minutes > 0) {
+        return `${minutes} Minutes ${seconds} Seconds`;
+    }
+    return `${seconds} Seconds`;
 });
 
 const repo = computed(() => {

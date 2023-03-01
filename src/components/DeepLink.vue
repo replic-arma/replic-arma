@@ -18,7 +18,6 @@ import { DEEP_LINK } from '@/util/system/deep-link';
 import { ref } from 'vue';
 const isOpen = ref(false);
 const content = ref(null as null | DeepLinkContent);
-DEEP_LINK.removeEventListener('deep_link_received', () => {});
 DEEP_LINK.addEventListener('deep_link_received', data => {
     isOpen.value = true;
     content.value = parseDeepLink(data.detail);

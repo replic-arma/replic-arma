@@ -1,7 +1,6 @@
-import { listen } from '@tauri-apps/api/event';
-import type { Event as TauriEvent } from '@tauri-apps/api/helpers/event';
+import { listen, type Event as TauriEvent } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/tauri';
-import TypedEventTarget from '../TypedEventTarget';
+import { TypedEventTarget } from 'typescript-event-target';
 
 export async function pauseDownload(): Promise<void> {
     return await invoke('pause_download');
@@ -13,7 +12,7 @@ export async function downloadFiles(
     targetPath: string,
     newFiles: string[],
     partialFiles: string[],
-    numberConnections: number
+    numberConnections = 10
 ): Promise<string> {
     return await invoke('download', {
         repoType: repoType.toUpperCase(),
@@ -21,7 +20,7 @@ export async function downloadFiles(
         targetPath,
         newFiles,
         partialFiles,
-        numberConnections: 10
+        numberConnections
     });
 }
 

@@ -9,7 +9,7 @@ import {
     writeFile as tauriWriteFile,
     writeBinaryFile as tauriWriteBinaryFile,
     readDir as tauriReadDir,
-    type FileEntry,
+    type FileEntry
 } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
 

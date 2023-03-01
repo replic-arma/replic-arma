@@ -1,9 +1,7 @@
-import * as core from '@actions/core';
 import TauriCli from '@tauri-apps/cli';
 import { exec, type ExecOptionsWithStringEncoding } from 'child_process';
 import type { AddressInfo, Server } from 'net';
-import { basename, dirname, join, relative } from 'path';
-import glob from 'tiny-glob';
+import { join, relative } from 'path';
 import type { Plugin, ResolvedConfig } from 'vite';
 
 interface BuildOptions {
@@ -136,59 +134,6 @@ export default function tauriPlugin(options?: PluginOptions): Plugin {
                 ],
                 undefined
             );
-
-            const macOSExts = ['app', 'app.tar.gz', 'app.tar.gz.sig', 'dmg'];
-            const linuxExts = ['AppImage', 'AppImage.tar.gz', 'AppImage.tar.gz.sig', 'deb'];
-            const windowsExts = ['msi', 'msi.zip', 'msi.zip.sig'];
-
-            const artifactsLookupPattern = `./src-tauri/target/release/*/*/!(linuxdeploy)*.{${[
-                ...macOSExts,
-                linuxExts,
-                windowsExts
-            ].join(',')}}`;
-
-            core.debug(`Looking for artifacts using this pattern: ${artifactsLookupPattern}`);
-
-            const artifacts1 = await glob(artifactsLookupPattern, { absolute: true, filesOnly: false });
-
-            const artifactsLookupPattern2 = `./src-tauri/target/release/*.exe`;
-
-            core.debug(`Looking for artifacts using this pattern: ${artifactsLookupPattern2}`);
-
-            const artifacts2 = await glob(artifactsLookupPattern2, { absolute: true, filesOnly: false });
-            const artifacts = [...artifacts1, ...artifacts2];
-            let i = 0;
-            for (const artifact of artifacts) {
-                if (artifact.endsWith('.app') && !artifacts.some(a => a.endsWith('.app.tar.gz'))) {
-                    await execCmd('tar', ['czf', `${artifact}.tar.gz`, '-C', dirname(artifact), basename(artifact)]);
-                    artifacts[i] += '.tar.gz';
-                } else if (artifact.endsWith('.app')) {
-                    // we can't upload a directory
-                    artifacts.splice(i, 1);
-                }
-
-                i++;
-            }
-            core.setOutput('artifacts', JSON.stringify(artifacts));
-
-            async function execCmd(
-                cmd: string,
-                args: string[],
-                options: Omit<ExecOptionsWithStringEncoding, 'encoding'> = {}
-            ) {
-                return new Promise((resolve, reject) => {
-                    exec(`${cmd} ${args.join(' ')}`, { ...options, encoding: 'utf-8' }, (error, stdout, stderr) => {
-                        if (error) {
-                            console.error(
-                                `Failed to execute cmd ${cmd} with args: ${args.join(' ')}. reason: ${error}`
-                            );
-                            reject(stderr);
-                        } else {
-                            resolve(stdout);
-                        }
-                    });
-                });
-            }
         }
     };
 }

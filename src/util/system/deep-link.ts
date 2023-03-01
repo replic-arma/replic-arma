@@ -1,6 +1,5 @@
-import { listen } from '@tauri-apps/api/event';
-import type { Event as TauriEvent } from '@tauri-apps/api/helpers/event';
-import TypedEventTarget from '../TypedEventTarget';
+import { listen, type Event as TauriEvent } from '@tauri-apps/api/event';
+import { TypedEventTarget } from 'typescript-event-target';
 
 interface DeepLink {
     deep_link_received: CustomEvent<{ payload: string }>;

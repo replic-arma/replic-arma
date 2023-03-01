@@ -4,10 +4,10 @@ import UncompressWorker from './uncompress_worker?worker';
 export async function compress(data: string) {
     const worker = new CompressWorker();
 
-    const promise = new Promise<Uint8Array>((resolve) => {
+    const promise = new Promise<Uint8Array>(resolve => {
         worker.addEventListener(
             'message',
-            (e) => {
+            e => {
                 resolve(e.data);
             },
             { once: true }
@@ -21,10 +21,10 @@ export async function compress(data: string) {
 export async function uncompress(data: Uint8Array): Promise<string> {
     const worker = new UncompressWorker();
 
-    const promise = new Promise<string>((resolve) => {
+    const promise = new Promise<string>(resolve => {
         worker.addEventListener(
             'message',
-            (e) => {
+            e => {
                 resolve(e.data);
             },
             { once: true }

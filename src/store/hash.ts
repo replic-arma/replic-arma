@@ -32,6 +32,8 @@ export const useHashStore = defineStore('hash', () => {
     const cache = ref([] as Array<ICacheItem>);
     const alreadyCheckedCache = ref([] as Array<string>);
     async function addToQueue(repo: IReplicArmaRepository) {
+        const inQueue = queue.value.find(item => item.repoId === repo.id);
+        if (inQueue) return;
         logInfo(LogType.HASH, `Repository ${repo.name} has been queued`);
         queue.value.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
         if (current.value === null) {

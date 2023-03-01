@@ -5,9 +5,9 @@ import type { HashResponseItem } from './system/hashes';
 export const ReplicWorker = {
     async mapFilesToMods(files: File[], modsets: Modset[]): Promise<Modset[]> {
         const { workerFn } = useWebWorkerFn((files: File[], modsets: Modset[]) => {
-            modsets.map((modset) => {
+            modsets.map(modset => {
                 const modMap = new Map<string, File[]>();
-                files.forEach((file) => {
+                files.forEach(file => {
                     const modName = file.path.split('\\')[0];
                     if (modName === undefined) return;
                     const foundMod = modMap.get(modName);
@@ -19,7 +19,7 @@ export const ReplicWorker = {
                     }
                 });
                 const mods: ModsetMod[] = [];
-                modset.mods?.forEach((mod) => {
+                modset.mods?.forEach(mod => {
                     mods.push({
                         name: mod.name,
                         mod_type: 'mod',
@@ -28,7 +28,7 @@ export const ReplicWorker = {
                             (previousValue: number, currentValue: { size: number }) =>
                                 previousValue + currentValue.size,
                             0
-                        ),
+                        )
                     });
                 });
                 modset.mods = mods;
@@ -41,7 +41,7 @@ export const ReplicWorker = {
     async createModsetFromFiles(files: File[]): Promise<ModsetMod[]> {
         const { workerFn } = useWebWorkerFn((files: File[]) => {
             const modMap = new Map<string, File[]>();
-            files.forEach((file) => {
+            files.forEach(file => {
                 const modName = file.path.split('\\')[0];
                 if (modName === undefined) return;
                 const foundMod = modMap.get(modName);
@@ -52,11 +52,11 @@ export const ReplicWorker = {
                     modMap.set(modName, [file]);
                 }
             });
-            return Array.from(modMap.keys()).map((modName) => {
+            return Array.from(modMap.keys()).map(modName => {
                 return {
                     name: modName,
                     mod_type: 'mod',
-                    files: modMap.get(modName),
+                    files: modMap.get(modName)
                 };
             });
         });
@@ -64,9 +64,9 @@ export const ReplicWorker = {
     },
     async isFileIn(wantedFiles: File[], fileList: Array<HashResponseItem>): Promise<Array<HashResponseItem>> {
         const { workerFn } = useWebWorkerFn((wantedFiles: File[], fileList: Array<HashResponseItem>) => {
-            const list = wantedFiles.map((file) => file.path);
-            return fileList.filter((wantedFile) => list.indexOf(wantedFile.file) !== -1);
+            const list = wantedFiles.map(file => file.path);
+            return fileList.filter(wantedFile => list.indexOf(wantedFile.file) !== -1);
         });
         return workerFn(wantedFiles, fileList);
-    },
+    }
 };

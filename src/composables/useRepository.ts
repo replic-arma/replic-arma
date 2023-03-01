@@ -87,6 +87,7 @@ export function useRepository(repoID: MaybeRef<string>) {
                     `Update for Repository ${repository.value.name} detected. Old revision ${repository.value.revision} new revision ${repoData.revision}`
                 );
             }
+            console.log(repoData.revision, repository.value.revision);
             return repoData.revision !== repository.value.revision;
         }
         return false;

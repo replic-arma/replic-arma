@@ -1,11 +1,17 @@
 {
   "extends": "@vue/tsconfig/tsconfig.web.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue"
+  ],
   "compilerOptions": {
     "target": "es2021",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "lib": [
       "esnext",
@@ -18,7 +24,8 @@
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "strict": true
   },
   "references": [
     {

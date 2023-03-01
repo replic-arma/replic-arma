@@ -9,21 +9,9 @@
                 <mdicon role="button" @click="isOpen = false" name="close" size="35" />
             </div>
             <div class="replic-dialog__content">
-                <div class="loading-text" v-if="loading && submitted">
+                <div class="loading-text" v-if="loading">
                     <Loader />
                     <span v-t="'repository_add.fetching'"></span>
-                </div>
-                <div class="status" v-if="!loading && status !== null">
-                    <div class="icon">
-                        <template v-if="status">
-                            <mdicon name="check-circle" size="35" />
-                            <span v-t="'repository_add.success'"></span>
-                        </template>
-                        <template v-if="!status">
-                            <mdicon name="close-circle" size="35" />
-                            <span v-t="'repository_add.error'"></span>
-                        </template>
-                    </div>
                 </div>
                 <template v-if="!loading">
                     <div class="txt">
@@ -53,29 +41,34 @@
 import { ref } from 'vue';
 import { useRepoStore } from '@/store/repo';
 import Loader from '../util/Loader.vue';
+import { isReplicArmaError } from '@/models/Error';
+import { notify } from '@kyvg/vue3-notification';
+import { useI18n } from 'vue-i18n';
 const autoConfigModel = ref('');
 const isOpen = ref(false);
 const loading = ref(false);
-const errorMsg = ref('');
 const repoStore = useRepoStore();
-const submitted = ref(false);
-const status = ref(null as null | boolean);
-function addRepo() {
-    submitted.value = true;
+const { t } = useI18n();
+async function addRepo() {
     loading.value = true;
-    repoStore
-        .addRepo(autoConfigModel.value)
-        .then(() => {
-            loading.value = false;
-            isOpen.value = false;
-            autoConfigModel.value = '';
-            // status.value = true;
-        })
-        .catch(error => {
-            // status.value = false;
-            loading.value = false;
-            errorMsg.value = error;
-        });
+
+    try {
+        await repoStore.addRepo(autoConfigModel.value);
+        loading.value = false;
+        isOpen.value = false;
+        autoConfigModel.value = '';
+    } catch (err) {
+        if (isReplicArmaError(err)) {
+            console.log(err);
+            notify({
+                title: t('repository_add.error'),
+                text: err.description,
+                type: 'error'
+            });
+        }
+    } finally {
+        loading.value = false;
+    }
 }
 </script>
 <style lang="scss" scoped>
@@ -105,13 +98,5 @@ function addRepo() {
     display: grid;
     place-content: center;
     text-align: center;
-}
-.status {
-    display: grid;
-    place-content: center;
-    text-align: center;
-    svg {
-        fill: green;
-    }
 }
 </style>

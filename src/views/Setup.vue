@@ -11,13 +11,7 @@
                     <button class="button" v-if="step !== 0" @click="step -= 1" role="link">Back</button>
                     <button class="button button--right" v-if="step !== 2" @click="step += 1" role="link">Next</button>
                     <router-link to="/" custom v-slot="{ navigate }">
-                        <button
-                            class="button button--right"
-                            @click="navigate"
-                            @keypress.enter="navigate"
-                            v-if="step === 2"
-                            role="link"
-                        >
+                        <button class="button button--right" @click="navigate" v-if="step === 2" role="link">
                             Skip
                         </button>
                     </router-link>

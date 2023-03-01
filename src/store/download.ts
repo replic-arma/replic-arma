@@ -25,6 +25,8 @@ export const useDownloadStore = defineStore('download', () => {
     );
 
     async function addToDownloadQueue(modset: Modset, repoId: string) {
+        const inQueue = queue.value.find(item => item.repoId === repoId);
+        if (inQueue) return;
         const { updateSize } = useModset(repoId, modset.id);
         queue.value.push({
             item: modset,

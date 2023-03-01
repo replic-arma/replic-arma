@@ -31,14 +31,14 @@ interface DownloadProgressEventMap {
 
 export const DOWNLOAD_PROGRESS = new TypedEventTarget<DownloadProgressEventMap>();
 
-await listen('download_report', (e: TauriEvent<number>) => {
+listen('download_report', (e: TauriEvent<number>) => {
     const size = e.payload;
 
     const event = new CustomEvent('download_report', { detail: { size } });
     DOWNLOAD_PROGRESS.dispatchTypedEvent('download_report', event);
 });
 
-await listen('download_finished', (e: TauriEvent<string>) => {
+listen('download_finished', (e: TauriEvent<string>) => {
     const event = new CustomEvent('download_finished', { detail: { path: e.payload } });
     DOWNLOAD_PROGRESS.dispatchTypedEvent('download_finished', event);
 });

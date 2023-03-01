@@ -8,8 +8,8 @@
 </template>
 
 <script lang="ts" setup>
-import CollectionItem from '@/components/collection/CollectionItem.vue';
-import CollectionAdd from '@/components/collection/CollectionAdd.vue';
+import CollectionItem from '@/components/Collection/CollectionItem.vue';
+import CollectionAdd from '@/components/Collection/CollectionAdd.vue';
 import type { PropType } from 'vue';
 import type { IReplicArmaRepository } from '@/models/Repository';
 defineProps({

@@ -40,7 +40,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { useRepoStore } from '@/store/repo';
-import Loader from '../util/Loader.vue';
+import Loader from '@/components/util/Loader.vue';
 import { isReplicArmaError } from '@/models/Error';
 import { notify } from '@kyvg/vue3-notification';
 import { useI18n } from 'vue-i18n';

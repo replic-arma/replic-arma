@@ -28,9 +28,9 @@
 import type { Collection, IReplicArmaRepository, Modset, ModsetMod } from '@/models/Repository';
 import { computed } from '@vue/reactivity';
 import { ref, type PropType } from 'vue';
-import LocalModList from '../LocalModList.vue';
+import LocalModList from '@/components/LocalModList.vue';
 import CollectionModsetList from '@/components/Collection/CollectionModsetList.vue';
-import DLCList from '../DLCList.vue';
+import DLCList from '@/components/DLCList.vue';
 const props = defineProps({
     model: {
         type: Object as PropType<Collection>,

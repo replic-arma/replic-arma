@@ -44,7 +44,7 @@
 import { ref } from 'vue';
 import { useRepoStore } from '@/store/repo';
 import { useRouter } from 'vue-router';
-import Loader from '../util/Loader.vue';
+import Loader from '@/components/util/Loader.vue';
 import { useSettingsStore } from '@/store/settings';
 const autoConfigModel = ref('');
 const loading = ref(false);

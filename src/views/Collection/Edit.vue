@@ -61,10 +61,10 @@ import { notify } from '@kyvg/vue3-notification';
 import Loader from '@/components/util/Loader.vue';
 import type { Collection, IReplicArmaRepository } from '@/models/Repository';
 import { open } from '@tauri-apps/api/dialog';
-import LocalMod from '../../components/CollectionEdit/LocalMod.vue';
-import CollectionModset from '../../components/CollectionEdit/CollectionModset.vue';
-import CollectionDLC from '../../components/CollectionEdit/CollectionDLC.vue';
-import Modlist from '../../components/Collection/Modlist.vue';
+import LocalMod from '@/components/CollectionEdit/LocalMod.vue';
+import CollectionModset from '@/components/CollectionEdit/CollectionModset.vue';
+import CollectionDLC from '@/components/CollectionEdit/CollectionDLC.vue';
+import Modlist from '@/components/Collection/Modlist.vue';
 
 const props = defineProps({
     model: {

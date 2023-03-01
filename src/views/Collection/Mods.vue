@@ -6,8 +6,8 @@
 <script lang="ts" setup>
 import type { Collection, IReplicArmaRepository } from '@/models/Repository';
 import type { PropType } from 'vue';
-import Loader from '../../components/util/Loader.vue';
-import Modlist from '../../components/Collection/Modlist.vue';
+import Loader from '@/components/util/Loader.vue';
+import Modlist from '@/components/Collection/Modlist.vue';
 defineProps({
     model: {
         type: Object as PropType<Collection>,

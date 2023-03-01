@@ -109,9 +109,9 @@
 import { useSettingsStore } from '@/store/settings';
 import { clearModsetCache } from '@/util/system/modset_cache';
 import { ref, toRaw } from 'vue';
-import PathSelectorVue from '../util/PathSelector.vue';
-import Tabs from '../util/Tabs.vue';
-import Tab from '../util/Tab.vue';
+import PathSelectorVue from '@/components/util/PathSelector.vue';
+import Tabs from '@/components/util/Tabs.vue';
+import Tab from '@/components/util/Tab.vue';
 import { notify } from '@kyvg/vue3-notification';
 import About from './About.vue';
 import Launch from './Launch.vue';

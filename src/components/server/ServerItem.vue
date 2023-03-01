@@ -19,7 +19,7 @@
 import type { GameServer } from '@/models/Repository';
 import { useRouteStore } from '@/store/route';
 import { launchModset } from '@/util/system/game';
-import PlayButton from '../PlayButton.vue';
+import PlayButton from '@/components/PlayButton.vue';
 
 interface Props {
     server: GameServer;

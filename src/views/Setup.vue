@@ -24,8 +24,8 @@
 import { ref } from 'vue';
 import Progress from '@/components/util/Progress.vue';
 import Executable from '@/components/Setup/Executable.vue';
-import ModDirectory from '../components/Setup/ModDirectory.vue';
-import FirstRepository from '../components/Setup/FirstRepository.vue';
+import ModDirectory from '@/components/Setup/ModDirectory.vue';
+import FirstRepository from '@/components/Setup/FirstRepository.vue';
 import { useSettingsStore } from '@/store/settings';
 const step = ref(0);
 const settings = useSettingsStore().settings;

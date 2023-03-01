@@ -16,8 +16,8 @@
 <script lang="ts" setup>
 import type { IApplicationSettings } from '@/models/Settings';
 import { ref, type PropType } from 'vue';
-import PathSelector from '../../components/util/PathSelector.vue';
-import Loader from '../util/Loader.vue';
+import PathSelector from '@/components/util/PathSelector.vue';
+import Loader from '@/components/util/Loader.vue';
 
 const props = defineProps({
     model: {

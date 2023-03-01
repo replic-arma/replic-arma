@@ -20,8 +20,8 @@ import { useHashStore } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
 import { launchCollection } from '@/util/system/game';
 import { computed } from 'vue';
-import Status from '../util/Status.vue';
-import PlayButton from '../PlayButton.vue';
+import Status from '@/components/util/Status.vue';
+import PlayButton from '@/components/PlayButton.vue';
 interface Props {
     collection: Collection;
 }

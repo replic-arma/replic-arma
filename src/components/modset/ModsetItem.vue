@@ -15,9 +15,9 @@
 </template>
 <script lang="ts" setup>
 import { useRouteStore } from '@/store/route';
-import Status from '../util/Status.vue';
+import Status from '@/components/util/Status.vue';
 import { launchModset } from '@/util/system/game';
-import PlayButton from '../PlayButton.vue';
+import PlayButton from '@/components/PlayButton.vue';
 import type { Modset } from '@/models/Repository';
 import { useModsetStatus } from '@/composables/useModsetStatus';
 interface Props {

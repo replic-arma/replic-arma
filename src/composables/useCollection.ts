@@ -2,11 +2,11 @@ import { DownloadStatus } from '@/models/Download';
 import { HashStatus, type Collection, type IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
+import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
 import { launchCollection } from '@/util/system/game';
 import { computedEager, type MaybeRef } from '@vueuse/core';
 import { computed, isRef, ref, unref, watch } from 'vue';
-import { useRepoStore } from '../store/repo';
 
 export function useCollection(repoID: MaybeRef<string>, collectionID: MaybeRef<string>) {
     const repository = ref(null as null | IReplicArmaRepository);

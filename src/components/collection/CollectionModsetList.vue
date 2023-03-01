@@ -12,7 +12,7 @@
 <script lang="ts" setup>
 import type { Modset } from '@/models/Repository';
 import type { PropType } from 'vue';
-import ModModsetList from '../ModModsetList.vue';
+import ModModsetList from '@/components/ModModsetList.vue';
 
 defineProps({
     model: {

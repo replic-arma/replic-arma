@@ -1,6 +1,7 @@
 import type { Collection, GameServer, IReplicArmaRepository, Modset, ModsetMod, Repository } from '@/models/Repository';
 import { RepositoryType } from '@/models/Repository';
 import { useHashStore, type ICacheItem } from '@/store/hash';
+import { useRepoStore } from '@/store/repo';
 import { ERROR_CODE_INTERNAL, InternalError } from '@/util/Errors';
 import { clearModsetCache, saveModsetCache } from '@/util/system/modset_cache';
 import { getRepoFromURL } from '@/util/system/repos';
@@ -9,7 +10,6 @@ import { notify } from '@kyvg/vue3-notification';
 import { computedEager, type MaybeRef } from '@vueuse/core';
 import { v4 as uuidv4 } from 'uuid';
 import { isRef, ref, toRaw, unref, watch } from 'vue';
-import { useRepoStore } from '../store/repo';
 
 export function useRepository(repoID: MaybeRef<string>) {
     const repository = ref(null as null | IReplicArmaRepository);

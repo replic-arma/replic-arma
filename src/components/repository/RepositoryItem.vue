@@ -34,11 +34,11 @@
 import { useHashStore } from '@/store/hash';
 import type { IHashItem } from '@/store/hash';
 import { computed, onMounted, ref } from 'vue';
-import Status from '../util/Status.vue';
+import Status from '@/components/util/Status.vue';
 import { launchModset } from '@/util/system/game';
 import { HashStatus, type Collection, type IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
-import PlayButton from '../PlayButton.vue';
+import PlayButton from '@/components/PlayButton.vue';
 
 interface Props {
     repository: IReplicArmaRepository;

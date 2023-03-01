@@ -24,11 +24,11 @@
 import RepositoryItem from '@/components/Repository/RepositoryItem.vue';
 import RepositoryAdd from '@/components/Repository/RepositoryAdd.vue';
 import Loader from '@/components/util/Loader.vue';
-import { useRepoStore } from '../store/repo';
+import { useRepoStore } from '@/store/repo';
 import { computed } from '@vue/runtime-core';
 import Downloads from '@/components/Download/Downloads.vue';
 import ApplicationSettings from '@/components/Settings/ApplicationSettings.vue';
-import Tooltip from '../components/util/Tooltip.vue';
+import Tooltip from '@/components/util/Tooltip.vue';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {
     useRepoStore().recalcRepositories();

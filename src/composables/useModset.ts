@@ -1,13 +1,13 @@
 import type { IReplicArmaRepository, Modset, ModsetMod } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
+import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
 import { launchModset } from '@/util/system/game';
 import type { HashResponseItem } from '@/util/system/hashes';
 import { notify } from '@kyvg/vue3-notification';
 import { computedEager, type MaybeRef } from '@vueuse/core';
 import { computed, isRef, ref, unref, watch } from 'vue';
-import { useRepoStore } from '../store/repo';
 import { useModsetStatus } from './useModsetStatus';
 
 export function useModset(repoID: MaybeRef<string>, modsetID: MaybeRef<string>) {

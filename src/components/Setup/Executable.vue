@@ -16,10 +16,10 @@
 <script lang="ts" setup>
 import { useSettingsStore } from '@/store/settings';
 import { ref, type PropType } from 'vue';
-import PathSelector from '../../components/util/PathSelector.vue';
+import PathSelector from '@/components/util/PathSelector.vue';
 import { getA3PathRegistry } from '@/util/system/game';
 import type { IApplicationSettings } from '@/models/Settings';
-import Loader from '../util/Loader.vue';
+import Loader from '@/components/util/Loader.vue';
 const inProgress = ref(true);
 
 resolvePath();

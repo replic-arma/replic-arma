@@ -1,9 +1,6 @@
 <template>
     <li class="collection" v-if="collection !== undefined">
-        <div class="collection__info">
-            <span class="collection__name">{{ collection.name }}</span>
-            <small class="collection__description">{{ collection.description }}</small>
-        </div>
+        <span class="collection__name">{{ collection.name }}</span>
         <span class="repo__status" :class="`status--${status}`">
             <Status :status="status" :progress="0"></Status>
         </span>
@@ -65,6 +62,7 @@ const status = computed(() => {
     &__name {
         font-weight: bold;
         font-size: 14pt;
+        margin-inline-start: 1rem;
     }
 
     &__open {
@@ -106,7 +104,7 @@ const status = computed(() => {
 
     &__info {
         display: grid;
-        padding-inline-start: 1rem;
+
         gap: 1rem;
     }
 

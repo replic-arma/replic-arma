@@ -147,6 +147,10 @@ export const useHashStore = defineStore('hash', () => {
         }
     });
 
+    HASHING_PROGRESS.addEventListener('outdated_files', data => {
+        console.log(data);
+    });
+
     return {
         addToQueue,
         current,

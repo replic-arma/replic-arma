@@ -1,6 +1,6 @@
 <template>
     <li :class="`download-item download-item--${downloadItem.status}`">
-        <img v-if="repo !== null && repo !== undefined" class="download-item__img" :src="repo.image" />
+        <!-- <img v-if="repo !== null && repo !== undefined" class="download-item__img" :src="repo.image" /> -->
         <div class="download-item__name-wrapper">
             <span class="download-item__repo-name" v-if="repo !== null && repo !== undefined">{{ repo.name }}</span>
             <span class="download-item__name">{{ downloadItem.item.name }}</span>
@@ -131,7 +131,7 @@ async function pauseDownloadF() {
     width: 100%;
     list-style-type: none;
     display: grid;
-    grid-template-columns: 4rem minmax(15ch, 15rem) 1fr 10%;
+    grid-template-columns: minmax(15ch, 15rem) 1fr 10%;
     padding-inline-start: 1rem;
     align-items: center;
     justify-content: center;

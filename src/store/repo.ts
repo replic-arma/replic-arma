@@ -63,12 +63,11 @@ export const useRepoStore = defineStore('repo', () => {
         for (const repo of reposdata) {
             const { updateRepository, checkRevisionChanged } = useRepository(repo.id);
             const revisionChanged = await checkRevisionChanged();
-            console.log(revisionChanged);
             if (revisionChanged) {
                 await updateRepository();
             }
             useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
-            // useHashStore().addToQueue(repo);
+            useHashStore().addToQueue(repo);
         }
     });
 

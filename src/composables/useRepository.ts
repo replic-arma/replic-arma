@@ -1,3 +1,4 @@
+import { isReplicArmaError } from '@/models/Error';
 import type { Collection, GameServer, IReplicArmaRepository, Modset, ModsetMod, Repository } from '@/models/Repository';
 import { RepositoryType } from '@/models/Repository';
 import { useHashStore, type ICacheItem } from '@/store/hash';
@@ -87,7 +88,6 @@ export function useRepository(repoID: MaybeRef<string>) {
                     `Update for Repository ${repository.value.name} detected. Old revision ${repository.value.revision} new revision ${repoData.revision}`
                 );
             }
-            console.log(repoData.revision, repository.value.revision);
             return repoData.revision !== repository.value.revision;
         }
         return false;
@@ -156,17 +156,30 @@ export function useRepository(repoID: MaybeRef<string>) {
     }
 
     async function recalc() {
-        if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
-        useHashStore().cache = useHashStore().cache.filter((cacheItem: ICacheItem) => cacheItem.id !== unref(repoID));
-        notify({
-            title: 'Reloading Repository',
-            text: 'Checking for Updates and recalculating the status',
-            type: 'success'
-        });
-        if (await checkRevisionChanged()) {
-            await updateRepository();
+        try {
+            if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
+            useHashStore().cache = useHashStore().cache.filter(
+                (cacheItem: ICacheItem) => cacheItem.id !== unref(repoID)
+            );
+            notify({
+                title: 'Reloading Repository',
+                text: 'Checking for Updates and recalculating the status',
+                type: 'success'
+            });
+            const revisionChanged = await checkRevisionChanged();
+            if (revisionChanged) {
+                await updateRepository();
+            }
+            useHashStore().addToQueue(repository.value);
+        } catch (err) {
+            if (isReplicArmaError(err)) {
+                notify({
+                    title: 'Failed to reload Repository',
+                    text: err.description,
+                    type: 'error'
+                });
+            }
         }
-        await useHashStore().addToQueue(repository.value);
     }
 
     async function updateModsetCache() {

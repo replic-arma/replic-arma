@@ -8,7 +8,7 @@
 <script lang="ts" setup>
 import type { IReplicArmaRepository } from '@/models/Repository';
 import type { PropType } from 'vue';
-import ServerItem from '@/components/server/ServerItem.vue';
+import ServerItem from '@/components/Server/ServerItem.vue';
 defineProps({
     model: {
         type: Object as PropType<IReplicArmaRepository>,

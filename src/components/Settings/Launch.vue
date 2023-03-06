@@ -20,7 +20,7 @@
                 </li>
                 <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="skipIntro" v-model="model.skipIntro" /><span
-                        v-t="'settings.checkSignatures'"
+                        v-t="'settings.skipIntro'"
                     ></span>
                 </li>
                 <li class="launch-settings__checkbox">

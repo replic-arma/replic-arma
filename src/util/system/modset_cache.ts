@@ -1,41 +1,32 @@
 import type { Modset } from '@/models/Repository';
 import { useRepoStore } from '@/store/repo';
 import { compress, uncompress } from './compress';
-import {
-    ensureAppDir,
-    fileExists,
-    readBinaryFile,
-    readDir, readTextFile, removeFile,
-    writeBinaryFile, writeTextFile
-} from './fs';
+import { ensureAppDir, fileExists, readBinaryFile, readDir, removeFile, writeBinaryFile } from './fs';
 
 export async function loadModsetCache(repositoryID: string): Promise<Array<Modset>> {
-    const fileName = `${repositoryID}.cache.json`;
+    const fileName = `${repositoryID}.cache.json.gz`;
 
     const exists = await fileExists(fileName);
     if (!exists) return [];
 
-    // const data = await readBinaryFile(fileName);
-    const data = await readTextFile(fileName);
+    const data = await readBinaryFile(fileName);
 
-    // return JSON.parse(await uncompress(data));
-    return JSON.parse(data);
+    return JSON.parse(await uncompress(data));
 }
 
 export async function saveModsetCache(repositoryID: string, contents: Array<Modset>): Promise<void> {
-    const fileName = `${repositoryID}.cache.json`;
+    const fileName = `${repositoryID}.cache.json.gz`;
 
     await ensureAppDir();
 
-    // const data = await compress(JSON.stringify(contents));
+    const data = await compress(JSON.stringify(contents));
 
-    // return writeBinaryFile(fileName, data);
-    return writeTextFile(fileName, JSON.stringify(contents));
+    return writeBinaryFile(fileName, data);
 }
 
 export async function clearModsetCache(repoId: string | null = null) {
     useRepoStore().modsetCache = [];
-    const fileName = repoId === null ? `.cache.json` : `${repoId}.cache.json`;
+    const fileName = repoId === null ? `.cache.json.gz` : `${repoId}.cache.json.gz`;
 
     await ensureAppDir();
 

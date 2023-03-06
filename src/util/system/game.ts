@@ -8,6 +8,15 @@ import { dirname, sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
 import type { HashResponseItem } from './hashes';
 
+export async function launchCollectionByID(collectionID: string, repositoryID: string) {
+    const repository = useRepoStore().repos?.find(
+        (repository: IReplicArmaRepository) => repository.id === repositoryID
+    );
+    const collection = repository?.collections.find(collection => collection.id === collectionID);
+    if (collection === null || collection === undefined) throw new Error('No collection found, cannot launch the game');
+    launchCollection(collection, repositoryID);
+}
+
 export async function launchCollection(collection: Collection, repoId: string) {
     const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === repoId);
     await launchGame(

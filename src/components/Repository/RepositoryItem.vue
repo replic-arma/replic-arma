@@ -35,7 +35,7 @@ import { useHashStore } from '@/store/hash';
 import type { IHashItem } from '@/store/hash';
 import { computed, onMounted, ref } from 'vue';
 import Status from '@/components/util/Status.vue';
-import { launchModset } from '@/util/system/game';
+import { launchCollectionByID, launchModset } from '@/util/system/game';
 import { HashStatus, type Collection, type IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import PlayButton from '@/components/PlayButton.vue';
@@ -89,9 +89,13 @@ onMounted(() => {
     currentModsetId.value = props.repository.modsets[0].id + '_1' ?? '';
 });
 function play() {
-    const [id] = currentModsetId.value.split('_');
+    const [id, type] = currentModsetId.value.split('_');
     if (id === undefined) return '';
-    launchModset(id, props.repository.id);
+    if (type === '1') {
+        launchModset(id, props.repository.id);
+    } else {
+        launchCollectionByID(id, props.repository.id);
+    }
 }
 const currentModsetId = ref('');
 </script>

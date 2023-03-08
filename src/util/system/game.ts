@@ -7,6 +7,7 @@ import { invoke } from '@tauri-apps/api';
 import { dirname, sep } from '@tauri-apps/api/path';
 import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
 import type { HashResponseItem } from './hashes';
+import { logInfo, LogType } from './logger';
 
 export async function launchCollectionByID(collectionID: string, repositoryID: string) {
     const repository = useRepoStore().repos?.find(
@@ -104,25 +105,39 @@ function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
     if (launchOptions.hugepages) parsedLaunchOptions.push('-hugepages');
     if (launchOptions.emptyWorld) parsedLaunchOptions.push('-world=empty');
     if (launchOptions.noLogs) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.noPauseAudio) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.debug) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.crashDiag) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.debugCallExtension) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.noLand) parsedLaunchOptions.push('-nologs');
     if (launchOptions.skipIntro) parsedLaunchOptions.push('-skipIntro');
     if (launchOptions.maxMem !== 0) parsedLaunchOptions.push(`-maxMem=${launchOptions.maxMem}`);
     if (launchOptions.cpuCount !== 0) parsedLaunchOptions.push(`-cpuCount=${launchOptions.cpuCount}`);
     if (launchOptions.exThreads !== 0) parsedLaunchOptions.push(`-exThreads=${launchOptions.exThreads}`);
     if (launchOptions.malloc !== '') parsedLaunchOptions.push(`-malloc=${launchOptions.malloc}`);
+    if (launchOptions.name !== '') parsedLaunchOptions.push(`-name=${launchOptions.name}`);
     if (launchOptions.customParameter !== '') parsedLaunchOptions.push(`${launchOptions.customParameter}`);
-    return parsedLaunchOptions.join(' ');
+    return parsedLaunchOptions;
 }
 
 async function spawnProcess(
     path: string,
     mods: string,
-    launchOptions: string,
+    launchOptions: string[],
     connection: string,
     spawnOptions: SpawnOptions
 ) {
-    const command = new Command('run-game', ['/C', 'start', '', path, mods, launchOptions, connection], spawnOptions);
+    const command = new Command(
+        'run-game',
+        ['/C', 'start', '', path, ...launchOptions, mods, connection],
+        spawnOptions
+    );
+    logInfo(
+        LogType.GAME,
+        `Launching Game. Params: ${['/C', 'start', '', path, ...launchOptions, mods, connection].join(' ')}`
+    );
     command.on('close', data => {
-        console.debug(`command finished with code ${data.code} and signal ${data.signal}`);
+        logInfo(LogType.GAME, `finished with code ${data.code} and signal ${data.signal}`);
     });
 
     command.on('error', error => console.error(`command error: "${error}"`));

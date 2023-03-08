@@ -9,6 +9,11 @@
                     ></span>
                 </li>
                 <li class="launch-settings__checkbox">
+                    <input type="checkbox" role="switch" name="noPauseAudio" v-model="model.noPauseAudio" /><span
+                        v-t="'settings.noPauseAudio'"
+                    ></span>
+                </li>
+                <li class="launch-settings__checkbox">
                     <input type="checkbox" role="switch" name="window" v-model="model.window" /><span
                         v-t="'settings.window'"
                     ></span>
@@ -111,11 +116,29 @@
                         v-model="model.showScriptErrors"
                     /><span v-t="'settings.showScriptErrors'"></span>
                 </li>
+                <li class="launch-settings__checkbox">
+                    <input type="checkbox" role="switch" name="crashDiag" v-model="model.crashDiag" /><span
+                        v-t="'settings.crashDiag'"
+                    ></span>
+                </li>
+                <li class="launch-settings__checkbox">
+                    <input
+                        type="checkbox"
+                        role="switch"
+                        name="debugCallExtension"
+                        v-model="model.debugCallExtension"
+                    /><span v-t="'settings.debugCallExtension'"></span>
+                </li>
+                <li class="launch-settings__checkbox">
+                    <input type="checkbox" role="switch" name="noLand" v-model="model.noLand" /><span
+                        v-t="'settings.noLand'"
+                    ></span>
+                </li>
             </ul>
         </div>
         <div class="launch-settings__custom">
             <label class="launch-settings__fieldset--title" v-t="'settings.custom_parameter'"></label>
-            <textarea />
+            <textarea v-model="model.customParameter" />
         </div>
     </div>
 </template>
@@ -153,6 +176,9 @@ watch(model, async newModel => {
         display: grid;
         grid-template-columns: min-content auto;
         column-gap: 1rem;
+        & > span {
+            align-self: center;
+        }
     }
     &__custom {
         display: grid;

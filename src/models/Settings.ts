@@ -17,6 +17,11 @@ export interface GameLaunchSettings {
     customParameter: string;
     battleye: boolean;
     skipIntro: boolean;
+    noPauseAudio: boolean;
+    debug: boolean;
+    crashDiag: boolean;
+    debugCallExtension: boolean;
+    noLand: boolean;
 }
 export interface IApplicationSettings {
     language: string;

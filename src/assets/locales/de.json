@@ -70,7 +70,12 @@
         "cpuCount": "CPU Count",
         "exThreads": "ExThreads",
         "skipIntro": "Skip Intro",
-        "max_connections": "Maximale Anzahl an gleichzeitigen Verbindungen"
+        "max_connections": "Maximale Anzahl an gleichzeitigen Verbindungen",
+        "noPauseAudio": "No Pause Audio",
+        "debug": "Debug",
+        "crashDiag": "Crash Diag",
+        "debugCallExtension": "Debug Call Extension",
+        "noLand": "No Land"
     },
     "remove": "Entfernen",
     "save": "Speichern",

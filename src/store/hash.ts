@@ -12,7 +12,7 @@ import { logDebug, logInfo, LogType, logWarn } from '@/util/system/logger';
 import { ReplicWorker } from '@/util/worker';
 
 import { defineStore } from 'pinia';
-import { computed, ref, toRaw } from 'vue';
+import { computed, reactive, ref, toRaw } from 'vue';
 import { useRepoStore } from './repo';
 import { useSettingsStore } from './settings';
 
@@ -22,15 +22,11 @@ export interface IHashItem {
     checkedFiles: number;
 }
 
-export interface ICacheItem extends HashResponse {
-    id: string;
-}
-
 export const useHashStore = defineStore('hash', () => {
     const current = ref(null as null | IHashItem);
     const queue = ref([] as Array<IHashItem>);
-    const cache = ref([] as Array<ICacheItem>);
-    const alreadyCheckedCache = ref([] as Array<string>);
+    const cache = reactive(new Map<string, HashResponse>());
+    const alreadyCheckedCache = reactive(new Set<string>());
     async function addToQueue(repo: IReplicArmaRepository) {
         const inQueue = queue.value.find(item => item.repoId === repo.id);
         if (inQueue) return;
@@ -69,11 +65,15 @@ export const useHashStore = defineStore('hash', () => {
         current.value.filesToCheck = currentHashRepo.value.files.length;
         window.performance.mark(current.value.repoId);
         logInfo(LogType.HASH, `Started hash calc for repo ${currentHashRepo.value.name}`);
+
+        // Clear cache before hash check
+        cache.delete(currentHashRepo.value.id);
+        for (const modset of currentHashRepo.value.modsets) {
+            cache.delete(modset.id);
+        }
+
         const hashData = await getHashes();
-        cache.value.push({
-            id: currentHashRepo.value.id,
-            ...hashData
-        });
+        cache.set(currentHashRepo.value.id, hashData);
         const neededModsets = currentHashRepo.value.modsets.map((modset: Modset) => modset.id);
         let currentHashRepoModsetCache = useRepoStore().modsetCache?.filter((cacheModset: Modset) =>
             neededModsets.includes(cacheModset.id)
@@ -88,6 +88,7 @@ export const useHashStore = defineStore('hash', () => {
         }
         if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
         for (const modset of currentHashRepo.value.modsets) {
+            cache.delete(currentHashRepo.value.id);
             const modsetCache = currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id);
             if (hashData === undefined || modsetCache === undefined) throw new Error('cache empty!');
             const modsetFiles = toRaw(modsetCache).mods?.flatMap((mod: ModsetMod) => mod.files);
@@ -95,8 +96,8 @@ export const useHashStore = defineStore('hash', () => {
             const missing = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.missing);
             const complete = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.complete);
             const extra = await ReplicWorker.isFileIn(modsetFiles as File[], hashData.extra);
-            cache.value.push({
-                id: modset.id,
+
+            cache.set(modset.id, {
                 outdated,
                 missing,
                 extra,
@@ -110,14 +111,14 @@ export const useHashStore = defineStore('hash', () => {
             }`
         );
         current.value = null;
-        alreadyCheckedCache.value = [];
+        alreadyCheckedCache.clear();
         next();
     }
 
     HASHING_PROGRESS.addEventListener('hash_calculated', e => {
-        if (current.value !== null && !alreadyCheckedCache.value.includes(e.detail.absolutePath)) {
+        if (current.value !== null && !alreadyCheckedCache.has(e.detail.absolutePath)) {
             current.value.checkedFiles += 1;
-            alreadyCheckedCache.value.push(e.detail.absolutePath);
+            alreadyCheckedCache.add(e.detail.absolutePath);
             logDebug(
                 LogType.HASH,
                 `[${current.value.checkedFiles}/${current.value.filesToCheck}] [${current.value.repoId}] ${e.detail.absolutePath}`
@@ -130,9 +131,9 @@ export const useHashStore = defineStore('hash', () => {
     });
 
     HASHING_PROGRESS.addEventListener('zsync_completed', e => {
-        if (current.value !== null && !alreadyCheckedCache.value.includes(e.detail.filename)) {
+        if (current.value !== null && !alreadyCheckedCache.has(e.detail.filename)) {
             current.value.checkedFiles += 1;
-            alreadyCheckedCache.value.push(e.detail.filename);
+            alreadyCheckedCache.add(e.detail.filename);
             logDebug(
                 LogType.ZSYNC,
                 `[${current.value.checkedFiles}/${current.value.filesToCheck}] [${current.value.repoId}] ${e.detail.filename}`
@@ -147,13 +148,10 @@ export const useHashStore = defineStore('hash', () => {
         }
     });
 
-    HASHING_PROGRESS.addEventListener('outdated_files', data => {
-        console.log(data);
-    });
-
     return {
         addToQueue,
         current,
-        cache
+        cache,
+        alreadyCheckedCache
     };
 });

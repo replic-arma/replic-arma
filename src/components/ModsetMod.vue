@@ -5,14 +5,13 @@
 <script lang="ts" setup>
 import { useRepository } from '@/composables/useRepository';
 import type { Modset, ModsetMod } from '@/models/Repository';
-import type { ICacheItem } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
-import type { HashResponseItem } from '@/util/system/hashes';
+import type { HashResponse, HashResponseItem } from '@/util/system/hashes';
 import { computed, type PropType } from 'vue';
 import Mod from '@/components/Mod.vue';
 const props = defineProps({
     hashCache: {
-        type: Object as PropType<ICacheItem>
+        type: Object as PropType<HashResponse>
     },
     modsetCache: {
         type: Object as PropType<Modset>

@@ -11,7 +11,7 @@
     </li>
 </template>
 <script lang="ts" setup>
-import type { Collection } from '@/models/Repository';
+import { HashStatus, type Collection } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
@@ -19,6 +19,7 @@ import { launchCollection } from '@/util/system/game';
 import { computed } from 'vue';
 import Status from '@/components/util/Status.vue';
 import PlayButton from '@/components/PlayButton.vue';
+import { DownloadStatus } from '@/models/Download';
 interface Props {
     collection: Collection;
 }
@@ -29,16 +30,16 @@ async function play() {
 }
 
 const status = computed(() => {
-    const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === useRouteStore().currentRepoID);
-    if (cacheData === undefined) return 'checking';
+    const cacheData = useHashStore().cache.get(useRouteStore().currentRepoID ?? '');
+    if (cacheData === undefined) return HashStatus.CHECKING;
     if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-        return 'outdated';
+        return HashStatus.OUTDATED;
     }
     for (const modsetId of Object.keys(props.collection.modsets)) {
         if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modsetId)
-            return 'downloading';
+            return DownloadStatus.DOWNLOADING;
     }
-    return 'ready';
+    return HashStatus.READY;
 });
 </script>
 <style lang="scss" scoped>

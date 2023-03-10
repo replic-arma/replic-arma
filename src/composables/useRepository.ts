@@ -1,7 +1,7 @@
 import { isReplicArmaError } from '@/models/Error';
 import type { Collection, GameServer, IReplicArmaRepository, Modset, ModsetMod, Repository } from '@/models/Repository';
 import { RepositoryType } from '@/models/Repository';
-import { useHashStore, type ICacheItem } from '@/store/hash';
+import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 import { ERROR_CODE_INTERNAL, InternalError } from '@/util/Errors';
 import { clearModsetCache, saveModsetCache } from '@/util/system/modset_cache';
@@ -158,9 +158,6 @@ export function useRepository(repoID: MaybeRef<string>) {
     async function recalc() {
         try {
             if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
-            useHashStore().cache = useHashStore().cache.filter(
-                (cacheItem: ICacheItem) => cacheItem.id !== unref(repoID)
-            );
             notify({
                 title: 'Reloading Repository',
                 text: 'Checking for Updates and recalculating the status',

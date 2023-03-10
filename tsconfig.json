@@ -25,7 +25,8 @@
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true
+    "strict": true,
+    "allowJs": true
   },
   "references": [
     {

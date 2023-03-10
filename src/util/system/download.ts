@@ -31,14 +31,17 @@ interface DownloadProgressEventMap {
 
 export const DOWNLOAD_PROGRESS = new TypedEventTarget<DownloadProgressEventMap>();
 
-listen('download_report', (e: TauriEvent<number>) => {
-    const size = e.payload;
+export async function setupListener() {
+    const downloadReport = await listen('download_report', (e: TauriEvent<number>) => {
+        const size = e.payload;
 
-    const event = new CustomEvent('download_report', { detail: { size } });
-    DOWNLOAD_PROGRESS.dispatchTypedEvent('download_report', event);
-});
+        const event = new CustomEvent('download_report', { detail: { size } });
+        DOWNLOAD_PROGRESS.dispatchTypedEvent('download_report', event);
+    });
 
-listen('download_finished', (e: TauriEvent<string>) => {
-    const event = new CustomEvent('download_finished', { detail: { path: e.payload } });
-    DOWNLOAD_PROGRESS.dispatchTypedEvent('download_finished', event);
-});
+    const downloadFinished = await listen('download_finished', (e: TauriEvent<string>) => {
+        const event = new CustomEvent('download_finished', { detail: { path: e.payload } });
+        DOWNLOAD_PROGRESS.dispatchTypedEvent('download_finished', event);
+    });
+    return [downloadReport, downloadFinished];
+}

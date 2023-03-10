@@ -97,7 +97,7 @@ const repo = computed(() => {
 
 const cacheData = computed(() => {
     if (props.downloadItem === null) return null;
-    const cacheData = useHashStore().cache.find(cacheItem => cacheItem.id === props.downloadItem.item.id);
+    const cacheData = useHashStore().cache.get(props.downloadItem.item.id);
     if (cacheData === undefined) return null;
     return cacheData;
 });

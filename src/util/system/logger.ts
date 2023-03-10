@@ -6,7 +6,8 @@ export enum LogType {
     HASH = 'Hash',
     ZSYNC = 'ZSync',
     DOWNLOAD = 'Download',
-    UNKNOWN = 'Unknown'
+    UNKNOWN = 'Unknown',
+    GAME = 'Game'
 }
 
 function generateLogString(type: LogType, msg: string) {

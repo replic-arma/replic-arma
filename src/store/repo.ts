@@ -73,7 +73,7 @@ export const useRepoStore = defineStore('repo', () => {
 
     async function recalcRepositories() {
         if (repos.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
-        useHashStore().cache = [];
+        useHashStore().cache.clear();
         repos.value.forEach(async (repo: IReplicArmaRepository) => {
             const { recalcRepository } = useRepository(repo.id);
             recalcRepository();

@@ -20,7 +20,12 @@ export const DEFAULT_LAUNCH_CONFIG: GameLaunchSettings = {
     noLogs: false,
     customParameter: '',
     battleye: false,
-    skipIntro: false
+    skipIntro: false,
+    noPauseAudio: false,
+    debug: false,
+    crashDiag: false,
+    debugCallExtension: false,
+    noLand: false
 };
 
 const DEFAULT_CONFIG: IApplicationSettings = {

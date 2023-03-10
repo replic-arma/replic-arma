@@ -57,7 +57,7 @@ export const useDownloadStore = defineStore('download', () => {
                 type: 'success'
             });
             current.value.status = DownloadStatus.DOWNLOADING;
-            const cacheData = useHashStore().cache.find(cacheItem => cacheItem.id === current.value?.item.id);
+            const cacheData = useHashStore().cache.get(current.value?.item.id);
             if (cacheData === undefined) return;
             const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === current.value?.repoId);
             if (repo === undefined) throw new Error(`Repository with id ${current.value?.repoId} not found`);
@@ -97,7 +97,7 @@ export const useDownloadStore = defineStore('download', () => {
     const { cache } = storeToRefs(useHashStore());
     DOWNLOAD_PROGRESS.addEventListener('download_finished', data => {
         if (current.value !== null) {
-            const cacheData = cache.value.find(cacheItem => cacheItem.id === current.value?.item.id);
+            const cacheData = cache.value.get(current.value?.item.id);
             if (cacheData !== undefined) {
                 cacheData.missing = cacheData.missing.filter(
                     (path: HashResponseItem) => path.file !== data.detail.path

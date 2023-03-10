@@ -56,7 +56,7 @@ export function useCollection(repoID: MaybeRef<string>, collectionID: MaybeRef<s
     }
 
     const status = computed(() => {
-        const cacheData = hashStore.cache.find(cacheModset => cacheModset.id === unref(repoID));
+        const cacheData = hashStore.cache.get(unref(repoID));
         if (cacheData === undefined) return HashStatus.CHECKING;
         if (isDownloading.value) return DownloadStatus.DOWNLOADING;
         if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {

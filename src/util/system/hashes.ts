@@ -42,24 +42,31 @@ interface HashingProgressEventMap {
 
 export const HASHING_PROGRESS = new TypedEventTarget<HashingProgressEventMap>();
 
-listen('hash_calculated', (e: TauriEvent<{ hash: string; path: string; size: number; time_modified: number }>) => {
-    const { path: absolutePath, hash, time_modified: lastModified, size } = e.payload;
+export async function setupListener() {
+    const hashCalculated = await listen(
+        'hash_calculated',
+        (e: TauriEvent<{ hash: string; path: string; size: number; time_modified: number }>) => {
+            const { path: absolutePath, hash, time_modified: lastModified, size } = e.payload;
 
-    const event = new CustomEvent('hash_calculated', { detail: { absolutePath, hash, lastModified, size } });
-    HASHING_PROGRESS.dispatchTypedEvent('hash_calculated', event);
-});
+            const event = new CustomEvent('hash_calculated', { detail: { absolutePath, hash, lastModified, size } });
+            HASHING_PROGRESS.dispatchTypedEvent('hash_calculated', event);
+        }
+    );
 
-listen('hash_failed', (e: TauriEvent<string>) => {
-    const event = new CustomEvent('hash_failed', { detail: { absolutePath: e.payload } });
-    HASHING_PROGRESS.dispatchTypedEvent('hash_failed', event);
-});
+    const hashFailed = await listen('hash_failed', (e: TauriEvent<string>) => {
+        const event = new CustomEvent('hash_failed', { detail: { absolutePath: e.payload } });
+        HASHING_PROGRESS.dispatchTypedEvent('hash_failed', event);
+    });
 
-listen('outdated_file_count', (e: TauriEvent<number>) => {
-    const event = new CustomEvent('outdated_file_count', { detail: { count: e.payload } });
-    HASHING_PROGRESS.dispatchTypedEvent('outdated_file_count', event);
-});
+    const outdatedFileCount = await listen('outdated_file_count', (e: TauriEvent<number>) => {
+        const event = new CustomEvent('outdated_file_count', { detail: { count: e.payload } });
+        HASHING_PROGRESS.dispatchTypedEvent('outdated_file_count', event);
+    });
 
-listen('zsync_completed', (e: TauriEvent<string>) => {
-    const event = new CustomEvent('zsync_completed', { detail: { filename: e.payload } });
-    HASHING_PROGRESS.dispatchTypedEvent('zsync_completed', event);
-});
+    const zsyncCompleted = await listen('zsync_completed', (e: TauriEvent<string>) => {
+        const event = new CustomEvent('zsync_completed', { detail: { filename: e.payload } });
+        HASHING_PROGRESS.dispatchTypedEvent('zsync_completed', event);
+    });
+
+    return [hashCalculated, hashFailed, outdatedFileCount, zsyncCompleted];
+}

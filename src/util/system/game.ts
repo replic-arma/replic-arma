@@ -76,7 +76,7 @@ export async function launchGame(
 }
 
 function filterMods(repoId: string, modNames: string[]) {
-    const cacheData = useHashStore().cache.find(cacheModset => cacheModset.id === repoId);
+    const cacheData = useHashStore().cache.get(repoId);
     if (cacheData === undefined) return modNames;
     if (cacheData.missing.length > 0) {
         const missingMods = cacheData.missing.map((mod: HashResponseItem) => mod.file);
@@ -114,7 +114,7 @@ function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
     if (launchOptions.noPauseAudio) parsedLaunchOptions.push('-nologs');
     if (launchOptions.debug) parsedLaunchOptions.push('-nologs');
     if (launchOptions.crashDiag) parsedLaunchOptions.push('-nologs');
-    if (launchOptions.debugCallExtension) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.debugCallExtension) parsedLaunchOptions.push('-debugCallExtension');
     if (launchOptions.noLand) parsedLaunchOptions.push('-nologs');
     if (launchOptions.skipIntro) parsedLaunchOptions.push('-skipIntro');
     if (launchOptions.maxMem !== 0) parsedLaunchOptions.push(`-maxMem=${launchOptions.maxMem}`);

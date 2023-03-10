@@ -10,12 +10,16 @@
 </style>
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
+import { onBeforeUnmount, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useSettingsStore } from './store/settings';
 import OnlineStatus from './components/util/OnlineStatus.vue';
 import DeepLink from './components/DeepLink.vue';
+import { setupListener as setupHashListener } from './util/system/hashes';
+import { setupListener as setupDownloadListener } from './util/system/download';
+import { setupListener as setupDeepLinkListener } from './util/system/deep-link';
+import type { UnlistenFn } from '@tauri-apps/api/event';
 const { locale } = useI18n({ useScope: 'global' });
 const router = useRouter();
 const store = useSettingsStore();
@@ -53,5 +57,13 @@ document.addEventListener('keydown', function (event) {
     ) {
         event.preventDefault();
     }
+});
+let listener: UnlistenFn[] = [];
+Promise.all([setupHashListener(), setupDownloadListener(), setupDeepLinkListener()]).then(
+    unlistener => (listener = [...unlistener.flat()])
+);
+
+onBeforeUnmount(() => {
+    listener.forEach(listener => listener());
 });
 </script>

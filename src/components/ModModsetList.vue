@@ -12,7 +12,7 @@
 
 <script lang="ts" setup>
 import type { Modset, ModsetMod } from '@/models/Repository';
-import { useHashStore, type ICacheItem } from '@/store/hash';
+import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 import { computed } from 'vue';
 import ModsetModItem from './ModsetMod.vue';
@@ -21,7 +21,7 @@ interface Props {
     tree: boolean;
     modsetId: string;
 }
-const hashCache = computed(() => useHashStore().cache.find((item: ICacheItem) => item.id === props.modsetId));
+const hashCache = computed(() => useHashStore().cache.get(props.modsetId));
 const modsetCache = computed(() => {
     if (useRepoStore().modsetCache === null) return;
     return useRepoStore().modsetCache!.find((item: Modset) => item.id === props.modsetId);

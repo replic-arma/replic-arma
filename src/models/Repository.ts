@@ -100,6 +100,7 @@ export enum RepositoryType {
 }
 
 export enum HashStatus {
+    UNKNOWN = 'unknown',
     OUTDATED = 'outdated',
     READY = 'ready',
     CHECKING = 'checking'

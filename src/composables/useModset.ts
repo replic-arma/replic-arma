@@ -82,7 +82,7 @@ export function useModset(repoID: MaybeRef<string>, modsetID: MaybeRef<string>) 
     }
 
     const updateSize = computed(() => {
-        const cacheData = hashStore.cache.find(cacheModset => cacheModset.id === modset.value!.id);
+        const cacheData = hashStore.cache.get(modset.value!.id);
         const missingSize = (cacheData?.missing ?? [])
             .map((item: HashResponseItem) => item.size)
             .reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0);
@@ -93,7 +93,7 @@ export function useModset(repoID: MaybeRef<string>, modsetID: MaybeRef<string>) 
     });
 
     const updateFiles = computed(() => {
-        const cacheData = hashStore.cache.find(cacheModset => cacheModset.id === modset.value!.id);
+        const cacheData = hashStore.cache.get(modset.value!.id);
         if (cacheData === null) return [];
 
         const filesToDownload = [...(cacheData?.missing ?? []), ...(cacheData?.outdated ?? [])];

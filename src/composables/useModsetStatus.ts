@@ -2,7 +2,7 @@ import { DownloadStatus } from '@/models/Download';
 import { HashStatus } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import { useHashStore, type IHashItem } from '@/store/hash';
-import { computedEager, type MaybeRef } from '@vueuse/core';
+import { computedEager, computedWithControl, type MaybeRef } from '@vueuse/core';
 import { computed, unref } from 'vue';
 
 export function useModsetStatus(repoID: MaybeRef<string>, modsetID: MaybeRef<string>) {
@@ -16,16 +16,19 @@ export function useModsetStatus(repoID: MaybeRef<string>, modsetID: MaybeRef<str
         return hashStore.current !== null && hashStore.current?.repoId === unref(repoID);
     });
 
-    const status = computed(() => {
-        const cacheData = hashStore.cache.find(cacheModset => cacheModset.id === unref(modsetID));
-        if (cacheData === undefined || isChecking.value) return HashStatus.CHECKING;
-        if (isDownloading.value) return DownloadStatus.DOWNLOADING;
-        if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-            return HashStatus.OUTDATED;
-        } else {
-            return HashStatus.READY;
+    const status = computedWithControl(
+        () => hashStore.cache,
+        () => {
+            const cacheData = hashStore.cache.get(unref(modsetID));
+            if (cacheData === undefined || isChecking.value) return HashStatus.CHECKING;
+            if (isDownloading.value) return DownloadStatus.DOWNLOADING;
+            if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
+                return HashStatus.OUTDATED;
+            } else {
+                return HashStatus.READY;
+            }
         }
-    });
+    );
 
     const progress = computed(() => {
         if (isDownloading.value) {

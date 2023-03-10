@@ -100,7 +100,7 @@ const collection = ref(props.model);
 function openDialog(): void {
     open({ directory: true, multiple: true }).then(filepaths => {
         if (filepaths === null) return;
-        if (!collection.value.localMods === undefined) collection.value.localMods = [];
+        if (collection.value.localMods === undefined) collection.value.localMods = [];
         (filepaths as string[]).forEach(filepath => {
             collection.value.localMods!.push({
                 name: filepath.split('\\').pop() ?? '',

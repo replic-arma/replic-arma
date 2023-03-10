@@ -24,7 +24,13 @@ export async function launchCollection(collection: Collection, repoId: string) {
         repo!.launchOptions,
         getModDlcString(
             repo?.downloadDirectoryPath ?? '',
-            [...filterMods(repoId, Object.values(collection.modsets).flat()), ...(collection.dlc ?? [])],
+            [
+                ...filterMods(repoId, [
+                    ...Object.values(collection.modsets).flat(),
+                    ...(collection.localMods?.map(localMod => localMod.path ?? '') ?? [])
+                ]),
+                ...(collection.dlc ?? [])
+            ],
             collection.dlc ?? []
         )
     );

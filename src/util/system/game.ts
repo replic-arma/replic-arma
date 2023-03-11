@@ -102,7 +102,7 @@ function getConnectionString(gameServer: GameServer | null = null) {
 function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
     const parsedLaunchOptions: string[] = [];
     if (launchOptions.noPause) parsedLaunchOptions.push('-noPause');
-    if (launchOptions.noSplash) parsedLaunchOptions.push('-nosplash');
+    if (launchOptions.noSplash) parsedLaunchOptions.push('-noSplash');
     if (launchOptions.window) parsedLaunchOptions.push('-window');
     if (launchOptions.showScriptErrors) parsedLaunchOptions.push('-showScriptErrors');
     if (launchOptions.filePatching) parsedLaunchOptions.push('-filePatching');
@@ -111,11 +111,11 @@ function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
     if (launchOptions.hugepages) parsedLaunchOptions.push('-hugepages');
     if (launchOptions.emptyWorld) parsedLaunchOptions.push('-world=empty');
     if (launchOptions.noLogs) parsedLaunchOptions.push('-nologs');
-    if (launchOptions.noPauseAudio) parsedLaunchOptions.push('-nologs');
-    if (launchOptions.debug) parsedLaunchOptions.push('-nologs');
-    if (launchOptions.crashDiag) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.noPauseAudio) parsedLaunchOptions.push('-noPauseAudio');
+    if (launchOptions.debug) parsedLaunchOptions.push('-debug');
+    if (launchOptions.crashDiag) parsedLaunchOptions.push('-crashDiag');
     if (launchOptions.debugCallExtension) parsedLaunchOptions.push('-debugCallExtension');
-    if (launchOptions.noLand) parsedLaunchOptions.push('-nologs');
+    if (launchOptions.noLand) parsedLaunchOptions.push('-noLand');
     if (launchOptions.skipIntro) parsedLaunchOptions.push('-skipIntro');
     if (launchOptions.maxMem !== 0) parsedLaunchOptions.push(`-maxMem=${launchOptions.maxMem}`);
     if (launchOptions.cpuCount !== 0) parsedLaunchOptions.push(`-cpuCount=${launchOptions.cpuCount}`);

@@ -43,6 +43,7 @@
         "eslint": "^8.5.0",
         "eslint-config-standard": "^17.0.0-0",
         "eslint-plugin-vue": "^8.2.0",
+        "node-fetch": "^3.3.1",
         "prettier": "^2.5.1",
         "sass": "^1.49.9",
         "tiny-glob": "^0.2.9",

@@ -83,62 +83,6 @@ struct FileMap {
 }
 
 impl Repository {
-    // pub fn generate_file_map(self: Repository) {
-    //     let file_map = Arc::new(RwLock::new(HashMap::<std::path::PathBuf, FileMap>::new()));
-
-    //     let start = Instant::now();
-
-    //     let base_dir = Path::new("E:/SteamLibrary/steamapps/common/Arma 3/Mods/");
-
-    //     //let len = self.files.len();
-    //     let files = self.files; //.clone();
-    //     let pool = ThreadPool::new(8);
-
-    //     for file in files {
-    //         let abs_path = base_dir.join(file.path.clone());
-
-    //         if fs::metadata(&abs_path).is_ok() {
-    //             let file_map = file_map.clone();
-
-    //             pool.execute(move || {
-    //                 let now = Instant::now();
-    //                 let local_hash = self::create_hash_from_file(&abs_path).unwrap();
-    //                 let mut list = file_map.write().unwrap();
-    //                 println!(
-    //                     "finished {:?} in {}ms ({})",
-    //                     &abs_path.file_name().unwrap(),
-    //                     now.elapsed().as_millis(),
-    //                     local_hash
-    //                 );
-    //                 list.insert(
-    //                     abs_path,
-    //                     FileMap {
-    //                         foreign_hash: file.sha1,
-    //                         local_hash,
-    //                         file_found: true,
-    //                     },
-    //                 );
-    //             });
-    //         } else {
-    //             let mut list = file_map.write().unwrap();
-    //             list.insert(
-    //                 abs_path,
-    //                 FileMap {
-    //                     foreign_hash: file.sha1,
-    //                     local_hash: String::from(""),
-    //                     file_found: false,
-    //                 },
-    //             );
-    //         }
-    //     }
-
-    //     pool.join();
-    //     let file_map = file_map.write().unwrap();
-
-    //     println!("Finished in {}s", start.elapsed().as_secs());
-    //     println!("{:?}", file_map);
-    // }
-
     pub fn repo_from_url(url: String) -> anyhow::Result<Repository> {
         let repo: Repository;
         if url.ends_with("autoconfig") {
@@ -151,34 +95,6 @@ impl Repository {
         Ok(repo)
     }
 }
-
-// pub fn create_hash_from_file<P: AsRef<Path>>(
-//     path: P,
-// ) -> Result<String, Box<dyn std::error::Error>> {
-//     let mut file = fs::File::open(&path)?;
-
-//     let buf_size = std::cmp::min(file.metadata()?.len(), 4 * 1024 * 1024) as usize;
-//     let mut vec = vec![0_u8; buf_size];
-//     let mut buf = vec.as_mut_slice();
-
-//     let mut digest = Sha1::new();
-
-//     loop {
-//         let size = file.read(&mut buf)?;
-//         if size == 0 {
-//             break;
-//         };
-
-//         if size < buf_size {
-//             digest.update(&buf[..size]);
-//         } else {
-//             digest.update(&buf);
-//         }
-//     }
-
-//     let hash = format!("{:x}", digest.finalize());
-//     Ok(hash)
-// }
 
 impl<T: Repo> From<T> for Repository {
     fn from(t: T) -> Self {

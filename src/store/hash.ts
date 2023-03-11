@@ -88,7 +88,7 @@ export const useHashStore = defineStore('hash', () => {
         }
         if (currentHashRepoModsetCache === undefined) throw new Error('cache empty after recalc!');
         for (const modset of currentHashRepo.value.modsets) {
-            cache.delete(currentHashRepo.value.id);
+            cache.delete(modset.id);
             const modsetCache = currentHashRepoModsetCache.find((cacheModset: Modset) => cacheModset.id === modset.id);
             if (hashData === undefined || modsetCache === undefined) throw new Error('cache empty!');
             const modsetFiles = toRaw(modsetCache).mods?.flatMap((mod: ModsetMod) => mod.files);

@@ -16,10 +16,10 @@ import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRouteStore } from '@/store/route';
 import { launchCollection } from '@/util/system/game';
-import { computed } from 'vue';
 import Status from '@/components/util/Status.vue';
 import PlayButton from '@/components/PlayButton.vue';
 import { DownloadStatus } from '@/models/Download';
+import { computedWithControl } from '@vueuse/core';
 interface Props {
     collection: Collection;
 }
@@ -29,18 +29,21 @@ async function play() {
     await launchCollection(props.collection!, useRouteStore().currentRepoID ?? '');
 }
 
-const status = computed(() => {
-    const cacheData = useHashStore().cache.get(useRouteStore().currentRepoID ?? '');
-    if (cacheData === undefined) return HashStatus.CHECKING;
-    if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-        return HashStatus.OUTDATED;
+const status = computedWithControl(
+    () => useHashStore().cache,
+    () => {
+        const cacheData = useHashStore().cache.get(useRouteStore().currentRepoID ?? '');
+        if (cacheData === undefined) return HashStatus.CHECKING;
+        if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
+            return HashStatus.OUTDATED;
+        }
+        for (const modsetId of Object.keys(props.collection.modsets)) {
+            if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modsetId)
+                return DownloadStatus.DOWNLOADING;
+        }
+        return HashStatus.READY;
     }
-    for (const modsetId of Object.keys(props.collection.modsets)) {
-        if (useDownloadStore().current !== null && useDownloadStore().current?.item.id === modsetId)
-            return DownloadStatus.DOWNLOADING;
-    }
-    return HashStatus.READY;
-});
+);
 </script>
 <style lang="scss" scoped>
 .collection {

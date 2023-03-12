@@ -4,7 +4,9 @@ import { useDownloadStore } from '@/store/download';
 import { useHashStore } from '@/store/hash';
 import { useRepoStore } from '@/store/repo';
 import { useRouteStore } from '@/store/route';
+import { resolveModNameFromPath } from '@/util/format';
 import { launchCollection } from '@/util/system/game';
+import type { HashResponseItem } from '@/util/system/hashes';
 import { computedEager, type MaybeRef } from '@vueuse/core';
 import { computed, isRef, ref, unref, watch } from 'vue';
 
@@ -14,6 +16,7 @@ export function useCollection(repoID: MaybeRef<string>, collectionID: MaybeRef<s
     const repoStore = useRepoStore();
     const downloadStore = useDownloadStore();
     const hashStore = useHashStore();
+    const modsetCache = repoStore.modsetCache;
     const reposInitialized = computedEager(() => {
         return repoStore.repos !== null;
     });
@@ -66,12 +69,33 @@ export function useCollection(repoID: MaybeRef<string>, collectionID: MaybeRef<s
         }
     });
 
+    const size = computed(() => {
+        if (modsetCache === null || repository.value === null || collection.value?.modsets === undefined) return 0;
+        const modNames = Object.values(collection.value?.modsets).flat();
+        return repository.value?.files
+            .filter(file => modNames.includes(resolveModNameFromPath(file.path)))
+            .reduce((previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size, 0);
+    });
+
+    const updateSize = computed(() => {
+        const cacheData = hashStore.cache.get(unref(repoID));
+        const missingSize = (cacheData?.missing ?? [])
+            .map((item: HashResponseItem) => item.size)
+            .reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0);
+        const outdatedSize = (cacheData?.outdated ?? [])
+            .map((item: HashResponseItem) => item.current_size)
+            .reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0);
+        return Number(missingSize + outdatedSize);
+    });
+
     return {
         repository,
         collection,
         loading,
         loadingError,
         status,
+        updateSize,
+        size,
         fetchModset: fetchAll,
         playCollection: play
     };

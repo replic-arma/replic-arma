@@ -1,11 +1,11 @@
 <template>
     <ul class="modlist" :class="tree ? 'tree' : 'list'">
         <ModsetModItem
-            v-for="(mod, index) of mods"
+            v-for="mod of mods"
             :name="mod.name"
             :hash-cache="hashCache"
             :modset-cache="modsetCache"
-            :key="index"
+            :key="mod.name"
         ></ModsetModItem>
     </ul>
 </template>

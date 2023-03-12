@@ -68,12 +68,10 @@ export function useModset(repoID: MaybeRef<string>, modsetID: MaybeRef<string>) 
 
     const size = computed(() => {
         if (modsetCache === null || modset.value === undefined) return 0;
-        return Number(
-            files.value.reduce(
-                (previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size,
-                0
-            ) / 10e8
-        ).toFixed(2);
+        return files.value.reduce(
+            (previousValue: number, currentValue: { size: number }) => previousValue + currentValue.size,
+            0
+        );
     });
 
     async function play() {

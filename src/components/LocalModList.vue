@@ -7,10 +7,10 @@
         </div>
         <ul class="modlist" :class="tree ? 'tree' : 'list'">
             <Mod
-                v-for="(mod, index) of model.localMods"
+                v-for="mod of model.localMods"
                 :name="mod.name"
                 :path="mod.path"
-                :key="index"
+                :key="mod.name"
                 :display-icon="true"
             ></Mod>
         </ul>

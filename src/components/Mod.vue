@@ -11,13 +11,14 @@
             </div>
             <template #content>
                 <div>{{ path }}</div>
-                <div>{{ size }}</div>
+                <div>{{ formatSize(size) }}</div>
             </template>
         </Popper>
     </li>
 </template>
 
 <script lang="ts" setup>
+import { formatSize } from '@/util/format';
 import Popper from 'vue3-popper';
 defineProps({
     name: {
@@ -25,7 +26,8 @@ defineProps({
         required: true
     },
     size: {
-        type: String
+        type: Number,
+        required: true
     },
     path: {
         type: String

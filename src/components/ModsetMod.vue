@@ -35,12 +35,12 @@ const isOutdated = computed(() => {
 });
 
 const size = computed(() => {
-    if (props.modsetCache === undefined) return '0';
+    if (props.modsetCache === undefined) return 0;
     const mod = props.modsetCache.mods.find((mod: ModsetMod) => mod.name === props.name);
-    if (mod !== undefined) {
-        return mod.size !== undefined ? `${Number(mod.size / 10e5).toFixed(2)} MB` : '0';
+    if (mod !== undefined && mod.size !== undefined) {
+        return mod.size;
     }
-    return '0';
+    return 0;
 });
 
 const path = computed(() => {

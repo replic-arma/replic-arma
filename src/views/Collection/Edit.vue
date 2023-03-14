@@ -44,7 +44,10 @@
                 </div>
             </div>
         </div>
-        <button class="button" @click="saveCollection()" v-t="'save'"></button>
+        <div style="display: flex">
+            <button class="button button--danger" @click="remove()" v-t="'remove_collection'"></button>
+            <button class="button" style="margin-left: auto" @click="saveCollection()" v-t="'save'"></button>
+        </div>
         <div class="collection__modlist" @click="toggle()" v-show="Object.keys(model.modsets).length > 0">
             <span v-t="'show_all_mods'"></span>
             <mdicon v-if="!listOpen" name="chevron-up"></mdicon>
@@ -65,6 +68,10 @@ import LocalMod from '@/components/CollectionEdit/LocalMod.vue';
 import CollectionModset from '@/components/CollectionEdit/CollectionModset.vue';
 import CollectionDLC from '@/components/CollectionEdit/CollectionDLC.vue';
 import Modlist from '@/components/Collection/Modlist.vue';
+import { useRepository } from '@/composables/useRepository';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+const listOpen = ref(false);
 
 const props = defineProps({
     model: {
@@ -76,6 +83,9 @@ const props = defineProps({
         required: true
     }
 });
+
+const collection = ref(props.model);
+
 const dlc = ref({
     contact: 'Contact',
     csla: 'CSLA Iron Curtain',
@@ -83,7 +93,7 @@ const dlc = ref({
     vn: 'S.O.G. Prairie Fire',
     ws: 'Western Sahara'
 });
-const listOpen = ref(false);
+
 async function saveCollection() {
     await useRepoStore().save();
     notify({
@@ -93,10 +103,21 @@ async function saveCollection() {
     });
 }
 
+const { removeCollection } = useRepository(props.repository.id);
+async function remove() {
+    await removeCollection(props.model.id);
+    notify({
+        title: 'Removed Collection',
+        text: `Removed Collection ${props.model.name}`,
+        type: 'success'
+    });
+    router.push(`/repo/${props.repository.id}/collections`);
+}
+
 function toggle() {
     listOpen.value = !listOpen.value;
 }
-const collection = ref(props.model);
+
 function openDialog(): void {
     open({ directory: true, multiple: true }).then(filepaths => {
         if (filepaths === null) return;

@@ -62,11 +62,11 @@ export const useRepoStore = defineStore('repo', () => {
         repos.value = reposdata;
         for (const repo of reposdata) {
             const { updateRepository, checkRevisionChanged } = useRepository(repo.id);
+            useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
             const revisionChanged = await checkRevisionChanged();
             if (revisionChanged) {
                 await updateRepository();
             }
-            useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
             if (
                 useSettingsStore().settings?.checkRepositoriesOnStartup === undefined ||
                 useSettingsStore().settings?.checkRepositoriesOnStartup
@@ -79,10 +79,10 @@ export const useRepoStore = defineStore('repo', () => {
     async function recalcRepositories() {
         if (repos.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
         useHashStore().cache.clear();
-        repos.value.forEach(async (repo: IReplicArmaRepository) => {
-            const { recalcRepository } = useRepository(repo.id);
+        for (const repository of repos.value) {
+            const { recalcRepository } = useRepository(repository.id);
             recalcRepository();
-        });
+        }
     }
 
     return {

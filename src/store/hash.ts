@@ -24,17 +24,23 @@ export interface IHashItem {
 
 export const useHashStore = defineStore('hash', () => {
     const current = ref(null as null | IHashItem);
-    const queue = ref([] as Array<IHashItem>);
+    const queue = reactive(new Map<string, IHashItem>());
     const cache = reactive(new Map<string, HashResponse>());
     const alreadyCheckedCache = reactive(new Set<string>());
     async function addToQueue(repo: IReplicArmaRepository) {
-        const inQueue = queue.value.find(item => item.repoId === repo.id);
-        if (inQueue) return;
+        if (isInQueue(repo.id)) return;
         logInfo(LogType.HASH, `Repository ${repo.name} has been queued`);
-        queue.value.push({ repoId: repo.id, filesToCheck: 1, checkedFiles: 1 });
+        queue.set(repo.id, { repoId: repo.id, filesToCheck: 0, checkedFiles: 0 });
         if (current.value === null) {
             next();
         }
+    }
+
+    function isInQueue(repositoryId: string) {
+        if (queue.size === 0) return false;
+        const inQueue = queue.get(repositoryId);
+        if (inQueue) return true;
+        return false;
     }
 
     const currentHashRepo = computed(() => {
@@ -54,9 +60,10 @@ export const useHashStore = defineStore('hash', () => {
     }
 
     async function next() {
-        if (queue.value.length === 0) return;
-        const firstElement = queue.value.splice(0, 1)[0];
+        if (queue.size === 0) return;
+        const firstElement: IHashItem = queue.values().next().value;
         if (firstElement === undefined) throw new Error('Queue empty');
+        queue.delete(firstElement.repoId);
         current.value = firstElement;
         if (currentHashRepo.value === undefined) {
             logWarn(LogType.HASH, 'Current hash repo not set (next). It probably got deleted while in queue');
@@ -152,6 +159,7 @@ export const useHashStore = defineStore('hash', () => {
         addToQueue,
         current,
         cache,
-        alreadyCheckedCache
+        alreadyCheckedCache,
+        isInQueue
     };
 });

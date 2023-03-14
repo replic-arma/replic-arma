@@ -12,23 +12,27 @@ export function useModsetStatus(repoID: MaybeRef<string>, modsetID: MaybeRef<str
     const isDownloading = computedEager(() => {
         return downloadStore.current !== null && downloadStore.current?.item.id === unref(modsetID);
     });
+
     const isChecking = computedEager(() => {
         return hashStore.current !== null && hashStore.current?.repoId === unref(repoID);
     });
 
-    const status = computedWithControl(
-        () => hashStore.cache,
-        () => {
-            const cacheData = hashStore.cache.get(unref(modsetID));
-            if (cacheData === undefined || isChecking.value) return HashStatus.CHECKING;
-            if (isDownloading.value) return DownloadStatus.DOWNLOADING;
-            if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-                return HashStatus.OUTDATED;
-            } else {
-                return HashStatus.READY;
-            }
+    const isQueued = computedEager(() => {
+        return hashStore.isInQueue(unref(repoID));
+    });
+
+    const status = computedEager(() => {
+        if (isQueued.value) return HashStatus.QUEUED;
+        const cacheData = hashStore.cache.get(unref(modsetID));
+        if (isChecking.value) return HashStatus.CHECKING;
+        if (isDownloading.value) return DownloadStatus.DOWNLOADING;
+        if (cacheData !== undefined && (cacheData.outdated.length > 0 || cacheData.missing.length > 0)) {
+            return HashStatus.OUTDATED;
+        } else if (cacheData === undefined && !isQueued.value) {
+            return HashStatus.UNKNOWN;
         }
-    );
+        return HashStatus.READY;
+    });
 
     const progress = computed(() => {
         if (isDownloading.value) {

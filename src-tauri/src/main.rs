@@ -178,7 +178,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         })
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(LevelFilter::Debug)
+                .level(LevelFilter::Info)
                 .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
                 .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
                 .build(),

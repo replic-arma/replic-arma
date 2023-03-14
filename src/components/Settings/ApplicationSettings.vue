@@ -1,5 +1,5 @@
 <template>
-    <mdicon name="tune" role="button" size="35" @click="isOpen = true"></mdicon>
+    <mdicon name="cog" role="button" size="35" @click="isOpen = true"></mdicon>
     <Teleport v-if="isOpen" to="#modal-target">
         <div class="replic-dialog">
             <div class="replic-dialog__heading">

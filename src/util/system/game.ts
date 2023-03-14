@@ -24,14 +24,9 @@ export async function launchCollection(collection: Collection, repoId: string) {
         repo!.launchOptions,
         getModDlcString(
             repo?.downloadDirectoryPath ?? '',
-            [
-                ...filterMods(repoId, [
-                    ...Object.values(collection.modsets).flat(),
-                    ...(collection.localMods?.map(localMod => localMod.path ?? '') ?? [])
-                ]),
-                ...(collection.dlc ?? [])
-            ],
-            collection.dlc ?? []
+            filterMods(repoId, Object.values(collection.modsets).flat()),
+            collection.dlc ?? [],
+            collection.localMods?.map(localMod => localMod.path ?? '') ?? []
         )
     );
 }
@@ -85,13 +80,13 @@ function filterMods(repoId: string, modNames: string[]) {
     return modNames;
 }
 
-function getModDlcString(directory: string, mods: string[], dlc: string[]) {
+function getModDlcString(directory: string, mods: string[], dlc: string[] = [], localMods: string[] = []) {
     let arrMods: string[] = [];
     mods.forEach((modName: string) => {
         arrMods = [...arrMods, ...[`${directory}${sep}${modName}`]];
     });
 
-    return ` -mod=${[...arrMods, ...dlc].join(';')};`;
+    return ` -mod=${[...arrMods, ...dlc, ...localMods].join(';')};`;
 }
 
 function getConnectionString(gameServer: GameServer | null = null) {

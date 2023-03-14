@@ -8,7 +8,9 @@
                     <mdicon name="refresh" size="35" v-once @click="reloadRepos" />
                 </Tooltip>
                 <Tooltip text="Settings">
-                    <ApplicationSettings></ApplicationSettings>
+                    <router-link to="settings/general">
+                        <mdicon name="cog" role="button" size="35"></mdicon>
+                    </router-link>
                 </Tooltip>
             </div>
         </div>
@@ -27,7 +29,6 @@ import Loader from '@/components/util/Loader.vue';
 import { useRepoStore } from '@/store/repo';
 import { computed } from '@vue/runtime-core';
 import Downloads from '@/components/Download/Downloads.vue';
-import ApplicationSettings from '@/components/Settings/ApplicationSettings.vue';
 import Tooltip from '@/components/util/Tooltip.vue';
 const repos = computed(() => useRepoStore().repos);
 function reloadRepos() {

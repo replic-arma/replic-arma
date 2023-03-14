@@ -9,7 +9,7 @@ import { Command, type SpawnOptions } from '@tauri-apps/api/shell';
 import type { HashResponseItem } from './hashes';
 import { logInfo, LogType } from './logger';
 
-export async function launchCollectionByID(collectionID: string, repositoryID: string) {
+export function launchCollectionByID(collectionID: string, repositoryID: string) {
     const repository = useRepoStore().repos?.find(
         (repository: IReplicArmaRepository) => repository.id === repositoryID
     );
@@ -18,9 +18,9 @@ export async function launchCollectionByID(collectionID: string, repositoryID: s
     launchCollection(collection, repositoryID);
 }
 
-export async function launchCollection(collection: Collection, repoId: string) {
+export function launchCollection(collection: Collection, repoId: string) {
     const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === repoId);
-    await launchGame(
+    launchGame(
         repo!.launchOptions,
         getModDlcString(
             repo?.downloadDirectoryPath ?? '',
@@ -31,12 +31,12 @@ export async function launchCollection(collection: Collection, repoId: string) {
     );
 }
 
-export async function launchModset(modsetId: string, repoId: string, gameServer: GameServer | null = null) {
+export function launchModset(modsetId: string, repoId: string, gameServer: GameServer | null = null) {
     const currentModset = useRepoStore().modsetCache?.find((cacheModset: Modset) => cacheModset.id === modsetId);
     if (currentModset === null || currentModset === undefined)
         throw new Error('No modset found, cannot launch the game');
     const repo = useRepoStore().repos?.find((repo: IReplicArmaRepository) => repo.id === repoId);
-    await launchGame(
+    launchGame(
         repo!.launchOptions,
         getModDlcString(
             repo?.downloadDirectoryPath ?? '',
@@ -140,11 +140,9 @@ async function spawnProcess(
     command.on('close', data => {
         logInfo(LogType.GAME, `finished with code ${data.code} and signal ${data.signal}`);
     });
-
     command.on('error', error => console.error(`command error: "${error}"`));
     command.stdout.on('data', line => console.debug(`command stdout: "${line}"`));
     command.stderr.on('data', line => console.debug(`command stderr: "${line}"`));
-
     const child = await command.spawn();
     console.debug('pid:', child.pid);
 }

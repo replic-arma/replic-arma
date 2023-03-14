@@ -27,7 +27,7 @@
                         <mdicon name="play"></mdicon>
                     </button>
                 </template>
-            </div>
+        </div>
         </div>
         <Subnavi v-if="modset !== undefined" :subnaviItems="subnaviItems"></Subnavi>
         <router-view :model="modset" />

@@ -24,16 +24,16 @@ interface Props {
     collection: Collection;
 }
 const props = defineProps<Props>();
-async function play() {
+function play() {
     if (props.collection === undefined) return;
-    await launchCollection(props.collection!, useRouteStore().currentRepoID ?? '');
+    launchCollection(props.collection!, useRouteStore().currentRepoID ?? '');
 }
 
 const status = computedWithControl(
     () => useHashStore().cache,
     () => {
         const cacheData = useHashStore().cache.get(useRouteStore().currentRepoID ?? '');
-        if (cacheData === undefined) return HashStatus.CHECKING;
+        if (cacheData === undefined) return HashStatus.UNKNOWN;
         if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
             return HashStatus.OUTDATED;
         }

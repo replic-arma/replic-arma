@@ -20,7 +20,9 @@
                     <mdicon name="refresh" size="35" @click="recalcRepository()" />
                 </Tooltip>
                 <Tooltip text="Settings">
-                    <Settings :modelValue="repository"></Settings>
+                    <router-link :to="`/repo-settings/${repository.id}/general`">
+                        <mdicon name="cog" role="button" size="35"></mdicon>
+                    </router-link>
                 </Tooltip>
             </div>
         </div>
@@ -33,7 +35,6 @@
 import SubnaviVue from '@/components/util/Subnavi.vue';
 import Loader from '@/components/util/Loader.vue';
 import { computed } from '@vue/runtime-core';
-import Settings from '@/components/Repository/Settings.vue';
 import Downloads from '@/components/Download/Downloads.vue';
 import { useRepository } from '@/composables/useRepository';
 import { useRouteStore } from '@/store/route';
@@ -42,11 +43,15 @@ import { notify } from '@kyvg/vue3-notification';
 import { writeTextClipboard } from '@/util/system/clipboard';
 const { repository, recalcRepository, loading } = useRepository(useRouteStore().currentRepoID ?? '');
 const subnaviItems = computed(() => {
-    return [
-        { label: 'modsets', link: '/repo/' + repository.value?.id + '/modsets' },
-        { label: 'collections', link: '/repo/' + repository.value?.id + '/collections' },
-        { label: 'server.title', link: '/repo/' + repository.value?.id + '/servers' }
+    const items = [
+        { label: 'modsets', link: `/repo/${repository.value?.id}/modsets` },
+        { label: 'collections', link: `/repo/${repository.value?.id}/collections` }
     ];
+    if (repository.value?.game_servers !== undefined && repository.value?.game_servers?.length > 0) {
+        items.push({ label: 'server.title', link: `/repo/${repository.value?.id}/servers` });
+    }
+
+    return items;
 });
 
 function shareRepository() {

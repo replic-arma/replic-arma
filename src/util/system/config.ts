@@ -35,7 +35,8 @@ const DEFAULT_CONFIG: IApplicationSettings = {
     theme: 'light',
     maxDownloadSpeed: 0,
     launchOptions: DEFAULT_LAUNCH_CONFIG,
-    maxConnections: 10
+    maxConnections: 10,
+    checkRepositoriesOnStartup: true
 };
 
 export async function loadConfig(): Promise<IApplicationSettings> {

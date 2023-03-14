@@ -25,6 +25,20 @@ const routes: Array<RouteRecordRaw> = [
         ]
     },
     {
+        path: '/repo-settings/:repoId',
+        component: () => import('../views/RepositorySettings.vue'),
+        children: [
+            {
+                path: 'general',
+                component: () => import('../views/RepositorySettings/General.vue')
+            },
+            {
+                path: 'launch',
+                component: () => import('../views/RepositorySettings/Launch.vue')
+            }
+        ]
+    },
+    {
         path: '/repo/:repoId/modset/:modsetId',
         component: () => import('../views/Modset.vue'),
         children: [
@@ -45,6 +59,24 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: 'edit',
                 component: () => import('../views/Collection/Edit.vue')
+            }
+        ]
+    },
+    {
+        path: '/settings',
+        component: () => import('../views/Settings.vue'),
+        children: [
+            {
+                path: 'general',
+                component: () => import('../views/Settings/ApplicationSettings.vue')
+            },
+            {
+                path: 'launch',
+                component: () => import('../views/Settings/Launch.vue')
+            },
+            {
+                path: 'about',
+                component: () => import('../views/Settings/About.vue')
             }
         ]
     },

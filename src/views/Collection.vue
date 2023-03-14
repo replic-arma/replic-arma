@@ -52,7 +52,7 @@ const subnaviItems = computed(() => {
 const router = useRouter();
 
 function goToRepo() {
-    router.push('/repo/' + useRouteStore().currentRepoID + '/collections');
+    router.push(`/repo/${useRouteStore().currentRepoID}/collections`);
 }
 </script>
 

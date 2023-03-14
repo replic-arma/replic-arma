@@ -73,7 +73,7 @@ import Tabs from '@/components/util/Tabs.vue';
 import PathSelector from '@/components/util/PathSelector.vue';
 import { notify } from '@kyvg/vue3-notification';
 import { clearModsetCache } from '@/util/system/modset_cache';
-import Launch from '@/components/Settings/Launch.vue';
+import Launch from '@/components/LaunchOptions.vue';
 const props = defineProps({
     modelValue: {
         type: Object as PropType<IReplicArmaRepository>,

@@ -6,7 +6,7 @@
             >
         </div>
         <ul class="dlclist" :class="tree ? 'tree' : 'list'">
-            <Mod v-for="(dlcName, index) of model.dlc" :name="dlcName" :key="index"></Mod>
+            <Mod v-for="(dlcName, index) of model.dlc" :size="0" :name="dlcName" :key="index"></Mod>
         </ul>
     </div>
 </template>

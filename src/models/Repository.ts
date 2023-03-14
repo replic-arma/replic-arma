@@ -103,7 +103,8 @@ export enum HashStatus {
     UNKNOWN = 'unknown',
     OUTDATED = 'outdated',
     READY = 'ready',
-    CHECKING = 'checking'
+    CHECKING = 'checking',
+    QUEUED = 'queued'
 }
 export interface IReplicArmaRepository extends Repository {
     id: string;

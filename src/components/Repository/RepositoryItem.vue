@@ -39,21 +39,26 @@ import { launchCollectionByID, launchModset } from '@/util/system/game';
 import { HashStatus, type Collection, type IReplicArmaRepository } from '@/models/Repository';
 import { useDownloadStore } from '@/store/download';
 import PlayButton from '@/components/PlayButton.vue';
+import { useModsetStatus } from '@/composables/useModsetStatus';
+import { computedEager } from '@vueuse/core';
 
 interface Props {
     repository: IReplicArmaRepository;
 }
 const props = defineProps<Props>();
-const status = computed(() => {
+const currentModsetId = ref('');
+
+onMounted(() => {
+    if (props.repository.modsets.length === 0 || props.repository.modsets[0] == null) return '';
+    currentModsetId.value = props.repository.modsets[0].id + '_1' ?? '';
+});
+
+const status = computedEager(() => {
     const [id, type] = currentModsetId.value.split('_');
+    if (id === undefined) return HashStatus.UNKNOWN;
     if (type === '1') {
-        const cacheData = useHashStore().cache.get(id ?? '');
-        if (cacheData === undefined) return HashStatus.CHECKING;
-        const current = useDownloadStore().current;
-        if (current !== null && current.item.id === id) return current.status;
-        if (cacheData.outdated.length > 0 || cacheData.missing.length > 0) {
-            return HashStatus.OUTDATED;
-        }
+        const { status: modsetStatus } = useModsetStatus(props.repository.id, id);
+        return modsetStatus.value;
     } else {
         const collection = props.repository.collections.find((collection: Collection) => collection.id === id);
         const cacheData = useHashStore().cache.get(props.repository.id);
@@ -84,10 +89,6 @@ const progress = computed(() => {
     }
 });
 
-onMounted(() => {
-    if (props.repository.modsets.length === 0 || props.repository.modsets[0] == null) return '';
-    currentModsetId.value = props.repository.modsets[0].id + '_1' ?? '';
-});
 function play() {
     const [id, type] = currentModsetId.value.split('_');
     if (id === undefined) return '';
@@ -97,7 +98,6 @@ function play() {
         launchCollectionByID(id, props.repository.id);
     }
 }
-const currentModsetId = ref('');
 </script>
 <style lang="scss" scoped>
 .repo {

@@ -81,6 +81,7 @@ function filterMods(repoId: string, modNames: string[]) {
 }
 
 function getModDlcString(directory: string, mods: string[], dlc: string[] = [], localMods: string[] = []) {
+    if (mods.length === 0 && dlc.length === 0 && localMods.length === 0) return '';
     let arrMods: string[] = [];
     mods.forEach((modName: string) => {
         arrMods = [...arrMods, ...[`${directory}${sep}${modName}`]];

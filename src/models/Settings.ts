@@ -30,5 +30,6 @@ export interface IApplicationSettings {
     downloadDirectoryPath: string;
     maxDownloadSpeed: number;
     maxConnections: number;
+    checkRepositoriesOnStartup: boolean;
     launchOptions: GameLaunchSettings;
 }

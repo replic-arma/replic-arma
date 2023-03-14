@@ -75,7 +75,8 @@
         "debug": "Debug",
         "crashDiag": "Crash Diag",
         "debugCallExtension": "Debug Call Extension",
-        "noLand": "No Land"
+        "noLand": "No Land",
+        "checkRepositoriesOnStartup": "Prüfe Repositories beim Start"
     },
     "remove": "Entfernen",
     "save": "Speichern",

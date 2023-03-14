@@ -67,7 +67,12 @@ export const useRepoStore = defineStore('repo', () => {
                 await updateRepository();
             }
             useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
-            useHashStore().addToQueue(repo);
+            if (
+                useSettingsStore().settings?.checkRepositoriesOnStartup === undefined ||
+                useSettingsStore().settings?.checkRepositoriesOnStartup
+            ) {
+                useHashStore().addToQueue(repo);
+            }
         }
     });
 

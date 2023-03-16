@@ -31,9 +31,9 @@ export async function clearModsetCache(repoId: string | null = null) {
     await ensureAppDir();
 
     const files = await readDir('');
-    files.forEach(file => {
+    for (const file of files) {
         if (file.name?.includes(fileName)) {
-            removeFile(file.path.split('\\').pop() ?? '');
+            await removeFile(file.path.split('\\').pop() ?? '');
         }
-    });
+    }
 }

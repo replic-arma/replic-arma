@@ -111,9 +111,10 @@ export function useRepository(repoID: MaybeRef<string>) {
     async function updateModsets(repoData: Repository) {
         if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
         let mods: ModsetMod[] = [];
-        if (repoData.files !== undefined) {
-            mods = await ReplicWorker.createModsetFromFiles(repoData.files);
-        }
+        if (repoData.files === undefined) return; // TODO handle this later
+        repository.value.files = repoData.files;
+
+        mods = await ReplicWorker.createModsetFromFiles(repoData.files);
         const allModsModset = repository.value.modsets.find(modset => modset.name === 'All Mods');
         repository.value.modsets = repoData.modsets.map((modset: Modset) => {
             const oldModset = repository.value!.modsets.find(
@@ -121,6 +122,7 @@ export function useRepository(repoID: MaybeRef<string>) {
             );
             return { ...modset, id: oldModset?.id ?? uuidv4() };
         });
+
         if (allModsModset !== undefined) {
             allModsModset.mods = mods;
             repository.value.modsets.unshift(allModsModset);

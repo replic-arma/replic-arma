@@ -116,74 +116,88 @@ pub async fn check_a3s(
         .collect();
 
     // create zsync tasks for outdated files
-    let hash_con = *state.number_hash_concurrent.lock().await;
+    // let hash_con = *state.number_hash_concurrent.lock().await;
 
-    #[allow(clippy::type_complexity)]
-    let zsync_check_fnmut: Box<
-        dyn Send
-            + FnMut(
-                (FileCheckInput, &(String, i64)),
-            ) -> TokioJoinHandle<std::result::Result<RepoFile, anyhow::Error>>,
-    > = Box::new(|(fci, _)| {
-        let url2 = url.clone();
-        let path_prefix2 = path_prefix.clone();
-        let inner_window = window.clone();
-        tokio::spawn(async move {
-            let file_without_prefix = remove_prefix(&fci, &path_prefix2);
+    // #[allow(clippy::type_complexity)]
+    // let zsync_check_fnmut: Box<
+    //     dyn Send
+    //         + FnMut(
+    //             (FileCheckInput, &(String, i64)),
+    //         ) -> TokioJoinHandle<std::result::Result<RepoFile, anyhow::Error>>,
+    // > = Box::new(|(fci, _)| {
+    //     let url2 = url.clone();
+    //     let path_prefix2 = path_prefix.clone();
+    //     let inner_window = window.clone();
+    //     tokio::spawn(async move {
+    //         let file_without_prefix = remove_prefix(&fci, &path_prefix2);
 
-            if !Path::new(&fci.file).exists() || fci.size == 0 {
-                return Ok(RepoFile {
-                    file: file_without_prefix,
-                    size: 0,
-                    current_size: 0.0,
-                    percentage: 0.0,
-                });
-            }
+    //         if !Path::new(&fci.file).exists() || fci.size == 0 {
+    //             return Ok(RepoFile {
+    //                 file: file_without_prefix,
+    //                 size: 0,
+    //                 current_size: 0.0,
+    //                 percentage: 0.0,
+    //             });
+    //         }
 
-            if let Ok(progress) =
-                get_zsync_progress(&url2, &file_without_prefix, &path_prefix2).await
-            {
-                inner_window
-                    .emit("zsync_completed", file_without_prefix.clone())
-                    .unwrap();
-                Ok(RepoFile {
-                    file: file_without_prefix,
-                    size: fci.size,
-                    current_size: progress.1,
-                    percentage: progress.0,
-                })
-            } else {
-                Err(anyhow!("Err"))
+    //         if let Ok(progress) =
+    //             get_zsync_progress(&url2, &file_without_prefix, &path_prefix2).await
+    //         {
+    //             inner_window
+    //                 .emit("zsync_completed", file_without_prefix.clone())
+    //                 .unwrap();
+    //             Ok(RepoFile {
+    //                 file: file_without_prefix,
+    //                 size: fci.size,
+    //                 current_size: progress.1,
+    //                 percentage: progress.0,
+    //             })
+    //         } else {
+    //             Err(anyhow!("Err"))
+    //         }
+    //     })
+    // });
+
+    let outdated_files = outdated
+        .into_iter()
+        .map(|(fci, _)| {
+            let file_without_prefix = remove_prefix(&fci, &path_prefix);
+            RepoFile {
+                file: file_without_prefix,
+                size: fci.size,
+                current_size: 0.0,
+                percentage: 0.0,
             }
         })
-    });
+        .collect::<Vec<RepoFile>>();
 
-    let zsync_tasks = futures::stream::iter(outdated)
-        .map(zsync_check_fnmut)
-        .buffer_unordered(hash_con);
+    // let zsync_tasks = futures::stream::iter(outdated)
+    //     .map(zsync_check_fnmut)
+    //     .buffer_unordered(hash_con);
     // collect outdated files via executing all the tasks
-    let zsync_results = zsync_tasks.filter_map(|f| async move {
-        if let Ok(Ok(rf)) = f {
-            Some(rf)
-        } else {
-            None
-        }
-    });
-    let outdated_files = zsync_results.collect::<Vec<_>>().await;
+    // let zsync_results = zsync_tasks.filter_map(|f| async move {
+    //     if let Ok(Ok(rf)) = f {
+    //         Some(rf)
+    //     } else {
+    //         None
+    //     }
+    // });
+    // let outdated_files = zsync_results.collect::<Vec<_>>().await;
 
     let missing_size: u64 = missing_files.iter().map(|f| f.size).sum();
-    let outdated_size: f64 = outdated_files.iter().map(|f| f.current_size).sum();
+    let outdated_size: u64 = outdated_files.iter().map(|f| f.size).sum();
+    // let outdated_size: f64 = outdated_files.iter().map(|f| f.current_size).sum();
     let completed_size: u64 = completed_files.iter().map(|f| f.size).sum();
     println!("missing file sizes: {}", missing_size);
     println!("outdated file sizes: {}", outdated_size);
     println!("completed file sizes: {}", completed_size);
     println!(
         "missing + outdated file sizes: {}",
-        missing_size + outdated_size as u64
+        missing_size + outdated_size
     );
     println!(
         "missing + outdated + completed file sizes: {}",
-        missing_size + outdated_size as u64 + completed_size
+        missing_size + outdated_size + completed_size
     );
 
     // dbg!(completed_files);

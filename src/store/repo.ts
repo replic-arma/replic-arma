@@ -14,11 +14,11 @@ import { useSettingsStore } from './settings';
 
 export const useRepoStore = defineStore('repo', () => {
     const repos = ref(null as null | Array<IReplicArmaRepository>);
-    const modsetCache = ref(null as null | Array<Modset>);
+    const modsetCache = ref([] as Array<Modset>);
 
-    function save() {
+    async function save() {
         if (repos.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_SAVE);
-        return saveRepos(repos.value);
+        return await saveRepos(repos.value);
     }
 
     async function addRepo(url: string) {
@@ -62,7 +62,10 @@ export const useRepoStore = defineStore('repo', () => {
         repos.value = reposdata;
         for (const repo of reposdata) {
             const { updateRepository, checkRevisionChanged } = useRepository(repo.id);
-            useRepoStore().modsetCache = [...(await loadModsetCache(repo.id)), ...(useRepoStore().modsetCache ?? [])];
+            const cache = await loadModsetCache(repo.id);
+            for (const modset of cache) {
+                useRepoStore().modsetCache.push(modset);
+            }
             const revisionChanged = await checkRevisionChanged();
             if (revisionChanged) {
                 await updateRepository();
@@ -76,7 +79,7 @@ export const useRepoStore = defineStore('repo', () => {
         }
     });
 
-    async function recalcRepositories() {
+    function recalcRepositories() {
         if (repos.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
         useHashStore().cache.clear();
         for (const repository of repos.value) {

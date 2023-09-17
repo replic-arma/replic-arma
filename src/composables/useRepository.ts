@@ -15,9 +15,8 @@ import { isRef, ref, toRaw, unref, watch } from 'vue';
 
 export function useRepository(repoID: MaybeRef<string>) {
     const repository = ref(null as null | IReplicArmaRepository);
-    const repoStore = useRepoStore();
     const reposInitialized = computedEager(() => {
-        return repoStore.repos !== null;
+        return useRepoStore().repos !== null;
     });
     const loading = ref(true);
     const loadingError = ref(null as unknown);
@@ -26,7 +25,7 @@ export function useRepository(repoID: MaybeRef<string>) {
 
         try {
             repository.value =
-                repoStore.repos!.find((repo: IReplicArmaRepository) => repo.id === unref(repoID)) ?? null;
+                useRepoStore().repos!.find((repo: IReplicArmaRepository) => repo.id === unref(repoID)) ?? null;
         } catch (err) {
             loadingError.value = err;
         }
@@ -48,7 +47,7 @@ export function useRepository(repoID: MaybeRef<string>) {
         if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
         const modset = { ...options, id: uuidv4() };
         repository.value.modsets?.push(modset);
-        await repoStore.save();
+        await useRepoStore().save();
         notify({
             title: 'Added Modset',
             text: `Added new Modset ${modset.name}`,
@@ -60,7 +59,7 @@ export function useRepository(repoID: MaybeRef<string>) {
         if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
         const collection = { ...options, id: uuidv4() };
         repository.value.collections?.push(collection);
-        await repoStore.save();
+        await useRepoStore().save();
         notify({
             title: 'Added Collection',
             text: `Added new Collection ${collection.name}`,
@@ -72,7 +71,7 @@ export function useRepository(repoID: MaybeRef<string>) {
         if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
         const server = { ...options, id: uuidv4() };
         repository.value.game_servers?.push(server);
-        await repoStore.save();
+        await useRepoStore().save();
         notify({
             title: 'Added Server',
             text: `Added new Server ${server.name}`,
@@ -104,7 +103,7 @@ export function useRepository(repoID: MaybeRef<string>) {
         await updateModsetCache();
         repository.value.build_date = repoData.build_date;
         repository.value.revision = repoData.revision;
-        await repoStore.save();
+        await useRepoStore().save();
         console.debug(`Updating Repository ${repoData.name} finished`);
     }
 
@@ -188,6 +187,10 @@ export function useRepository(repoID: MaybeRef<string>) {
             toRaw(repository.value.files),
             toRaw(repository.value.modsets)
         );
+        const modsetIds = calculatedModsetCache.map((modset: Modset) => modset.id);
+        useRepoStore().modsetCache = useRepoStore().modsetCache.filter(modsetCache =>
+            !modsetIds.includes(modsetCache.id)
+        );
         useRepoStore().modsetCache = [...calculatedModsetCache, ...(useRepoStore().modsetCache ?? [])];
         await saveModsetCache(unref(repoID), calculatedModsetCache);
     }
@@ -197,13 +200,13 @@ export function useRepository(repoID: MaybeRef<string>) {
         repository.value.collections = repository.value.collections?.filter(
             collection => collection.id !== collectionId
         );
-        await repoStore.save();
+        await useRepoStore().save();
     }
 
     async function updateLaunchOptions(launchOptions: GameLaunchSettings) {
         if (repository.value === null) throw new InternalError(ERROR_CODE_INTERNAL.REPOSITORIES_NOT_LOADED_ACCESS);
         repository.value.launchOptions = launchOptions;
-        await repoStore.save();
+        await useRepoStore().save();
     }
 
     return {

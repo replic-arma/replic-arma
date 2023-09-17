@@ -63,9 +63,7 @@ export async function launchGame(
     }
     await spawnProcess(
         settings.gamePath,
-        modDlcString,
-        getParsedLaunchOptions(launchOptions),
-        getConnectionString(gameServer),
+        composeArgumentList(modDlcString, getParsedLaunchOptions(launchOptions), getConnectionString(gameServer)),
         {}
     );
 }
@@ -80,19 +78,19 @@ function filterMods(repoId: string, modNames: string[]) {
     return modNames;
 }
 
-function getModDlcString(directory: string, mods: string[], dlc: string[] = [], localMods: string[] = []) {
+export function getModDlcString(directory: string, mods: string[], dlc: string[] = [], localMods: string[] = []) {
     if (mods.length === 0 && dlc.length === 0 && localMods.length === 0) return '';
     let arrMods: string[] = [];
     mods.forEach((modName: string) => {
         arrMods = [...arrMods, ...[`${directory}${sep}${modName}`]];
     });
 
-    return ` -mod=${[...arrMods, ...dlc, ...localMods].join(';')};`;
+    return [...arrMods, ...dlc, ...localMods].map(path => `\"-mod=${path};\"`);
 }
 
-function getConnectionString(gameServer: GameServer | null = null) {
+export function getConnectionString(gameServer: GameServer | null = null) {
     if (gameServer === null) return '';
-    return ` -ip=${gameServer.host};-port=${gameServer.port};-password=${gameServer.password};`;
+    return `-ip=${gameServer.host}; -port=${gameServer.port}; -password=${gameServer.password};`;
 }
 
 function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
@@ -122,22 +120,17 @@ function getParsedLaunchOptions(launchOptions: GameLaunchSettings) {
     return parsedLaunchOptions;
 }
 
-async function spawnProcess(
-    path: string,
-    mods: string,
-    launchOptions: string[],
-    connection: string,
-    spawnOptions: SpawnOptions
-) {
-    const command = new Command(
-        'run-game',
-        ['/C', 'start', '', path, ...launchOptions, mods, connection],
-        spawnOptions
-    );
-    logInfo(
-        LogType.GAME,
-        `Launching Game. Params: ${['/C', 'start', '', path, ...launchOptions, mods, connection].join(' ')}`
-    );
+function composeArgumentList(mods: string[], launchOptions: string[], connection: string) {
+    const args = [];
+    if (launchOptions.length > 0) args.push(launchOptions.map(o => `\"${o}\"`));
+    if (mods.length > 0) args.push(mods);
+    if (connection.length > 0) args.push(connection);
+    return `${args.join(', ')}`;
+}
+
+async function spawnProcess(path: string, args: string, spawnOptions: SpawnOptions) {
+    const command = new Command('run-game', `Start-Process -FilePath "${path}" -ArgumentList ${args}`, spawnOptions);
+    logInfo(LogType.GAME, `Start-Process -FilePath "${path}" -ArgumentList ${args}`);
     command.on('close', data => {
         logInfo(LogType.GAME, `finished with code ${data.code} and signal ${data.signal}`);
     });

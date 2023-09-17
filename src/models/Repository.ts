@@ -84,7 +84,6 @@ export interface Repository {
     modsets: Array<Modset>;
     game_servers?: Array<GameServer>;
     download_server?: DownloadServer;
-    collections: Array<Collection>;
     config_url: string | undefined;
     connection?: ConnectionSettings;
 }
@@ -112,6 +111,7 @@ export interface IReplicArmaRepository extends Repository {
     error?: ReplicArmaRepositoryError;
     settings?: GameLaunchSettings;
     type?: RepositoryType;
-    launchOptions: GameLaunchSettings;
+    launchOptions?: GameLaunchSettings;
     downloadDirectoryPath: string;
+    collections: Array<Collection>;
 }

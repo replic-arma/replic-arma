@@ -1,3 +1,4 @@
+import { useCacheStore } from '@/store/cache';
 import Notifications from '@kyvg/vue3-notification';
 import * as mdijs from '@mdi/js';
 import mdiVue from 'mdi-vue/v3';
@@ -13,7 +14,6 @@ import { useDownloadStore } from './store/download';
 import { useHashStore } from './store/hash';
 import { useRepoStore } from './store/repo';
 import { useSettingsStore } from './store/settings';
-import { updateActivity } from './util/system/discord';
 import { initLogger } from './util/system/logger';
 
 const app = createApp(App);
@@ -28,8 +28,10 @@ app.use(mdiVue, {
 app.use(Notifications);
 app.use(i18n);
 app.mount('#app');
+initLogger();
 useSettingsStore();
 useRepoStore();
+useCacheStore();
 useHashStore();
 useDownloadStore();
 // app.use(VueMatomo, {
@@ -53,5 +55,4 @@ useDownloadStore();
 //     crossOrigin: undefined
 // });
 
-updateActivity();
-initLogger();
+// updateActivity();

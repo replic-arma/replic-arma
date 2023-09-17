@@ -64,7 +64,7 @@
                 "scope": [
                     {
                         "name": "run-game",
-                        "cmd": "cmd",
+                        "cmd": "powershell",
                         "args": true
                     }
                 ]

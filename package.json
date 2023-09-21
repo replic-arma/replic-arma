@@ -12,7 +12,8 @@
         "preview": "vite preview --port 5050",
         "typecheck": "vue-tsc --noEmit",
         "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-        "test": "vitest"
+        "test": "vitest",
+        "tauri": "tauri"
     },
     "dependencies": {
         "@tauri-apps/api": "^1.3.0",

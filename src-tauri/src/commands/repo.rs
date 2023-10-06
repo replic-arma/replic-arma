@@ -1,9 +1,9 @@
 use crate::commands::repo::check_a3s::check_a3s;
 use crate::{
-    repository::Repository,
     state::ReplicArmaState,
     util::types::{JSResult, RepoType},
 };
+use ra_core::repository::Repository;
 use anyhow::Result;
 use std::{path::PathBuf, str::FromStr};
 use tauri::Window;

@@ -1,12 +1,14 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use tauri::async_runtime::Mutex;
+use ra_core::repository::Repository;
 
 pub struct ReplicArmaState {
     pub data_dir: Box<PathBuf>,
     pub known_hashes: Mutex<HashMap<String, (String, i64)>>,
     pub downloading: Arc<Mutex<Option<bool>>>,
     pub number_hash_concurrent: Arc<Mutex<usize>>,
+    pub repositories: Mutex<HashMap<String, Repository>>
 }
 
 impl ReplicArmaState {}

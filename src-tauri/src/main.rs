@@ -3,14 +3,9 @@
     windows_subsystem = "windows"
 )]
 
-#[path = "./repos/a3s/mod.rs"]
-mod a3s;
-mod commands;
-mod repository;
 mod state;
-#[path = "./repos/swifty/mod.rs"]
-mod swifty;
 mod util;
+mod commands;
 
 use std::collections::HashMap;
 use std::fs;
@@ -25,7 +20,7 @@ use crate::commands::{
     util::{dir_exists, file_exists, get_a3_dir},
 };
 use log::LevelFilter;
-use tauri::{api::path::app_dir, async_runtime::Mutex, Manager};
+use tauri::{api::path::app_data_dir, async_runtime::Mutex, Manager};
 use tauri_plugin_log::LogTarget;
 use util::methods::load_t;
 
@@ -71,6 +66,7 @@ fn init_state(app_dir: PathBuf) -> anyhow::Result<ReplicArmaState> {
         known_hashes: Mutex::new(hashes),
         downloading: Arc::new(Mutex::new(None)),
         number_hash_concurrent: Arc::new(Mutex::new(num_logical_cores)),
+        repositories: Mutex::new(HashMap::new())
     };
 
     Ok(state)
@@ -105,7 +101,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     tauri::Builder::default()
         .setup(move |app| {
-            let app_dir = app_dir(&app.config()).expect("Couldn't get app dir path!");
+            let app_dir = app_data_dir(&app.config()).expect("Couldn't get app dir path!");
             app.manage(init_state(app_dir.clone()).unwrap_or_else(|_| {
                 println!("Error during init state! Using default state!");
                 let num_logical_cores = available_parallelism().unwrap().get();
@@ -114,6 +110,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     known_hashes: Mutex::new(HashMap::new()),
                     downloading: Arc::new(Mutex::new(None)),
                     number_hash_concurrent: Arc::new(Mutex::new(num_logical_cores)),
+                    repositories: Mutex::new(HashMap::new())
                 }
             }));
             let handle = app.handle();
@@ -228,56 +225,12 @@ mod tests {
     use std::{path::PathBuf, str::FromStr};
 
     use crate::{
-        a3s::A3SRepository,
         commands::{
             repo::{download, get_repo},
             util::{dir_exists, file_exists, get_a3_dir},
         },
-        swifty::SwiftyRepository,
     };
 
-    #[test]
-    fn test_swifty() {
-        let swifty = SwiftyRepository::from_repo_json(String::from(
-            "https://swifty.projectawesome.net/event/repo.json",
-        ));
-
-        //assert_eq!(swifty.unwrap().repo_name, "Event".to_string());
-    }
-
-    #[test]
-    fn test_a3s() {
-        let a3s = A3SRepository::from_auto_config(String::from(
-            "http://a3s.gruppe-adler.de/mods/.a3s/autoconfig",
-        ));
-
-        assert_eq!(
-            a3s.unwrap().auto_config.protocol.url,
-            "a3s.gruppe-adler.de/mods".to_string()
-        );
-    }
-
-    #[test]
-    fn test_a3s_3cb() {
-        let a3s = A3SRepository::from_auto_config(String::from(
-            "http://repo.3commandobrigade.com/autoconfig",
-        ));
-
-        assert!(a3s.is_ok());
-
-        assert!(a3s.unwrap().auto_config.protocol.url == "repo.3commandobrigade.com");
-    }
-
-    #[test]
-    fn test_a3s_402() {
-        let a3s = A3SRepository::from_auto_config(String::from(
-            "http://repo.pzgrenbtl402.de/main/.a3s/autoconfig",
-        ));
-
-        assert!(a3s.is_ok());
-
-        assert!(a3s.unwrap().auto_config.protocol.url == "repo.pzgrenbtl402.de/main");
-    }
 
     #[tokio::test]
     async fn test_get_a3s() {
